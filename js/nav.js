@@ -10,6 +10,7 @@
     clients:    'Clients',
     tours:      'Tours',
     passengers: 'Passengers',
+    bookings:   'Bookings',
     quotes:     'Quotes',
     invoicing:  'Invoicing',
     providers:  'Providers',
@@ -41,6 +42,18 @@
     contentArea.innerHTML = '';
     if (section === 'dashboard' && window.Dashboard) {
       window.Dashboard.render(contentArea);
+    } else if (section === 'clients' && window.Clients) {
+      window.Clients.render(contentArea);
+    } else if (section === 'tours' && window.Tours) {
+      window.Tours.render(contentArea);
+    } else if (section === 'passengers' && window.Passengers) {
+      window.Passengers.render(contentArea);
+    } else if (section === 'bookings' && window.Bookings) {
+      window.Bookings.render(contentArea);
+    } else if (section === 'quotes' && window.Quotes) {
+      window.Quotes.render(contentArea);
+    } else if (section === 'invoicing' && window.Invoicing) {
+      window.Invoicing.render(contentArea);
     } else {
       contentArea.innerHTML = buildPlaceholder(section);
     }
