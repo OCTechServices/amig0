@@ -54,6 +54,10 @@
       window.Quotes.render(contentArea);
     } else if (section === 'invoicing' && window.Invoicing) {
       window.Invoicing.render(contentArea);
+    } else if (section === 'providers' && window.Providers) {
+      window.Providers.render(contentArea);
+    } else if (section === 'briefings' && window.Briefings) {
+      window.Briefings.render(contentArea);
     } else {
       contentArea.innerHTML = buildPlaceholder(section);
     }
