@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Amig0 Travel — CRM</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+
+  <!-- Auth Gate -->
+  <div id="login-screen" class="login-screen">
+    <div class="login-card">
+      <h1 class="login-title">Amig0 Travel</h1>
+      <p class="login-subtitle">Operator Portal</p>
+      <form id="login-form" class="login-form" novalidate>
+        <div class="field">
+          <label for="email">Email</label>
+          <input type="email" id="email" placeholder="you@example.com" autocomplete="email" required>
+        </div>
+        <div class="field">
+          <label for="password">Password</label>
+          <input type="password" id="password" placeholder="••••••••" autocomplete="current-password" required>
+        </div>
+        <p id="login-error" class="login-error" role="alert" aria-live="polite"></p>
+        <button type="submit" id="login-btn" class="btn btn-primary btn-full">Sign In</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- App Shell — hidden until authenticated -->
+  <div id="app-shell" class="app-shell hidden">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <span class="sidebar-logo">Amig<span class="brand-zero">0</span></span>
+        <span class="sidebar-tagline">Travel CRM</span>
+      </div>
+
+      <nav class="sidebar-nav" aria-label="Main navigation">
+        <ul>
+          <li>
+            <a href="#" class="nav-link active" data-section="dashboard">
+              <span class="nav-icon">&#9783;</span>
+              Dashboard
+            </a>
+          </li>
+          <li>
+            <a href="#" class="nav-link" data-section="clients">
+              <span class="nav-icon">&#9786;</span>
+              Clients
+            </a>
+          </li>
+          <li>
+            <a href="#" class="nav-link" data-section="tours">
+              <span class="nav-icon">&#9788;</span>
+              Tours
+            </a>
+          </li>
+          <li>
+            <a href="#" class="nav-link" data-section="passengers">
+              <span class="nav-icon">&#9757;</span>
+              Passengers
+            </a>
+          </li>
+          <li>
+            <a href="#" class="nav-link" data-section="quotes">
+              <span class="nav-icon">&#9998;</span>
+              Quotes
+            </a>
+          </li>
+          <li>
+            <a href="#" class="nav-link" data-section="invoicing">
+              <span class="nav-icon">&#9776;</span>
+              Invoicing
+            </a>
+          </li>
+          <li>
+            <a href="#" class="nav-link" data-section="providers">
+              <span class="nav-icon">&#9881;</span>
+              Providers
+            </a>
+          </li>
+          <li>
+            <a href="#" class="nav-link" data-section="briefings">
+              <span class="nav-icon">&#9741;</span>
+              Briefings
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+      <div class="sidebar-footer">
+        <span id="user-email" class="sidebar-user-email"></span>
+        <button id="sign-out-btn" class="btn btn-ghost-light btn-full">Sign Out</button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="main-wrapper">
+      <header class="topbar">
+        <h2 id="section-title" class="topbar-title">Dashboard</h2>
+      </header>
+      <main id="content-area" class="content-area">
+        <!-- Injected by section modules -->
+      </main>
+    </div>
+
+  </div>
+
+  <!-- Firebase compat SDK v10.12 — load order matters -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
+
+  <!-- App config — gitignored, never committed -->
+  <script src="firebase-config.js"></script>
+
+  <!-- App modules -->
+  <script src="js/auth.js"></script>
+  <script src="js/dashboard.js"></script>
+  <script src="js/nav.js"></script>
+
+</body>
+</html>

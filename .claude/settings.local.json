@@ -1,0 +1,21 @@
+{
+  "tier": 1,
+  "phase": "Build",
+  "permissions": {
+    "allow": [],
+    "deny": []
+  },
+  "hooks": {
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/danielbolanos/Documents/amig0-travel-company/.claude/hooks/session-end.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
