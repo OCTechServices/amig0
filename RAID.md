@@ -28,7 +28,7 @@
 | ID | Issue | Source | Priority | Status |
 |---|---|---|---|---|
 | I01 | Firebase config key exposure risk — not yet verified as excluded from git | Project intake | High | Closed — .gitignore created 2026-04-11, firebase-config.js excluded before any keys exist |
-| I02 | Firestore Security Rules not reviewed for client portal UID scoping | Project intake | High | Open |
+| I02 | Firestore Security Rules not reviewed for client portal UID scoping | Project intake | High | Closed — role-based rules written 2026-04-19; user_profiles collection required; deploy before portal goes live |
 | I03 | Service worker cache versioning strategy not documented | Project intake | Medium | Open |
 | I04 | GitHub Pages → Firebase Hosting migration decision pending | Project intake | Low | Open |
 | I05 | Client Portal scoped as read-only (bookings + itineraries) — no pre-trip social layer designed yet | Session 2 design input | Low | Open — evaluate during portal design phase |
