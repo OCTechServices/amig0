@@ -5,8 +5,9 @@
 (function () {
   'use strict';
 
-  var db = firebase.firestore();
-  var col = db.collection('clients');
+  var db              = firebase.firestore();
+  var col             = db.collection('clients');
+  var fnProvision     = firebase.functions().httpsCallable('provisionClient');
 
   window.Clients = {
     render: render
@@ -66,6 +67,11 @@
               '<td>' + esc(d.email || '—') + '</td>',
               '<td>' + esc(d.phone || '—') + '</td>',
               '<td>' + esc(d.country || '—') + '</td>',
+              '<td>',
+                d.uid
+                  ? '<button class="btn-table-action btn-table-pay" data-action="provision" data-id="' + doc.id + '" data-uid="' + esc(d.uid) + '">Grant Access</button>'
+                  : '<span class="badge badge-neutral">Not linked</span>',
+              '</td>',
               '<td class="td-actions">',
                 '<button class="btn-table-action" data-action="edit" data-id="' + doc.id + '">Edit</button>',
                 '<button class="btn-table-action btn-table-danger" data-action="delete" data-id="' + doc.id + '">Delete</button>',
@@ -82,6 +88,7 @@
                 '<th>Email</th>',
                 '<th>Phone</th>',
                 '<th>Country</th>',
+                '<th>Portal Access</th>',
                 '<th></th>',
               '</tr>',
             '</thead>',
@@ -96,6 +103,8 @@
             var action = btn.getAttribute('data-action');
             if (action === 'edit') {
               loadAndOpenEdit(id);
+            } else if (action === 'provision') {
+              provisionPortalAccess(id, btn.getAttribute('data-uid'), btn);
             } else if (action === 'delete') {
               confirmDelete(id, btn.closest('tr'));
             }
@@ -125,6 +134,7 @@
       form.elements['email'].value   = data.email   || '';
       form.elements['phone'].value   = data.phone   || '';
       form.elements['country'].value = data.country || '';
+      form.elements['uid'].value     = data.uid     || '';
       form.elements['notes'].value   = data.notes   || '';
       form.dataset.editId = data._id;
     } else {
@@ -168,6 +178,7 @@
       email:   form.elements['email'].value.trim(),
       phone:   form.elements['phone'].value.trim(),
       country: form.elements['country'].value.trim(),
+      uid:     form.elements['uid'].value.trim() || null,
       notes:   form.elements['notes'].value.trim(),
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     };
@@ -200,6 +211,27 @@
       saveBtn.disabled = false;
       saveBtn.textContent = 'Save Client';
     });
+  }
+
+  // -------------------------------------------------------------------------
+  // Portal provisioning
+  // -------------------------------------------------------------------------
+  function provisionPortalAccess(clientId, uid, btn) {
+    if (!uid) return;
+    var original = btn.textContent;
+    btn.disabled    = true;
+    btn.textContent = 'Granting…';
+
+    fnProvision({ clientId: clientId, uid: uid })
+      .then(function () {
+        btn.outerHTML = '<span class="badge badge-success">Active</span>';
+      })
+      .catch(function (err) {
+        console.error('[clients] provision:', err.message);
+        alert(err.message || 'Failed to grant access. Check the UID and try again.');
+        btn.disabled    = false;
+        btn.textContent = original;
+      });
   }
 
   // -------------------------------------------------------------------------
@@ -250,6 +282,10 @@
                 '<label for="client-country">Country</label>',
                 '<input type="text" id="client-country" name="country" placeholder="e.g. United States" autocomplete="off">',
               '</div>',
+            '</div>',
+            '<div class="field">',
+              '<label for="client-uid">Firebase Auth UID <span class="field-hint">— paste from Firebase Console → Authentication → Users</span></label>',
+              '<input type="text" id="client-uid" name="uid" placeholder="e.g. abc123XYZ…" autocomplete="off" spellcheck="false">',
             '</div>',
             '<div class="field">',
               '<label for="client-notes">Notes</label>',

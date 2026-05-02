@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0F2940">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Amig0 Guide">
+  <title>Amig0 — Guide</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/guide.css">
+</head>
+<body>
+
+  <!-- Auth Gate -->
+  <div id="guide-login" class="guide-login">
+    <div class="guide-login-inner">
+      <div class="guide-brand">
+        <span class="guide-brand-name">Amig<svg class="brand-zero" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 26" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" d="M10,1.5 C14.97,1.5 19,6.65 19,13 C19,19.35 14.97,24.5 10,24.5 C5.03,24.5 1,19.35 1,13 C1,6.65 5.03,1.5 10,1.5 Z M10,7 C7.51,7 5.5,9.69 5.5,13 C5.5,16.31 7.51,19 10,19 C12.49,19 14.5,16.31 14.5,13 C14.5,9.69 12.49,7 10,7 Z"/></svg></span>
+        <span class="guide-brand-sub">Guide</span>
+      </div>
+      <h1 class="guide-login-title">Guide App</h1>
+      <p class="guide-login-sub">Sign in to access your tour dashboard.</p>
+      <form id="guide-login-form" class="guide-form" novalidate>
+        <div class="gfield">
+          <label for="g-email">Email</label>
+          <input type="email" id="g-email" placeholder="your@email.com" autocomplete="email" required>
+        </div>
+        <div class="gfield">
+          <label for="g-password">Password</label>
+          <input type="password" id="g-password" placeholder="••••••••" autocomplete="current-password" required>
+        </div>
+        <p id="guide-login-error" class="guide-error" role="alert" aria-live="polite"></p>
+        <button type="submit" id="guide-login-btn" class="gbtn gbtn-primary gbtn-full">Sign In</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Guide Shell -->
+  <div id="guide-shell" class="guide-shell hidden">
+
+    <!-- Top Bar -->
+    <header class="guide-topbar">
+      <div class="guide-topbar-brand">
+        <span class="guide-topbar-logo">Amig<svg class="brand-zero" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 26" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" d="M10,1.5 C14.97,1.5 19,6.65 19,13 C19,19.35 14.97,24.5 10,24.5 C5.03,24.5 1,19.35 1,13 C1,6.65 5.03,1.5 10,1.5 Z M10,7 C7.51,7 5.5,9.69 5.5,13 C5.5,16.31 7.51,19 10,19 C12.49,19 14.5,16.31 14.5,13 C14.5,9.69 12.49,7 10,7 Z"/></svg></span>
+        <span id="guide-tour-name" class="guide-topbar-tour"></span>
+      </div>
+      <button id="guide-sign-out" class="gbtn gbtn-ghost-sm">Sign Out</button>
+    </header>
+
+    <!-- Content -->
+    <main id="guide-content" class="guide-content">
+      <!-- Injected by section modules -->
+    </main>
+
+    <!-- Bottom Nav -->
+    <nav class="guide-bottomnav">
+      <a href="#" class="gnav-item active" data-section="today">
+        <span class="gnav-icon">&#9788;</span>
+        <span class="gnav-label">Today</span>
+      </a>
+      <a href="#" class="gnav-item" data-section="itinerary">
+        <span class="gnav-icon">&#128197;</span>
+        <span class="gnav-label">Itinerary</span>
+      </a>
+      <a href="#" class="gnav-item" data-section="passengers">
+        <span class="gnav-icon">&#128101;</span>
+        <span class="gnav-label">Passengers</span>
+      </a>
+      <a href="#" class="gnav-item" data-section="briefings">
+        <span class="gnav-icon">&#128196;</span>
+        <span class="gnav-label">Briefings</span>
+      </a>
+    </nav>
+
+  </div>
+
+  <!-- Firebase compat SDK v10.12 -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
+  <!-- App config — gitignored -->
+  <script src="firebase-config.js"></script>
+
+  <!-- Guide modules -->
+  <script src="js/guide-auth.js"></script>
+  <script src="js/guide-today.js"></script>
+  <script src="js/guide-itinerary.js"></script>
+  <script src="js/guide-passengers.js"></script>
+  <script src="js/guide-briefings.js"></script>
+  <script src="js/guide-nav.js"></script>
+
+  <!-- Service worker registration -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js').catch(function (err) {
+        console.warn('[guide] SW registration failed:', err.message);
+      });
+    }
+  </script>
+
+</body>
+</html>

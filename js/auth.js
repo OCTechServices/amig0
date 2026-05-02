@@ -7,6 +7,13 @@
 
   const auth = firebase.auth();
 
+  // Apply branding from config
+  if (window.AppConfig) {
+    document.title = window.AppConfig.crmTitle || document.title;
+    var loginTitle = document.querySelector('.login-title');
+    if (loginTitle) loginTitle.textContent = window.AppConfig.brandName;
+  }
+
   // DOM refs
   const loginScreen = document.getElementById('login-screen');
   const appShell    = document.getElementById('app-shell');

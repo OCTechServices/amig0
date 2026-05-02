@@ -1,13 +1,20 @@
 // firestore.rules — amig0-travel-company | OCTech Services
-// Last Updated: 2026-04-19
+// Last Updated: 2026-05-02
 //
-// Role model (enforced via user_profiles collection):
-//   operator — CRM users, full read/write
-//   client   — portal users, read-only on their own data (scoped by clientId)
-//   guide    — guide app users, read-only on assigned tour data
+// Operator access: Firebase Auth custom claim { operator: true }
+//   Bootstrap: Firebase Console → Authentication → Users → Edit → Custom Claims: {"operator":true}
+//   After bootstrap, use CRM → Operators module to manage operator accounts.
 //
-// user_profiles/{uid} must exist for every Firebase Auth user.
-// Operators must be created manually in user_profiles by another operator.
+// Client access:  user_profiles/{uid} with role == 'client' + clientId scoping
+// Guide access:   user_profiles/{uid} with role == 'guide'
+//
+// To make someone a client: add to user_profiles
+//   Document ID = Firebase Auth UID
+//   { role: "client", clientId: "<clients doc ID>" }
+//
+// To make someone a guide: add to user_profiles
+//   Document ID = Firebase Auth UID
+//   { role: "guide", guideId: "<guides doc ID>" }
 
 rules_version = '2';
 service cloud.firestore {
@@ -20,111 +27,131 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    function profile() {
-      return get(/databases/$(database)/documents/user_profiles/$(request.auth.uid)).data;
-    }
-
     function isOperator() {
-      return isAuthenticated() && profile().role == 'operator';
+      return isAuthenticated() && request.auth.token.operator == true;
     }
 
     function isClientUser() {
-      return isAuthenticated() && profile().role == 'client';
+      return isAuthenticated() &&
+        exists(/databases/$(database)/documents/user_profiles/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/user_profiles/$(request.auth.uid)).data.role == 'client';
     }
 
     function isGuideUser() {
-      return isAuthenticated() && profile().role == 'guide';
+      return isAuthenticated() &&
+        exists(/databases/$(database)/documents/user_profiles/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/user_profiles/$(request.auth.uid)).data.role == 'guide';
+    }
+
+    function isClientOrGuide() {
+      return isClientUser() || isGuideUser();
+    }
+
+    function clientId() {
+      return get(/databases/$(database)/documents/user_profiles/$(request.auth.uid)).data.clientId;
+    }
+
+    function guideRecordId() {
+      return get(/databases/$(database)/documents/user_profiles/$(request.auth.uid)).data.guideId;
     }
 
     // -----------------------------------------------------------------------
-    // user_profiles
-    // Each Firebase Auth user must have a profile doc (ID = UID).
-    // Only operators can create/update profiles — no self-registration.
+    // user_profiles — each user reads and writes only their own profile.
+    // Operator provisioning (creating client/guide profiles) is done via
+    // Firebase Console, which bypasses rules.
     // -----------------------------------------------------------------------
     match /user_profiles/{uid} {
       allow read:  if isAuthenticated() && request.auth.uid == uid;
-      allow write: if isOperator();
+      allow write: if isAuthenticated() && request.auth.uid == uid;
+    }
+
+    // -----------------------------------------------------------------------
+    // operators — read by operators; writes managed by Cloud Function only
+    // -----------------------------------------------------------------------
+    match /operators/{uid} {
+      allow read:  if isOperator();
+      allow write: if false;
     }
 
     // -----------------------------------------------------------------------
     // clients
-    // Operators: full access
-    // Clients: read their own record only (profile.clientId == document ID)
     // -----------------------------------------------------------------------
-    match /clients/{clientId} {
+    match /clients/{docId} {
       allow read, write: if isOperator();
-      allow read:        if isClientUser() && profile().clientId == clientId;
+      allow read:        if isClientUser() && clientId() == docId;
     }
 
     // -----------------------------------------------------------------------
     // tours
-    // Operators: full access
-    // Clients + guides: read (further scoped at booking level in the app)
+    // Guides can only read their assigned tour (guideId field on tour doc).
     // -----------------------------------------------------------------------
     match /tours/{tourId} {
       allow read, write: if isOperator();
-      allow read:        if isClientUser() || isGuideUser();
+      allow read:        if isClientUser();
+      allow read:        if isGuideUser() && resource.data.guideId == guideRecordId();
     }
 
-    // tours → itineraries sub-collection
     match /tours/{tourId}/itineraries/{dayId} {
       allow read, write: if isOperator();
-      allow read:        if isClientUser() || isGuideUser();
+      allow read:        if isClientUser();
+      allow read:        if isGuideUser() &&
+        get(/databases/$(database)/documents/tours/$(tourId)).data.guideId == guideRecordId();
     }
 
     // -----------------------------------------------------------------------
     // passengers
-    // Operators: full access
-    // Clients: read passengers linked to their clientId
-    // Guides: read-only (to see their tour's passenger list)
+    // Client portal reads passenger names for fellow travellers.
+    // Guide app fetches passengers by booking-filtered IDs (in-query by doc ID).
+    // Rules-level scoping requires a tourId on the passenger doc — not yet
+    // denormalized. Guide app scopes in JS. Accepted for single-tenant. (RAID I10)
     // -----------------------------------------------------------------------
     match /passengers/{docId} {
       allow read, write: if isOperator();
-      allow read:        if isClientUser() && profile().clientId == resource.data.clientId;
-      allow read:        if isGuideUser();
+      allow read:        if isClientOrGuide();
     }
 
     // -----------------------------------------------------------------------
     // bookings
-    // Operators: full access
-    // Clients: read bookings linked to their clientId
-    // Guides: read-only (to see who is on their tour)
+    // Client portal reads all bookings on a tour for fellow travellers (RAID I06).
+    // Guides can only read bookings for their assigned tour (via tour guideId lookup).
     // -----------------------------------------------------------------------
     match /bookings/{docId} {
       allow read, write: if isOperator();
-      allow read:        if isClientUser() && profile().clientId == resource.data.clientId;
-      allow read:        if isGuideUser();
+      allow read:        if isClientUser();
+      allow read:        if isGuideUser() &&
+        get(/databases/$(database)/documents/tours/$(resource.data.tourId)).data.guideId == guideRecordId();
     }
 
     // -----------------------------------------------------------------------
     // quotes
-    // Operators: full access
-    // Clients: read their own quotes only
     // -----------------------------------------------------------------------
     match /quotes/{docId} {
       allow read, write: if isOperator();
-      allow read:        if isClientUser() && profile().clientId == resource.data.clientId;
+      allow read:        if isClientUser() && clientId() == resource.data.clientId;
     }
 
     // -----------------------------------------------------------------------
     // invoices
-    // Operators: full access
-    // Clients: read their own invoices only
     // -----------------------------------------------------------------------
     match /invoices/{docId} {
       allow read, write: if isOperator();
-      allow read:        if isClientUser() && profile().clientId == resource.data.clientId;
+      allow read:        if isClientUser() && clientId() == resource.data.clientId;
     }
 
-    // invoices → payments sub-collection (future)
     match /invoices/{invoiceId}/payments/{paymentId} {
       allow read, write: if isOperator();
-      allow read:        if isClientUser();
+    }
+
+    // -----------------------------------------------------------------------
+    // guides
+    // -----------------------------------------------------------------------
+    match /guides/{docId} {
+      allow read, write: if isOperator();
+      allow read:        if isGuideUser();
     }
 
     // -----------------------------------------------------------------------
     // providers
-    // Operators only — never exposed to clients or guides
     // -----------------------------------------------------------------------
     match /providers/{docId} {
       allow read, write: if isOperator();
@@ -132,9 +159,6 @@ service cloud.firestore {
 
     // -----------------------------------------------------------------------
     // briefings
-    // Operators: full access
-    // Clients: read briefings of type 'client' only
-    // Guides: read briefings of type 'guide' only
     // -----------------------------------------------------------------------
     match /briefings/{docId} {
       allow read, write: if isOperator();
@@ -143,13 +167,11 @@ service cloud.firestore {
     }
 
     // -----------------------------------------------------------------------
-    // documents (generated PDFs — Firebase Storage refs)
-    // Operators: full access
-    // Clients: read their own documents
+    // documents
     // -----------------------------------------------------------------------
     match /documents/{docId} {
       allow read, write: if isOperator();
-      allow read:        if isClientUser() && profile().clientId == resource.data.clientId;
+      allow read:        if isClientUser() && clientId() == resource.data.clientId;
     }
   }
 }

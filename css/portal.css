@@ -1,0 +1,435 @@
+/* =============================================================================
+   portal.css — amig0-travel-company | OCTech Services
+   Client portal styles — mobile-first, warm travel aesthetic
+   ============================================================================= */
+
+:root {
+  --color-primary:       #1B4965;
+  --color-primary-dark:  #163D54;
+  --color-accent:        #E8A045;
+  --color-accent-light:  #FEF3E2;
+  --color-bg:            #F7F5F2;
+  --color-surface:       #FFFFFF;
+  --color-border:        #E8E4DF;
+  --color-text:          #1A2332;
+  --color-text-secondary:#5A6A7A;
+  --color-text-muted:    #9AA5B1;
+  --color-success:       #2E8B57;
+  --color-success-bg:    #D1FAE5;
+  --color-warning:       #92400E;
+  --color-warning-bg:    #FEF3C7;
+  --color-error:         #991B1B;
+  --color-error-bg:      #FEE2E2;
+  --color-info:          #1E40AF;
+  --color-info-bg:       #DBEAFE;
+
+  --font-body:    'DM Sans', system-ui, sans-serif;
+  --font-display: 'Playfair Display', Georgia, serif;
+
+  --space-1:  0.25rem;
+  --space-2:  0.5rem;
+  --space-3:  0.75rem;
+  --space-4:  1rem;
+  --space-5:  1.25rem;
+  --space-6:  1.5rem;
+  --space-8:  2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --shadow-sm: 0 1px 4px rgba(0,0,0,0.07);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.10);
+  --nav-height: 64px;
+  --content-max: 720px;
+}
+
+/* Reset */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; -webkit-text-size-adjust: 100%; }
+body { font-family: var(--font-body); color: var(--color-text); background: var(--color-bg); line-height: 1.6; }
+ul { list-style: none; }
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
+input, textarea, select { font-family: inherit; font-size: inherit; }
+.hidden { display: none !important; }
+
+/* -----------------------------------------------------------------------
+   Brand zero mark
+   ----------------------------------------------------------------------- */
+.brand-zero {
+  display: inline-block;
+  width: 0.7em;
+  height: 1em;
+  vertical-align: -0.1em;
+  color: var(--color-accent);
+}
+
+/* -----------------------------------------------------------------------
+   Buttons
+   ----------------------------------------------------------------------- */
+.pbtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-5);
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1;
+  transition: background 150ms ease, opacity 150ms ease;
+  white-space: nowrap;
+}
+.pbtn-full { width: 100%; }
+.pbtn-primary { background: var(--color-primary); color: #fff; }
+.pbtn-primary:hover { background: var(--color-primary-dark); }
+.pbtn-ghost { background: transparent; color: var(--color-text-secondary); border: 1px solid var(--color-border); }
+.pbtn-ghost:hover { background: var(--color-bg); }
+.pbtn-ghost-sm { padding: var(--space-2) var(--space-3); font-size: 0.8rem; background: transparent; color: var(--color-text-muted); border: 1px solid var(--color-border); border-radius: var(--radius-sm); }
+.pbtn-ghost-sm:hover { color: var(--color-text); }
+.pbtn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* -----------------------------------------------------------------------
+   Form fields
+   ----------------------------------------------------------------------- */
+.pfield { display: flex; flex-direction: column; gap: var(--space-2); }
+.pfield label { font-size: 0.85rem; font-weight: 500; color: var(--color-text-secondary); }
+.pfield input {
+  padding: var(--space-3) var(--space-4);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 1rem;
+  transition: border-color 150ms;
+}
+.pfield input:focus { outline: none; border-color: var(--color-primary); }
+.pfield input::placeholder { color: var(--color-text-muted); }
+.portal-error { font-size: 0.85rem; color: var(--color-error); min-height: 1.2em; text-align: center; }
+
+/* -----------------------------------------------------------------------
+   Login screen
+   ----------------------------------------------------------------------- */
+.portal-login {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(150deg, #1B4965 0%, #2A6A94 60%, #E8A045 150%);
+  padding: var(--space-6);
+}
+
+.portal-login-inner {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: var(--space-10) var(--space-8);
+  width: 100%;
+  max-width: 400px;
+}
+
+.portal-brand {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  justify-content: center;
+  margin-bottom: var(--space-6);
+}
+
+.portal-brand-name {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+.portal-brand-sub {
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.portal-login-title {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  color: var(--color-text);
+  text-align: center;
+  margin-bottom: var(--space-2);
+}
+
+.portal-login-sub {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  text-align: center;
+  margin-bottom: var(--space-8);
+}
+
+.portal-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+/* -----------------------------------------------------------------------
+   Portal shell
+   ----------------------------------------------------------------------- */
+.portal-shell { min-height: 100vh; display: flex; flex-direction: column; }
+
+/* -----------------------------------------------------------------------
+   Top nav
+   ----------------------------------------------------------------------- */
+.portal-nav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  height: var(--nav-height);
+  background: var(--color-primary);
+  display: flex;
+  align-items: center;
+  padding: 0 var(--space-6);
+  gap: var(--space-6);
+  box-shadow: var(--shadow-sm);
+}
+
+.portal-nav-brand { flex-shrink: 0; }
+
+.portal-nav-logo {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  color: #fff;
+  font-weight: 700;
+}
+
+.portal-nav-links {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  flex: 1;
+}
+
+.pnav-link {
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: rgba(255,255,255,0.7);
+  transition: background 150ms, color 150ms;
+}
+.pnav-link:hover { color: #fff; background: rgba(255,255,255,0.1); }
+.pnav-link.active { color: #fff; background: rgba(255,255,255,0.15); }
+
+.portal-nav-right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-shrink: 0;
+}
+
+.portal-greeting {
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.7);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 180px;
+}
+
+/* -----------------------------------------------------------------------
+   Content area
+   ----------------------------------------------------------------------- */
+.portal-content {
+  flex: 1;
+  padding: var(--space-8) var(--space-6);
+  max-width: calc(var(--content-max) + var(--space-12));
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* -----------------------------------------------------------------------
+   Shared portal components
+   ----------------------------------------------------------------------- */
+.portal-section-title {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  color: var(--color-text);
+  margin-bottom: var(--space-6);
+}
+
+.portal-card {
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  margin-bottom: var(--space-5);
+}
+
+.portal-card-header {
+  padding: var(--space-4) var(--space-6);
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.portal-card-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--color-text-muted);
+}
+
+.portal-card-body { padding: var(--space-6); }
+
+/* Hero tour card */
+.tour-hero {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  border-radius: var(--radius-md);
+  padding: var(--space-8);
+  color: #fff;
+  margin-bottom: var(--space-6);
+  position: relative;
+  overflow: hidden;
+}
+
+.tour-hero::after {
+  content: '';
+  position: absolute;
+  bottom: -30px;
+  right: -30px;
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.05);
+}
+
+.tour-hero-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-accent);
+  margin-bottom: var(--space-2);
+}
+
+.tour-hero-name {
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-bottom: var(--space-3);
+}
+
+.tour-hero-meta {
+  display: flex;
+  gap: var(--space-6);
+  flex-wrap: wrap;
+}
+
+.tour-hero-meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.tour-hero-meta-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(255,255,255,0.6);
+}
+
+.tour-hero-meta-value {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #fff;
+}
+
+/* Passenger list */
+.passenger-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-6);
+  border-bottom: 1px solid var(--color-border);
+  font-size: 0.9rem;
+}
+.passenger-row:last-child { border-bottom: none; }
+.passenger-name { font-weight: 500; }
+.passenger-meta { color: var(--color-text-muted); font-size: 0.8rem; }
+
+/* Itinerary day */
+.itinerary-day {
+  display: flex;
+  gap: var(--space-5);
+  padding: var(--space-5) var(--space-6);
+  border-bottom: 1px solid var(--color-border);
+}
+.itinerary-day:last-child { border-bottom: none; }
+.itinerary-day-num {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--color-accent-light);
+  color: var(--color-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+.itinerary-day-body { flex: 1; }
+.itinerary-day-title { font-weight: 600; color: var(--color-text); margin-bottom: var(--space-1); }
+.itinerary-day-location { font-size: 0.8rem; color: var(--color-accent); font-weight: 500; margin-bottom: var(--space-2); }
+.itinerary-day-desc { font-size: 0.875rem; color: var(--color-text-secondary); line-height: 1.6; }
+
+/* Status badges */
+.pbadge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.pbadge-success  { background: var(--color-success-bg); color: var(--color-success); }
+.pbadge-warning  { background: var(--color-warning-bg); color: var(--color-warning); }
+.pbadge-error    { background: var(--color-error-bg);   color: var(--color-error); }
+.pbadge-info     { background: var(--color-info-bg);    color: var(--color-info); }
+.pbadge-neutral  { background: #F3F4F6; color: #6B7280; }
+
+/* Quotes & Invoice rows */
+.portal-list-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4) var(--space-6);
+  border-bottom: 1px solid var(--color-border);
+  gap: var(--space-4);
+  font-size: 0.9rem;
+}
+.portal-list-row:last-child { border-bottom: none; }
+.portal-list-primary { font-weight: 600; color: var(--color-text); }
+.portal-list-secondary { font-size: 0.8rem; color: var(--color-text-muted); margin-top: 2px; }
+.portal-list-amount { font-weight: 700; font-size: 1rem; color: var(--color-primary); white-space: nowrap; }
+
+/* Empty & error */
+.portal-empty { padding: var(--space-10); text-align: center; color: var(--color-text-muted); font-size: 0.9rem; }
+.portal-error-state { padding: var(--space-6); text-align: center; color: var(--color-error); font-size: 0.875rem; }
+
+/* -----------------------------------------------------------------------
+   Responsive
+   ----------------------------------------------------------------------- */
+@media (max-width: 600px) {
+  .portal-nav-links { display: none; }
+  .portal-content { padding: var(--space-5) var(--space-4); }
+  .tour-hero { padding: var(--space-6); }
+  .tour-hero-name { font-size: 1.4rem; }
+  .portal-greeting { display: none; }
+}

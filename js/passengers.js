@@ -20,8 +20,8 @@
     container.innerHTML = [
       '<div class="module">',
         '<div class="module-header">',
-          '<h3 class="module-title">All Passengers</h3>',
-          '<button class="btn btn-primary" id="add-passenger-btn">+ Add Passenger</button>',
+          '<h3 class="module-title">All ' + cfg('passengers') + '</h3>',
+          '<button class="btn btn-primary" id="add-passenger-btn">+ ' + cfg('addPassenger') + '</button>',
         '</div>',
         '<div class="card">',
           '<div id="passengers-table-wrap">',
@@ -82,7 +82,7 @@
     col.orderBy('createdAt', 'desc').get()
       .then(function (snap) {
         if (snap.empty) {
-          wrap.innerHTML = '<p class="empty-state">No passengers yet. Add your first passenger to get started.</p>';
+          wrap.innerHTML = '<p class="empty-state">No ' + cfg('passengers').toLowerCase() + ' yet. Add your first ' + cfg('passenger').toLowerCase() + ' to get started.</p>';
           return;
         }
 
@@ -147,7 +147,7 @@
     var title = document.getElementById('passenger-modal-title');
     var form  = document.getElementById('passenger-form');
 
-    title.textContent = data ? 'Edit Passenger' : 'Add Passenger';
+    title.textContent = data ? 'Edit ' + cfg('passenger') : 'Add ' + cfg('passenger');
     form.reset();
     clearFormError();
     populateClientDropdown();
@@ -244,7 +244,7 @@
     })
     .finally(function () {
       saveBtn.disabled    = false;
-      saveBtn.textContent = 'Save Passenger';
+      saveBtn.textContent = 'Save ' + cfg('passenger');
     });
   }
 
@@ -252,7 +252,7 @@
   // Delete
   // -------------------------------------------------------------------------
   function confirmDelete(id, row) {
-    if (!confirm('Delete this passenger? This cannot be undone.')) return;
+    if (!confirm('Delete this ' + cfg('passenger').toLowerCase() + '? This cannot be undone.')) return;
 
     col.doc(id).delete()
       .then(function () {
@@ -274,7 +274,7 @@
       '<div id="passenger-modal-overlay" class="modal-overlay hidden">',
         '<div class="modal modal-lg">',
           '<div class="modal-header">',
-            '<h3 id="passenger-modal-title" class="modal-title">Add Passenger</h3>',
+            '<h3 id="passenger-modal-title" class="modal-title">Add ' + cfg('passenger') + '</h3>',
             '<button id="passenger-modal-close" class="modal-close" aria-label="Close">&times;</button>',
           '</div>',
           '<form id="passenger-form" class="modal-form" novalidate>',
@@ -334,7 +334,7 @@
             '<p id="passenger-form-error" class="form-error" role="alert"></p>',
             '<div class="modal-footer">',
               '<button type="button" class="btn btn-ghost" onclick="document.getElementById(\'passenger-modal-overlay\').classList.add(\'hidden\')">Cancel</button>',
-              '<button type="submit" class="btn btn-primary" id="passenger-save-btn">Save Passenger</button>',
+              '<button type="submit" class="btn btn-primary" id="passenger-save-btn">Save ' + cfg('passenger') + '</button>',
             '</div>',
           '</form>',
         '</div>',

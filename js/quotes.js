@@ -55,7 +55,9 @@
     return Promise.all([
       db.collection('clients').orderBy('name').get().then(function (snap) {
         clientsCache = {};
-        snap.forEach(function (doc) { clientsCache[doc.id] = doc.data().name || 'Unnamed'; });
+        snap.forEach(function (doc) {
+          clientsCache[doc.id] = { name: doc.data().name || 'Unnamed', email: doc.data().email || '' };
+        });
       }),
       db.collection('tours').orderBy('name').get().then(function (snap) {
         toursCache = {};
@@ -80,7 +82,7 @@
 
         var rows = snap.docs.map(function (doc) {
           var d          = doc.data();
-          var clientName = d.clientId ? (clientsCache[d.clientId] || '—') : '—';
+          var clientName = d.clientId ? (clientsCache[d.clientId] && clientsCache[d.clientId].name || '—') : '—';
           var tourName   = d.tourId   ? (toursCache[d.tourId]     || '—') : '—';
           var valid      = d.validUntil ? formatDate(d.validUntil.toDate()) : '—';
 
@@ -92,6 +94,8 @@
               '<td><span class="badge badge-' + quoteStatusClass(d.status) + '">' + esc(d.status || 'draft') + '</span></td>',
               '<td>' + valid + '</td>',
               '<td class="td-actions">',
+                '<button class="btn-table-action" data-action="pdf" data-id="' + doc.id + '">PDF</button>',
+                '<button class="btn-table-action" data-action="email" data-id="' + doc.id + '">Email</button>',
                 '<button class="btn-table-action" data-action="edit" data-id="' + doc.id + '">Edit</button>',
                 '<button class="btn-table-action btn-table-danger" data-action="delete" data-id="' + doc.id + '">Delete</button>',
               '</td>',
@@ -110,9 +114,14 @@
 
         wrap.querySelectorAll('[data-action]').forEach(function (btn) {
           btn.addEventListener('click', function () {
-            var id = btn.getAttribute('data-id');
-            if (btn.getAttribute('data-action') === 'edit') {
+            var id     = btn.getAttribute('data-id');
+            var action = btn.getAttribute('data-action');
+            if (action === 'edit') {
               loadAndOpenEdit(id);
+            } else if (action === 'pdf') {
+              downloadPDF(id);
+            } else if (action === 'email') {
+              emailClient(id);
             } else {
               confirmDelete(id, btn.closest('tr'));
             }
@@ -185,7 +194,7 @@
 
     var cOpts = '<option value="">— No client —</option>';
     Object.keys(clientsCache).forEach(function (id) {
-      cOpts += '<option value="' + id + '">' + esc(clientsCache[id]) + '</option>';
+      cOpts += '<option value="' + id + '">' + esc(clientsCache[id].name) + '</option>';
     });
     cSel.innerHTML = cOpts;
 
@@ -318,6 +327,73 @@
       .finally(function () {
         saveBtn.disabled    = false;
         saveBtn.textContent = 'Save Quote';
+      });
+  }
+
+  // -------------------------------------------------------------------------
+  // PDF download
+  // -------------------------------------------------------------------------
+  function downloadPDF(id) {
+    col.doc(id).get()
+      .then(function (doc) {
+        if (!doc.exists) return;
+        var data       = doc.data();
+        var clientName = data.clientId ? (clientsCache[data.clientId] && clientsCache[data.clientId].name || '—') : '—';
+        var tourName   = data.tourId   ? (toursCache[data.tourId]     || '—') : '—';
+        window.PDF.generateQuote(data, clientName, tourName);
+      })
+      .catch(function (err) {
+        console.error('[quotes] pdf:', err.message);
+        alert('Failed to generate PDF. Please try again.');
+      });
+  }
+
+  // -------------------------------------------------------------------------
+  // Email client
+  // -------------------------------------------------------------------------
+  function emailClient(id) {
+    col.doc(id).get()
+      .then(function (doc) {
+        if (!doc.exists) return;
+        var data       = doc.data();
+        var client     = data.clientId ? clientsCache[data.clientId] : null;
+        var clientEmail = client ? client.email : '';
+        var clientName  = client ? client.name  : '';
+        var tourName    = data.tourId ? (toursCache[data.tourId] || '') : '';
+
+        if (!clientEmail) {
+          alert('No email address on file for this client. Add one in the Clients module first.');
+          return;
+        }
+
+        var valid   = data.validUntil ? formatDate(data.validUntil.toDate()) : 'N/A';
+        var total   = formatCurrency(data.total, data.currency);
+        var brand   = (window.AppConfig && window.AppConfig.brandName) || 'Amig0 Travel';
+        var subject = 'Your Quote from ' + brand + (tourName ? ' — ' + tourName : '');
+        var body    = [
+          'Hi ' + (clientName || 'there') + ',',
+          '',
+          'Please find your quote details below:',
+          '',
+          (tourName ? 'Tour:         ' + tourName : ''),
+          'Total:        ' + total,
+          'Valid Until:  ' + valid,
+          '',
+          'To view your quote and booking details, log in to the client portal.',
+          '',
+          'If you have any questions, please reply to this email.',
+          '',
+          'Best regards,',
+          (window.AppConfig && window.AppConfig.brandName) || 'Amig0 Travel'
+        ].filter(function (l) { return l !== undefined; }).join('\n');
+
+        window.location.href = 'mailto:' + encodeURIComponent(clientEmail) +
+          '?subject=' + encodeURIComponent(subject) +
+          '&body='    + encodeURIComponent(body);
+      })
+      .catch(function (err) {
+        console.error('[quotes] email:', err.message);
+        alert('Failed to load quote. Please try again.');
       });
   }
 

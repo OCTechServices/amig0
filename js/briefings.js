@@ -23,8 +23,8 @@
     container.innerHTML = [
       '<div class="module">',
         '<div class="module-header">',
-          '<h3 class="module-title">Briefings</h3>',
-          '<button class="btn btn-primary" id="add-briefing-btn">+ New Briefing</button>',
+          '<h3 class="module-title">' + cfg('briefings') + '</h3>',
+          '<button class="btn btn-primary" id="add-briefing-btn">+ New ' + cfg('briefing') + '</button>',
         '</div>',
         '<div class="providers-filter">',
           '<button class="filter-btn active" data-type="all">All</button>',
@@ -139,7 +139,7 @@
     var title = document.getElementById('briefing-modal-title');
     var form  = document.getElementById('briefing-form');
 
-    title.textContent = data ? 'Edit Briefing' : 'New Briefing';
+    title.textContent = data ? 'Edit ' + cfg('briefing') : 'New ' + cfg('briefing');
     form.reset();
     clearFormError();
     populateTourDropdown(form);
@@ -233,7 +233,7 @@
     })
     .finally(function () {
       saveBtn.disabled    = false;
-      saveBtn.textContent = 'Save Briefing';
+      saveBtn.textContent = 'Save ' + cfg('briefing');
     });
   }
 
@@ -241,7 +241,7 @@
   // Delete
   // -------------------------------------------------------------------------
   function confirmDelete(id, card) {
-    if (!confirm('Delete this briefing? This cannot be undone.')) return;
+    if (!confirm('Delete this ' + cfg('briefing').toLowerCase() + '? This cannot be undone.')) return;
     col.doc(id).delete()
       .then(function () {
         if (card) card.remove();
@@ -269,7 +269,7 @@
       '<div id="briefing-modal-overlay" class="modal-overlay hidden">',
         '<div class="modal modal-lg">',
           '<div class="modal-header">',
-            '<h3 id="briefing-modal-title" class="modal-title">New Briefing</h3>',
+            '<h3 id="briefing-modal-title" class="modal-title">New ' + cfg('briefing') + '</h3>',
             '<button id="briefing-modal-close" class="modal-close" aria-label="Close">&times;</button>',
           '</div>',
           '<form id="briefing-form" class="modal-form" novalidate>',
@@ -294,7 +294,7 @@
             '<p id="briefing-form-error" class="form-error" role="alert"></p>',
             '<div class="modal-footer">',
               '<button type="button" class="btn btn-ghost" onclick="document.getElementById(\'briefing-modal-overlay\').classList.add(\'hidden\')">Cancel</button>',
-              '<button type="submit" class="btn btn-primary" id="briefing-save-btn">Save Briefing</button>',
+              '<button type="submit" class="btn btn-primary" id="briefing-save-btn">Save ' + cfg('briefing') + '</button>',
             '</div>',
           '</form>',
         '</div>',

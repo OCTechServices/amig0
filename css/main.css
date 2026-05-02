@@ -180,6 +180,13 @@ input {
   color: var(--color-text-secondary);
 }
 
+.field-hint {
+  font-weight: 400;
+  font-size: var(--font-size-xs, 0.75rem);
+  color: var(--color-text-tertiary, var(--color-text-secondary));
+  opacity: 0.75;
+}
+
 .field input {
   padding: var(--space-3) var(--space-4);
   border: 1px solid var(--color-border);
@@ -276,14 +283,18 @@ input {
 
 .sidebar-logo {
   display: block;
-  font-family: var(--font-body);
+  font-family: var(--font-display);
   font-size: var(--font-size-xl);
-  font-weight: 600;
+  font-weight: 700;
   color: #fff;
-  letter-spacing: 0.04em;
+  letter-spacing: -0.02em;
 }
 
 .brand-zero {
+  display: inline-block;
+  width: 0.7em;
+  height: 1em;
+  vertical-align: -0.1em;
   color: var(--color-accent);
 }
 
@@ -615,6 +626,9 @@ input {
 
 .btn-table-danger { color: var(--color-error); }
 .btn-table-danger:hover { background: #FEE2E2; border-color: #FECACA; }
+
+.btn-table-pay { color: var(--color-success); }
+.btn-table-pay:hover { background: #D1FAE5; border-color: #6EE7B7; }
 
 /* -----------------------------------------------------------------------------
    Modal
@@ -1002,4 +1016,103 @@ textarea:focus {
 .section-placeholder-body {
   font-size: var(--font-size-sm);
   max-width: 320px;
+}
+
+/* -----------------------------------------------------------------------------
+   Payment modal
+   ----------------------------------------------------------------------------- */
+.payment-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.payment-summary-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.ps-label {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.ps-value {
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.ps-balance-due .ps-value { color: var(--color-error); }
+.ps-paid .ps-value        { color: var(--color-success); }
+
+.payment-history {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.payment-history-row {
+  display: grid;
+  grid-template-columns: 7rem 8rem 1fr auto;
+  gap: var(--space-3);
+  align-items: center;
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+  font-size: var(--font-size-sm);
+}
+
+.payment-history-row:last-child { border-bottom: none; }
+
+.ph-date   { color: var(--color-text-secondary); }
+.ph-method { color: var(--color-text); }
+.ph-ref    { color: var(--color-text-muted); font-size: var(--font-size-xs); }
+.ph-amount { font-weight: 600; color: var(--color-success); text-align: right; }
+
+/* -----------------------------------------------------------------------------
+   Reports
+   ----------------------------------------------------------------------------- */
+.reports-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-5);
+}
+
+.report-full {
+  grid-column: 1 / -1;
+}
+
+.report-card-header {
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.report-card-title {
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0;
+}
+
+.reports-grid .data-table {
+  margin: 0;
+  border-radius: 0;
+  border: none;
+}
+
+.reports-grid .empty-state {
+  padding: var(--space-5);
+}
+
+@media (max-width: 768px) {
+  .reports-grid {
+    grid-template-columns: 1fr;
+  }
 }

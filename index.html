@@ -37,8 +37,8 @@
     <!-- Sidebar -->
     <aside class="sidebar">
       <div class="sidebar-header">
-        <span class="sidebar-logo">Amig<span class="brand-zero">0</span></span>
-        <span class="sidebar-tagline">Travel CRM</span>
+        <span class="sidebar-logo">Amig<svg class="brand-zero" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 26" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" d="M10,1.5 C14.97,1.5 19,6.65 19,13 C19,19.35 14.97,24.5 10,24.5 C5.03,24.5 1,19.35 1,13 C1,6.65 5.03,1.5 10,1.5 Z M10,7 C7.51,7 5.5,9.69 5.5,13 C5.5,16.31 7.51,19 10,19 C12.49,19 14.5,16.31 14.5,13 C14.5,9.69 12.49,7 10,7 Z"/></svg></span>
+        <span class="sidebar-tagline" id="sidebar-tagline">Travel CRM</span>
       </div>
 
       <nav class="sidebar-nav" aria-label="Main navigation">
@@ -58,19 +58,19 @@
           <li>
             <a href="#" class="nav-link" data-section="tours">
               <span class="nav-icon">&#9788;</span>
-              Tours
+              <span class="nav-label" data-cfg="tours">Tours</span>
             </a>
           </li>
           <li>
             <a href="#" class="nav-link" data-section="passengers">
               <span class="nav-icon">&#9757;</span>
-              Passengers
+              <span class="nav-label" data-cfg="passengers">Passengers</span>
             </a>
           </li>
           <li>
             <a href="#" class="nav-link" data-section="bookings">
               <span class="nav-icon">&#9875;</span>
-              Bookings
+              <span class="nav-label" data-cfg="bookings">Bookings</span>
             </a>
           </li>
           <li>
@@ -88,13 +88,31 @@
           <li>
             <a href="#" class="nav-link" data-section="providers">
               <span class="nav-icon">&#9881;</span>
-              Providers
+              <span class="nav-label" data-cfg="providers">Providers</span>
+            </a>
+          </li>
+          <li>
+            <a href="#" class="nav-link" data-section="guides">
+              <span class="nav-icon">&#9873;</span>
+              <span class="nav-label" data-cfg="guides">Guides</span>
             </a>
           </li>
           <li>
             <a href="#" class="nav-link" data-section="briefings">
               <span class="nav-icon">&#9741;</span>
-              Briefings
+              <span class="nav-label" data-cfg="briefings">Briefings</span>
+            </a>
+          </li>
+          <li>
+            <a href="#" class="nav-link" data-section="operators">
+              <span class="nav-icon">&#9670;</span>
+              Operators
+            </a>
+          </li>
+          <li>
+            <a href="#" class="nav-link" data-section="reports">
+              <span class="nav-icon">&#9636;</span>
+              Reports
             </a>
           </li>
         </ul>
@@ -123,11 +141,20 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-functions-compat.js"></script>
 
   <!-- App config — gitignored, never committed -->
   <script src="firebase-config.js"></script>
 
+  <!-- Instance config — branding, labels, locale -->
+  <script src="config.js"></script>
+
+  <!-- PDF generation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+
   <!-- App modules -->
+  <script src="js/pdf.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/dashboard.js"></script>
   <script src="js/clients.js"></script>
@@ -137,7 +164,10 @@
   <script src="js/quotes.js"></script>
   <script src="js/invoicing.js"></script>
   <script src="js/providers.js"></script>
+  <script src="js/guides.js"></script>
   <script src="js/briefings.js"></script>
+  <script src="js/operators.js"></script>
+  <script src="js/reports.js"></script>
   <script src="js/nav.js"></script>
 
 </body>

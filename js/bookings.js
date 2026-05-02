@@ -26,8 +26,8 @@
     container.innerHTML = [
       '<div class="module">',
         '<div class="module-header">',
-          '<h3 class="module-title">All Bookings</h3>',
-          '<button class="btn btn-primary" id="add-booking-btn">+ Add Booking</button>',
+          '<h3 class="module-title">All ' + cfg('bookings') + '</h3>',
+          '<button class="btn btn-primary" id="add-booking-btn">+ ' + cfg('addBooking') + '</button>',
         '</div>',
         '<div class="card">',
           '<div id="bookings-table-wrap">',
@@ -104,7 +104,7 @@
     col.orderBy('bookedAt', 'desc').get()
       .then(function (snap) {
         if (snap.empty) {
-          wrap.innerHTML = '<p class="empty-state">No bookings yet. Add a booking to link a passenger to a tour.</p>';
+          wrap.innerHTML = '<p class="empty-state">No ' + cfg('bookings').toLowerCase() + ' yet. Add a ' + cfg('booking').toLowerCase() + ' to link a ' + cfg('passenger').toLowerCase() + ' to a ' + cfg('tour').toLowerCase() + '.</p>';
           return;
         }
 
@@ -170,7 +170,7 @@
     var title = document.getElementById('booking-modal-title');
     var form  = document.getElementById('booking-form');
 
-    title.textContent = data ? 'Edit Booking' : 'Add Booking';
+    title.textContent = data ? 'Edit ' + cfg('booking') : 'Add ' + cfg('booking');
     form.reset();
     clearFormError();
     populateDropdowns();
@@ -291,7 +291,7 @@
     })
     .finally(function () {
       saveBtn.disabled    = false;
-      saveBtn.textContent = 'Save Booking';
+      saveBtn.textContent = 'Save ' + cfg('booking');
     });
   }
 
@@ -299,7 +299,7 @@
   // Delete
   // -------------------------------------------------------------------------
   function confirmDelete(id, row) {
-    if (!confirm('Delete this booking? This cannot be undone.')) return;
+    if (!confirm('Delete this ' + cfg('booking').toLowerCase() + '? This cannot be undone.')) return;
     col.doc(id).delete()
       .then(function () {
         if (row) row.remove();
@@ -324,7 +324,7 @@
       '<div id="booking-modal-overlay" class="modal-overlay hidden">',
         '<div class="modal modal-lg">',
           '<div class="modal-header">',
-            '<h3 id="booking-modal-title" class="modal-title">Add Booking</h3>',
+            '<h3 id="booking-modal-title" class="modal-title">Add ' + cfg('booking') + '</h3>',
             '<button id="booking-modal-close" class="modal-close" aria-label="Close">&times;</button>',
           '</div>',
           '<form id="booking-form" class="modal-form" novalidate>',
@@ -355,7 +355,7 @@
             '<p id="booking-form-error" class="form-error" role="alert"></p>',
             '<div class="modal-footer">',
               '<button type="button" class="btn btn-ghost" onclick="document.getElementById(\'booking-modal-overlay\').classList.add(\'hidden\')">Cancel</button>',
-              '<button type="submit" class="btn btn-primary" id="booking-save-btn">Save Booking</button>',
+              '<button type="submit" class="btn btn-primary" id="booking-save-btn">Save ' + cfg('booking') + '</button>',
             '</div>',
           '</form>',
         '</div>',

@@ -34,6 +34,7 @@
         '</div>',
       '</div>',
       buildModal(),
+      buildPaymentModal(),
     ].join('');
 
     document.getElementById('add-invoice-btn').addEventListener('click', function () { openModal(null); });
@@ -42,6 +43,13 @@
       if (e.target === this) closeModal();
     });
     document.getElementById('invoice-form').addEventListener('submit', handleSubmit);
+
+    document.getElementById('payment-modal-close').addEventListener('click', closePaymentModal);
+    document.getElementById('payment-modal-overlay').addEventListener('click', function (e) {
+      if (e.target === this) closePaymentModal();
+    });
+    document.getElementById('payment-cancel-btn').addEventListener('click', closePaymentModal);
+    document.getElementById('payment-form').addEventListener('submit', handlePaymentSubmit);
     document.getElementById('inv-add-line-btn').addEventListener('click', function () { addLineRow(); });
     document.getElementById('inv-tax').addEventListener('input', recalcTotals);
     document.getElementById('inv-currency').addEventListener('change', recalcTotals);
@@ -73,7 +81,9 @@
     return Promise.all([
       db.collection('clients').orderBy('name').get().then(function (snap) {
         clientsCache = {};
-        snap.forEach(function (doc) { clientsCache[doc.id] = doc.data().name || 'Unnamed'; });
+        snap.forEach(function (doc) {
+          clientsCache[doc.id] = { name: doc.data().name || 'Unnamed', email: doc.data().email || '' };
+        });
       }),
       db.collection('tours').orderBy('name').get().then(function (snap) {
         toursCache = {};
@@ -104,9 +114,32 @@
           return;
         }
 
+        // Overdue detection — flip sent/partial → overdue if dueDate has passed
+        var today    = new Date();
+        today.setHours(0, 0, 0, 0);
+        var overdueIds = snap.docs.filter(function (doc) {
+          var d = doc.data();
+          return (d.status === 'sent' || d.status === 'partial') &&
+                 d.dueDate && d.dueDate.toDate() < today;
+        }).map(function (doc) { return doc.id; });
+
+        if (overdueIds.length) {
+          var batch = db.batch();
+          overdueIds.forEach(function (id) {
+            batch.update(col.doc(id), {
+              status:    'overdue',
+              updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+          });
+          batch.commit().then(loadInvoices).catch(function (err) {
+            console.error('[invoicing] overdue batch:', err.message);
+          });
+          return; // re-render after batch completes
+        }
+
         var rows = snap.docs.map(function (doc) {
           var d          = doc.data();
-          var clientName = d.clientId ? (clientsCache[d.clientId] || '—') : '—';
+          var clientName = d.clientId ? (clientsCache[d.clientId] && clientsCache[d.clientId].name || '—') : '—';
           var tourName   = d.tourId   ? (toursCache[d.tourId]     || '—') : '—';
           var due        = d.dueDate  ? formatDate(d.dueDate.toDate())     : '—';
           var balance    = (d.total || 0) - (d.amountPaid || 0);
@@ -122,6 +155,9 @@
               '<td><span class="badge badge-' + invoiceStatusClass(d.status) + '">' + esc(d.status || 'draft') + '</span></td>',
               '<td>' + due + '</td>',
               '<td class="td-actions">',
+                '<button class="btn-table-action" data-action="pdf" data-id="' + doc.id + '">PDF</button>',
+                '<button class="btn-table-action" data-action="email" data-id="' + doc.id + '">Email</button>',
+                '<button class="btn-table-action btn-table-pay" data-action="pay" data-id="' + doc.id + '">Pay</button>',
                 '<button class="btn-table-action" data-action="edit" data-id="' + doc.id + '">Edit</button>',
                 '<button class="btn-table-action btn-table-danger" data-action="delete" data-id="' + doc.id + '">Delete</button>',
               '</td>',
@@ -144,9 +180,16 @@
 
         wrap.querySelectorAll('[data-action]').forEach(function (btn) {
           btn.addEventListener('click', function () {
-            var id = btn.getAttribute('data-id');
-            if (btn.getAttribute('data-action') === 'edit') {
+            var id     = btn.getAttribute('data-id');
+            var action = btn.getAttribute('data-action');
+            if (action === 'edit') {
               loadAndOpenEdit(id);
+            } else if (action === 'pdf') {
+              downloadPDF(id);
+            } else if (action === 'email') {
+              emailClient(id);
+            } else if (action === 'pay') {
+              openPaymentModal(id);
             } else {
               confirmDelete(id, btn.closest('tr'));
             }
@@ -235,7 +278,7 @@
     var cSel = form.querySelector('[name="clientId"]');
     var cOpts = '<option value="">— No client —</option>';
     Object.keys(clientsCache).forEach(function (id) {
-      cOpts += '<option value="' + id + '">' + esc(clientsCache[id]) + '</option>';
+      cOpts += '<option value="' + id + '">' + esc(clientsCache[id].name) + '</option>';
     });
     cSel.innerHTML = cOpts;
 
@@ -252,7 +295,7 @@
     var qOpts = '<option value="">— Import from quote —</option>';
     Object.keys(quotesCache).forEach(function (id) {
       var q = quotesCache[id];
-      var label = (q.clientId && clientsCache[q.clientId] ? clientsCache[q.clientId] : 'Quote') +
+      var label = (q.clientId && clientsCache[q.clientId] ? clientsCache[q.clientId].name : 'Quote') +
                   ' · ' + formatCurrency(q.total, q.currency);
       qOpts += '<option value="' + id + '">' + esc(label) + '</option>';
     });
@@ -403,6 +446,217 @@
   }
 
   // -------------------------------------------------------------------------
+  // PDF download
+  // -------------------------------------------------------------------------
+  function downloadPDF(id) {
+    col.doc(id).get()
+      .then(function (doc) {
+        if (!doc.exists) return;
+        var data       = doc.data();
+        var clientName = data.clientId ? (clientsCache[data.clientId] && clientsCache[data.clientId].name || '—') : '—';
+        var tourName   = data.tourId   ? (toursCache[data.tourId]     || '—') : '—';
+        window.PDF.generateInvoice(data, clientName, tourName);
+      })
+      .catch(function (err) {
+        console.error('[invoicing] pdf:', err.message);
+        alert('Failed to generate PDF. Please try again.');
+      });
+  }
+
+  // -------------------------------------------------------------------------
+  // Email client
+  // -------------------------------------------------------------------------
+  function emailClient(id) {
+    col.doc(id).get()
+      .then(function (doc) {
+        if (!doc.exists) return;
+        var data        = doc.data();
+        var client      = data.clientId ? clientsCache[data.clientId] : null;
+        var clientEmail = client ? client.email : '';
+        var clientName  = client ? client.name  : '';
+        var tourName    = data.tourId ? (toursCache[data.tourId] || '') : '';
+        var balance     = (data.total || 0) - (data.amountPaid || 0);
+
+        if (!clientEmail) {
+          alert('No email address on file for this client. Add one in the Clients module first.');
+          return;
+        }
+
+        var due     = data.dueDate ? formatDate(data.dueDate.toDate()) : 'N/A';
+        var brand   = (window.AppConfig && window.AppConfig.brandName) || 'Amig0 Travel';
+        var subject = 'Invoice ' + (data.invoiceNumber || '') + ' from ' + brand + (tourName ? ' — ' + tourName : '');
+        var body    = [
+          'Hi ' + (clientName || 'there') + ',',
+          '',
+          'Please find your invoice details below:',
+          '',
+          'Invoice #:    ' + (data.invoiceNumber || 'N/A'),
+          (tourName ? 'Tour:         ' + tourName : ''),
+          'Total:        ' + formatCurrency(data.total, data.currency),
+          'Amount Paid:  ' + formatCurrency(data.amountPaid || 0, data.currency),
+          'Balance Due:  ' + formatCurrency(balance, data.currency),
+          'Due Date:     ' + due,
+          '',
+          'To view your invoice and booking details, log in to the client portal.',
+          '',
+          'If you have any questions, please reply to this email.',
+          '',
+          'Best regards,',
+          (window.AppConfig && window.AppConfig.brandName) || 'Amig0 Travel'
+        ].filter(function (l) { return l !== undefined; }).join('\n');
+
+        window.location.href = 'mailto:' + encodeURIComponent(clientEmail) +
+          '?subject=' + encodeURIComponent(subject) +
+          '&body='    + encodeURIComponent(body);
+      })
+      .catch(function (err) {
+        console.error('[invoicing] email:', err.message);
+        alert('Failed to load invoice. Please try again.');
+      });
+  }
+
+  // -------------------------------------------------------------------------
+  // Payment recording
+  // -------------------------------------------------------------------------
+  function openPaymentModal(invoiceId) {
+    var overlay = document.getElementById('payment-modal-overlay');
+    var form    = document.getElementById('payment-form');
+    form.reset();
+    document.getElementById('payment-form-error').textContent = '';
+    form.elements['date'].value = new Date().toISOString().split('T')[0];
+    overlay.dataset.invoiceId = invoiceId;
+    loadPaymentContext(invoiceId);
+    overlay.classList.remove('hidden');
+  }
+
+  function closePaymentModal() {
+    document.getElementById('payment-modal-overlay').classList.add('hidden');
+  }
+
+  function loadPaymentContext(invoiceId) {
+    var summaryEl = document.getElementById('payment-invoice-summary');
+    var historyEl = document.getElementById('payment-history');
+    summaryEl.innerHTML = '<p class="empty-state">Loading…</p>';
+    historyEl.innerHTML = '<p class="empty-state">Loading…</p>';
+
+    col.doc(invoiceId).get()
+      .then(function (invoiceDoc) {
+        if (!invoiceDoc.exists) return;
+        var inv      = invoiceDoc.data();
+        var currency = inv.currency || 'USD';
+        var balance  = Math.max(0, (inv.total || 0) - (inv.amountPaid || 0));
+
+        summaryEl.innerHTML = [
+          '<div class="payment-summary-grid">',
+            '<div class="payment-summary-item"><span class="ps-label">Invoice</span><span class="ps-value">' + esc(inv.invoiceNumber || '—') + '</span></div>',
+            '<div class="payment-summary-item"><span class="ps-label">Total</span><span class="ps-value">' + formatCurrency(inv.total, currency) + '</span></div>',
+            '<div class="payment-summary-item"><span class="ps-label">Paid</span><span class="ps-value">' + formatCurrency(inv.amountPaid || 0, currency) + '</span></div>',
+            '<div class="payment-summary-item' + (balance > 0 ? ' ps-balance-due' : ' ps-paid') + '"><span class="ps-label">Balance Due</span><span class="ps-value">' + formatCurrency(balance, currency) + '</span></div>',
+          '</div>'
+        ].join('');
+
+        return col.doc(invoiceId).collection('payments')
+          .orderBy('date', 'desc').get()
+          .then(function (snap) {
+            if (snap.empty) {
+              historyEl.innerHTML = '<p class="empty-state" style="margin:0">No payments recorded yet.</p>';
+              return;
+            }
+            var rows = snap.docs.map(function (doc) {
+              var p    = doc.data();
+              var date = p.date ? formatDate(p.date.toDate()) : '—';
+              var method = (p.method || 'other').replace('_', ' ');
+              return [
+                '<div class="payment-history-row">',
+                  '<span class="ph-date">' + esc(date) + '</span>',
+                  '<span class="ph-method">' + esc(method.charAt(0).toUpperCase() + method.slice(1)) + '</span>',
+                  '<span class="ph-ref">' + esc(p.reference || '—') + '</span>',
+                  '<span class="ph-amount">' + formatCurrency(p.amount, currency) + '</span>',
+                '</div>'
+              ].join('');
+            });
+            historyEl.innerHTML = rows.join('');
+          });
+      })
+      .catch(function (err) {
+        console.error('[invoicing] payment context:', err.message);
+        historyEl.innerHTML = '<p class="error-state">Failed to load.</p>';
+      });
+  }
+
+  function handlePaymentSubmit(e) {
+    e.preventDefault();
+    var invoiceId = document.getElementById('payment-modal-overlay').dataset.invoiceId;
+    var form      = e.target;
+    var saveBtn   = document.getElementById('payment-save-btn');
+    var errEl     = document.getElementById('payment-form-error');
+
+    errEl.textContent = '';
+
+    var amount = parseFloat(form.elements['amount'].value) || 0;
+    var dateVal = form.elements['date'].value;
+
+    if (!amount || amount <= 0) {
+      errEl.textContent = 'Amount must be greater than 0.';
+      return;
+    }
+    if (!dateVal) {
+      errEl.textContent = 'Date is required.';
+      return;
+    }
+
+    saveBtn.disabled    = true;
+    saveBtn.textContent = 'Recording…';
+
+    var invoiceRef = col.doc(invoiceId);
+    var payment = {
+      amount:     amount,
+      date:       firebase.firestore.Timestamp.fromDate(new Date(dateVal)),
+      method:     form.elements['method'].value || 'other',
+      reference:  form.elements['reference'].value.trim(),
+      recordedAt: firebase.firestore.FieldValue.serverTimestamp()
+    };
+
+    invoiceRef.collection('payments').add(payment)
+      .then(function () {
+        return invoiceRef.collection('payments').get();
+      })
+      .then(function (snap) {
+        var totalPaid = 0;
+        snap.forEach(function (doc) { totalPaid += doc.data().amount || 0; });
+        return invoiceRef.get().then(function (invoiceDoc) {
+          var inv     = invoiceDoc.data();
+          var balance = Math.max(0, (inv.total || 0) - totalPaid);
+          var newStatus = inv.status;
+          if (inv.status !== 'cancelled' && inv.status !== 'overdue') {
+            if (balance <= 0)      newStatus = 'paid';
+            else if (totalPaid > 0) newStatus = 'partial';
+          }
+          return invoiceRef.update({
+            amountPaid: totalPaid,
+            balance:    balance,
+            status:     newStatus,
+            updatedAt:  firebase.firestore.FieldValue.serverTimestamp()
+          });
+        });
+      })
+      .then(function () {
+        form.reset();
+        form.elements['date'].value = new Date().toISOString().split('T')[0];
+        loadPaymentContext(invoiceId);
+        loadInvoices();
+      })
+      .catch(function (err) {
+        console.error('[invoicing] record payment:', err.message);
+        errEl.textContent = 'Failed to record payment. Please try again.';
+      })
+      .finally(function () {
+        saveBtn.disabled    = false;
+        saveBtn.textContent = 'Record Payment';
+      });
+  }
+
+  // -------------------------------------------------------------------------
   // Delete
   // -------------------------------------------------------------------------
   function confirmDelete(id, row) {
@@ -519,6 +773,64 @@
               '<button type="submit" class="btn btn-primary" id="invoice-save-btn">Save Invoice</button>',
             '</div>',
           '</form>',
+        '</div>',
+      '</div>'
+    ].join('');
+  }
+
+  // -------------------------------------------------------------------------
+  // Payment modal HTML
+  // -------------------------------------------------------------------------
+  function buildPaymentModal() {
+    return [
+      '<div id="payment-modal-overlay" class="modal-overlay hidden">',
+        '<div class="modal modal-lg">',
+          '<div class="modal-header">',
+            '<h3 class="modal-title">Record Payment</h3>',
+            '<button id="payment-modal-close" class="modal-close" aria-label="Close">&times;</button>',
+          '</div>',
+          '<div class="modal-form">',
+
+            '<div id="payment-invoice-summary"></div>',
+
+            '<div class="form-section-label" style="margin-top:var(--space-4)">Payment History</div>',
+            '<div id="payment-history" class="payment-history"></div>',
+
+            '<div class="form-section-label" style="margin-top:var(--space-4)">New Payment</div>',
+            '<form id="payment-form" novalidate>',
+              '<div class="form-grid">',
+                '<div class="field">',
+                  '<label>Amount <span class="required">*</span></label>',
+                  '<input type="number" name="amount" placeholder="0.00" min="0.01" step="0.01" autocomplete="off">',
+                '</div>',
+                '<div class="field">',
+                  '<label>Date <span class="required">*</span></label>',
+                  '<input type="date" name="date">',
+                '</div>',
+                '<div class="field">',
+                  '<label>Method</label>',
+                  '<select name="method">',
+                    '<option value="bank_transfer">Bank Transfer</option>',
+                    '<option value="card">Card</option>',
+                    '<option value="cash">Cash</option>',
+                    '<option value="cheque">Cheque</option>',
+                    '<option value="wise">Wise</option>',
+                    '<option value="other">Other</option>',
+                  '</select>',
+                '</div>',
+                '<div class="field">',
+                  '<label>Reference</label>',
+                  '<input type="text" name="reference" placeholder="e.g. TXN-123456" autocomplete="off">',
+                '</div>',
+              '</div>',
+              '<p id="payment-form-error" class="form-error" role="alert"></p>',
+              '<div class="modal-footer">',
+                '<button type="button" class="btn btn-ghost" id="payment-cancel-btn">Close</button>',
+                '<button type="submit" class="btn btn-primary" id="payment-save-btn">Record Payment</button>',
+              '</div>',
+            '</form>',
+
+          '</div>',
         '</div>',
       '</div>'
     ].join('');

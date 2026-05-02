@@ -21,8 +21,8 @@
     container.innerHTML = [
       '<div class="module">',
         '<div class="module-header">',
-          '<h3 class="module-title">Providers</h3>',
-          '<button class="btn btn-primary" id="add-provider-btn">+ Add Provider</button>',
+          '<h3 class="module-title">' + cfg('providers') + '</h3>',
+          '<button class="btn btn-primary" id="add-provider-btn">+ ' + cfg('addProvider') + '</button>',
         '</div>',
         '<div class="providers-filter">',
           '<button class="filter-btn active" data-type="all">All</button>',
@@ -128,7 +128,7 @@
     var title = document.getElementById('provider-modal-title');
     var form  = document.getElementById('provider-form');
 
-    title.textContent = data ? 'Edit Provider' : 'Add Provider';
+    title.textContent = data ? 'Edit ' + cfg('provider') : 'Add ' + cfg('provider');
     form.reset();
     clearFormError();
 
@@ -210,7 +210,7 @@
     })
     .finally(function () {
       saveBtn.disabled    = false;
-      saveBtn.textContent = 'Save Provider';
+      saveBtn.textContent = 'Save ' + cfg('provider');
     });
   }
 
@@ -218,7 +218,7 @@
   // Delete
   // -------------------------------------------------------------------------
   function confirmDelete(id, row) {
-    if (!confirm('Delete this provider? This cannot be undone.')) return;
+    if (!confirm('Delete this ' + cfg('provider').toLowerCase() + '? This cannot be undone.')) return;
     col.doc(id).delete()
       .then(function () {
         if (row) row.remove();
@@ -246,7 +246,7 @@
       '<div id="provider-modal-overlay" class="modal-overlay hidden">',
         '<div class="modal modal-lg">',
           '<div class="modal-header">',
-            '<h3 id="provider-modal-title" class="modal-title">Add Provider</h3>',
+            '<h3 id="provider-modal-title" class="modal-title">Add ' + cfg('provider') + '</h3>',
             '<button id="provider-modal-close" class="modal-close" aria-label="Close">&times;</button>',
           '</div>',
           '<form id="provider-form" class="modal-form" novalidate>',
@@ -287,7 +287,7 @@
             '<p id="provider-form-error" class="form-error" role="alert"></p>',
             '<div class="modal-footer">',
               '<button type="button" class="btn btn-ghost" onclick="document.getElementById(\'provider-modal-overlay\').classList.add(\'hidden\')">Cancel</button>',
-              '<button type="submit" class="btn btn-primary" id="provider-save-btn">Save Provider</button>',
+              '<button type="submit" class="btn btn-primary" id="provider-save-btn">Save ' + cfg('provider') + '</button>',
             '</div>',
           '</form>',
         '</div>',

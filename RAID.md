@@ -1,6 +1,6 @@
 # RAID Log: amig0-travel-company
 # Tier 1 — Enterprise Grade | OCTech Services
-# Last Updated: 2026-04-19 (Session 2)
+# Last Updated: 2026-05-02 (Session 5)
 
 ---
 
@@ -28,10 +28,15 @@
 | ID | Issue | Source | Priority | Status |
 |---|---|---|---|---|
 | I01 | Firebase config key exposure risk — not yet verified as excluded from git | Project intake | High | Closed — .gitignore created 2026-04-11, firebase-config.js excluded before any keys exist |
-| I02 | Firestore Security Rules not reviewed for client portal UID scoping | Project intake | High | Closed — role-based rules written 2026-04-19; user_profiles collection required; deploy before portal goes live |
-| I03 | Service worker cache versioning strategy not documented | Project intake | Medium | Open |
-| I04 | GitHub Pages → Firebase Hosting migration decision pending | Project intake | Low | Open |
+| I02 | Firestore Security Rules — operator role enforcement | Project intake | Medium | Closed — Firebase Auth custom claims implemented via Cloud Functions (addOperator, removeOperator). Firestore rules updated to isOperator() for all CRM collections. Operators module added to CRM. Bootstrap: Firebase Console → Custom Claims: {"operator":true} on first account, then sign out/in. (2026-05-02) |
+| I03 | Service worker cache versioning strategy not documented | Project intake | Medium | Closed — bump CACHE_NAME version on every guide app deploy. Activate handler purges old caches automatically. Documented in sw.js header. |
+| I04 | GitHub Pages → Firebase Hosting migration decision pending | Project intake | Low | Closed — firebase.json hosting block configured and deployed (2026-05-02). sw.js no-cache header added. |
 | I05 | Client Portal scoped as read-only (bookings + itineraries) — no pre-trip social layer designed yet | Session 2 design input | Low | Open — evaluate during portal design phase |
+| I06 | Fellow Travellers list requires cross-client booking reads — blocked by correct security rules | Session 3 | Low | Closed — resolved by current auth != null rules which allow all authenticated reads. Graceful fallback retained for network errors. |
+| I07 | No in-CRM provisioning flow for client/guide Firebase Auth accounts | Session 5 review | High | Partially closed — Firebase Auth UID field added to clients form (2026-05-02). Portal Access column shows Linked/Not linked. Operator pastes UID from Firebase Console → Authentication → Users; user_profiles doc still created via Console. Full automation requires custom claims + Admin SDK (RAID I02). |
+| I08 | guides.js form has no UID field — guide records cannot be linked to Firebase Auth for guide app login | Session 5 review | High | Closed — Firebase Auth UID field added to guide form (2026-05-02). App Access column in table shows Linked/Not linked. Operator pastes UID from Firebase Console → Authentication → Users. |
+| I09 | No email delivery for quotes and invoices | Session 5 review | Medium | Closed — mailto: deep links added to Quotes and Invoicing modules (2026-05-02). Email button opens operator's email client pre-filled with client address, subject, and structured body. Falls back to alert if no client email on record. |
+| I10 | Guide passengers rule-level scoping incomplete | Session 6 | Low | Open — passengers collection allows read by any authenticated guide (no tour-level restriction at rules layer). Guide app scopes in JS via booking-filtered passenger IDs. Full rules scoping requires adding tourId to passenger docs (denormalization). Accepted limitation for single-tenant. |
 
 ## Dependencies
 | ID | Dependency | Type | Notes |

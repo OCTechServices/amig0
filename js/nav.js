@@ -7,15 +7,26 @@
 
   var sectionTitles = {
     dashboard:  'Dashboard',
-    clients:    'Clients',
-    tours:      'Tours',
-    passengers: 'Passengers',
-    bookings:   'Bookings',
+    clients:    cfg('clients'),
+    tours:      cfg('tours'),
+    passengers: cfg('passengers'),
+    bookings:   cfg('bookings'),
     quotes:     'Quotes',
     invoicing:  'Invoicing',
-    providers:  'Providers',
-    briefings:  'Briefings',
+    providers:  cfg('providers'),
+    guides:     cfg('guides'),
+    briefings:  cfg('briefings'),
+    operators:  'Operators',
+    reports:    'Reports',
   };
+
+  // Apply config labels to nav link text and sidebar tagline
+  var tagline = document.getElementById('sidebar-tagline');
+  if (tagline && window.AppConfig) tagline.textContent = window.AppConfig.brandTagline;
+
+  document.querySelectorAll('.nav-label[data-cfg]').forEach(function (el) {
+    el.textContent = cfg(el.getAttribute('data-cfg'));
+  });
 
   var navLinks    = document.querySelectorAll('.nav-link');
   var sectionTitle = document.getElementById('section-title');
@@ -56,8 +67,14 @@
       window.Invoicing.render(contentArea);
     } else if (section === 'providers' && window.Providers) {
       window.Providers.render(contentArea);
+    } else if (section === 'guides' && window.Guides) {
+      window.Guides.render(contentArea);
     } else if (section === 'briefings' && window.Briefings) {
       window.Briefings.render(contentArea);
+    } else if (section === 'operators' && window.Operators) {
+      window.Operators.render(contentArea);
+    } else if (section === 'reports' && window.Reports) {
+      window.Reports.render(contentArea);
     } else {
       contentArea.innerHTML = buildPlaceholder(section);
     }

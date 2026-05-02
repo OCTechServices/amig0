@@ -13,7 +13,7 @@ The platform consists of three apps in one codebase:
 **Target Users:** Tour operators, travel agents, clients, tour guides
 **Tier:** 1 — Enterprise Grade
 **Status:** Active
-**Last Updated:** 2026-04-11
+**Last Updated:** 2026-05-02
 
 ## 2. Architecture Overview
 **Stack:**
@@ -26,9 +26,30 @@ The platform consists of three apps in one codebase:
 - Hosting: GitHub Pages + custom domain
 
 **Codebase Scale:**
-- Greenfield — application code does not yet exist as of 2026-04-11
+- Active build — Sessions 2–3 complete. CRM and Client Portal fully scaffolded and live.
 - Target: ~18,600 lines across 17 JS files and 3 CSS files (planned)
 - No build step — pure vanilla. Zero npm dependencies beyond Firebase, Leaflet, jsPDF
+
+**Completed Modules (as of 2026-05-02):**
+- CRM: auth.js, nav.js, dashboard.js, clients.js, tours.js, passengers.js, bookings.js, quotes.js, invoicing.js, providers.js, briefings.js, guides.js
+- Client Portal: portal-auth.js, portal-nav.js, portal-overview.js, portal-itinerary.js, portal-quotes.js, portal-invoices.js
+- Guide App: guide-auth.js, guide-nav.js, guide-today.js, guide-itinerary.js, guide-passengers.js, guide-briefings.js, sw.js
+- PDF: pdf.js (quotes + invoices)
+- CSS: css/main.css, css/portal.css, css/guide.css
+- Rules: firestore.rules (role-based: operators + user_profiles) — privilege escalation fix deployed 2026-05-02
+- Hooks: .claude/hooks/pre-commit.sh, .claude/hooks/session-end.sh
+
+**Session 5 additions (2026-05-02):**
+- firestore.rules: user_profiles write scoped to own UID — privilege escalation blocked, deployed
+- guides.js: Firebase Auth UID field + App Access (Linked/Not linked) column
+- clients.js: Firebase Auth UID field + Portal Access (Linked/Not linked) column
+- quotes.js + invoicing.js: Email button — mailto: deep link pre-filled with client address, subject, structured body
+- clientsCache shape updated to { name, email } in quotes.js and invoicing.js
+
+**Pending:**
+- SVG logo/wordmark for "Amig0" brand mark
+- Operator role hardening — Firebase Auth custom claims (RAID I02)
+- GitHub Pages → Firebase Hosting migration (RAID I04)
 
 **Key Modules:**
 Auth · Dashboard · CRM · Clients · Tours · Passengers · Quotes · Invoicing · Email · PDF · Providers · Briefings · Data · Guide App · Client Portal
@@ -133,7 +154,17 @@ and confirm all three are accurate before we sign off.
 
 ## 10. Open Items
 - [x] Confirm Firebase config object is not committed with live keys — .gitignore created 2026-04-11
-- [ ] Firebase project creation — Dan to create project in Firebase Console and share config
-- [ ] Review Firestore Security Rules — client portal data isolation (UID scoping)
-- [ ] Service worker cache versioning strategy documented
-- [ ] Assess GitHub Pages → Firebase Hosting migration (custom domain handling)
+- [x] Firebase project creation — live project confirmed, config active
+- [x] CRM fully scaffolded and tested (Sessions 2–3)
+- [x] Client Portal built and working (My Trip, Itinerary, Quotes, Invoices)
+- [x] Firestore Security Rules deployed — role-based (operators + user_profiles). Privilege escalation fix deployed 2026-05-02.
+- [x] Guide App (guide.html) — mobile-first PWA — complete
+- [x] PDF generation — jsPDF for quotes and invoices — complete
+- [x] Guide UID linking — Firebase Auth UID field + App Access column in guides.js (Session 5)
+- [x] Client portal provisioning — Firebase Auth UID field + Portal Access column in clients.js (Session 5)
+- [x] Email delivery — mailto: deep links on quotes and invoices (Session 5)
+- [x] Service worker cache versioning documented — bump CACHE_NAME on every guide deploy (RAID I03)
+- [x] Fellow Travellers — works with current auth rules, graceful fallback retained (RAID I06)
+- [x] SVG logo/wordmark for "Amig0" brand mark — inline SVG "0" approved (Session 5)
+- [x] Operator role hardening — Firebase Auth custom claims via Cloud Functions. CRM gated on operator claim. (RAID I02, Session 5)
+- [x] Firebase Hosting migration — firebase.json hosting block configured, deployed (RAID I04, Session 5)
