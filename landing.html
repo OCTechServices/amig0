@@ -19,12 +19,12 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --ink:           #0b1c26;
-      --ink-secondary: #162b3a;
-      --ink-muted:     #3a5a6e;
-      --primary:       #163344;
-      --primary-dark:  #0e1f2b;
-      --primary-light: #1f4a62;
+      --ink:           #0C180E;
+      --ink-secondary: #1D3323;
+      --ink-muted:     #4A6855;
+      --primary:       #1B3D28;
+      --primary-dark:  #122A1C;
+      --primary-light: #2A5C3C;
       --accent:        #8B1A1A;
       --accent-light:  #C42B2B;
       --accent-dark:   #6B1212;
@@ -125,7 +125,7 @@
     .hero-stats   { animation: rise-in 0.85s cubic-bezier(0.16,1,0.3,1) 0.68s both; }
     .hero {
       min-height: 100vh;
-      background: linear-gradient(135deg, #0b1c26 0%, #163344 35%, #091520 65%, #0e1f2b 100%);
+      background: linear-gradient(135deg, #0C180E 0%, #1B3D28 35%, #0A1A0C 65%, #122A1C 100%);
       background-size: 300% 300%;
       animation: gradient-drift 14s ease infinite;
       display: flex; flex-direction: column; justify-content: center;
@@ -603,43 +603,67 @@
     .footer-right a { color: rgba(255,255,255,0.32); text-decoration: none; transition: color 0.2s; }
     .footer-right a:hover { color: rgba(255,255,255,0.65); }
 
-    /* Crushed metallic texture — SVG turbulence noise */
+    /* Horizontal light bars — venetian blind / system aesthetic */
+    @keyframes bar-shimmer {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.55; }
+    }
     @keyframes scan-sweep {
       0%   { transform: translateY(-100%); opacity: 0; }
-      6%   { opacity: 0.7; }
-      94%  { opacity: 0.7; }
+      8%   { opacity: 1; }
+      92%  { opacity: 1; }
       100% { transform: translateY(120vh); opacity: 0; }
     }
+    /* Fine scanline texture sits on the hero via ::before — add to existing ::after */
     .hero-bars {
       position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 0;
     }
-    /* SVG feTurbulence noise — tiled, simulates crushed metallic surface */
-    .hero-texture {
-      position: absolute; inset: 0; pointer-events: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0.2'/%3E%3C/filter%3E%3Crect width='512' height='512' filter='url(%23n)'/%3E%3C/svg%3E");
-      background-size: 280px 280px;
-      opacity: 0.09;
-      mix-blend-mode: overlay;
+    .hero-bar {
+      position: absolute; left: -4%; right: -4%; pointer-events: none;
     }
-    /* Second layer — finer grain for depth */
-    .hero-texture-fine {
-      position: absolute; inset: 0; pointer-events: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='256' height='256' filter='url(%23f)'/%3E%3C/svg%3E");
-      background-size: 160px 160px;
-      opacity: 0.045;
-      mix-blend-mode: screen;
+    /* Thick primary bars */
+    .hero-bar-1 {
+      top: 14%; height: 38px;
+      background: linear-gradient(90deg, transparent 0%, rgba(200,245,215,0.04) 10%, rgba(220,255,230,0.18) 35%, rgba(235,255,240,0.22) 50%, rgba(220,255,230,0.18) 65%, rgba(200,245,215,0.04) 90%, transparent 100%);
+      filter: blur(0.8px);
+      animation: bar-shimmer 7s ease-in-out infinite;
     }
-    /* Subtle light vignette — brighter center, dark edges */
-    .hero-vignette {
-      position: absolute; inset: 0; pointer-events: none;
-      background: radial-gradient(ellipse at 60% 40%, rgba(80,140,180,0.14) 0%, rgba(20,60,90,0.08) 45%, rgba(0,0,0,0.35) 100%);
-    }
-    /* Single slow scan line */
-    .hero-scan {
-      position: absolute; left: 0; right: 0; height: 1px; pointer-events: none;
-      background: linear-gradient(90deg, transparent, rgba(160,210,240,0.4) 30%, rgba(190,230,255,0.6) 50%, rgba(160,210,240,0.4) 70%, transparent);
+    .hero-bar-2 {
+      top: 26%; height: 22px;
+      background: linear-gradient(90deg, transparent 0%, rgba(200,245,215,0.03) 15%, rgba(220,255,230,0.12) 40%, rgba(220,255,230,0.15) 55%, rgba(200,245,215,0.03) 85%, transparent 100%);
       filter: blur(0.5px);
-      animation: scan-sweep 16s linear infinite 1s;
+      animation: bar-shimmer 9s ease-in-out infinite 1.8s;
+    }
+    .hero-bar-3 {
+      top: 38%; height: 52px;
+      background: linear-gradient(90deg, transparent 0%, rgba(200,245,215,0.03) 8%, rgba(220,255,230,0.13) 30%, rgba(235,255,240,0.20) 50%, rgba(220,255,230,0.13) 70%, rgba(200,245,215,0.03) 92%, transparent 100%);
+      filter: blur(1px);
+      animation: bar-shimmer 11s ease-in-out infinite 0.5s;
+    }
+    .hero-bar-4 {
+      top: 55%; height: 18px;
+      background: linear-gradient(90deg, transparent 0%, rgba(200,245,215,0.02) 20%, rgba(220,255,230,0.10) 45%, rgba(220,255,230,0.12) 55%, rgba(200,245,215,0.02) 80%, transparent 100%);
+      filter: blur(0.5px);
+      animation: bar-shimmer 8s ease-in-out infinite 3s;
+    }
+    .hero-bar-5 {
+      top: 63%; height: 30px;
+      background: linear-gradient(90deg, transparent 0%, rgba(200,245,215,0.03) 12%, rgba(220,255,230,0.14) 38%, rgba(235,255,240,0.18) 52%, rgba(220,255,230,0.14) 68%, rgba(200,245,215,0.03) 88%, transparent 100%);
+      filter: blur(0.8px);
+      animation: bar-shimmer 13s ease-in-out infinite 2.5s;
+    }
+    .hero-bar-6 {
+      top: 78%; height: 14px;
+      background: linear-gradient(90deg, transparent 0%, rgba(200,245,215,0.02) 18%, rgba(220,255,230,0.08) 42%, rgba(220,255,230,0.10) 58%, rgba(200,245,215,0.02) 82%, transparent 100%);
+      filter: blur(0.5px);
+      animation: bar-shimmer 6s ease-in-out infinite 4s;
+    }
+    /* Single slow scan line that sweeps the full height */
+    .hero-scan {
+      position: absolute; left: 0; right: 0; height: 2px; pointer-events: none;
+      background: linear-gradient(90deg, transparent, rgba(200,255,215,0.35) 30%, rgba(220,255,230,0.55) 50%, rgba(200,255,215,0.35) 70%, transparent);
+      filter: blur(1px);
+      animation: scan-sweep 12s linear infinite 2s;
     }
 
     /* Exclusive CTA — red signals limited access */
@@ -700,9 +724,12 @@
 <!-- Hero -->
 <section class="hero">
   <div class="hero-bars">
-    <div class="hero-texture"></div>
-    <div class="hero-texture-fine"></div>
-    <div class="hero-vignette"></div>
+    <div class="hero-bar hero-bar-1"></div>
+    <div class="hero-bar hero-bar-2"></div>
+    <div class="hero-bar hero-bar-3"></div>
+    <div class="hero-bar hero-bar-4"></div>
+    <div class="hero-bar hero-bar-5"></div>
+    <div class="hero-bar hero-bar-6"></div>
     <div class="hero-scan"></div>
   </div>
   <div class="hero-inner">
