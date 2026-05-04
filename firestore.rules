@@ -173,5 +173,43 @@ service cloud.firestore {
       allow read, write: if isOperator();
       allow read:        if isClientUser() && clientId() == resource.data.clientId;
     }
+
+    // -----------------------------------------------------------------------
+    // partners — operator manages; authenticated clients can read (for portal map)
+    // -----------------------------------------------------------------------
+    match /partners/{docId} {
+      allow read, write: if isOperator();
+      allow read:        if isClientOrGuide();
+    }
+
+    // -----------------------------------------------------------------------
+    // marketplace_listings — operator manages; clients with access can read
+    // -----------------------------------------------------------------------
+    match /marketplace_listings/{docId} {
+      allow read, write: if isOperator();
+      allow read:        if isClientUser() &&
+        get(/databases/$(database)/documents/user_profiles/$(request.auth.uid)).data.marketplaceAccess == true;
+    }
+
+    // -----------------------------------------------------------------------
+    // invites — operator creates; client can read (for validation) and update
+    //           own redemption fields only
+    // -----------------------------------------------------------------------
+    match /invites/{docId} {
+      allow read, write: if isOperator();
+      allow read:        if isClientUser();
+      allow update:      if isClientUser() &&
+        request.resource.data.usedByUid == request.auth.uid &&
+        resource.data.usedByUid == null;
+    }
+
+    // -----------------------------------------------------------------------
+    // checkins — clients write and read their own; operators read all
+    // -----------------------------------------------------------------------
+    match /checkins/{docId} {
+      allow read, write: if isOperator();
+      allow create:      if isClientUser() && request.resource.data.userId == request.auth.uid;
+      allow read:        if isClientUser() && resource.data.userId == request.auth.uid;
+    }
   }
 }

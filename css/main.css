@@ -8,20 +8,20 @@
    ----------------------------------------------------------------------------- */
 :root {
   /* Brand colours */
-  --color-primary:        #1B4965;
-  --color-primary-dark:   #163D54;
-  --color-primary-light:  #2A6A94;
+  --color-primary:        #1B3D28;
+  --color-primary-dark:   #122A1C;
+  --color-primary-light:  #2A5C3C;
   --color-accent:         #E8A045;
   --color-accent-dark:    #C9832A;
 
   /* Surfaces */
-  --color-bg:             #F4F6F9;
+  --color-bg:             #F4F0EB;
   --color-surface:        #FFFFFF;
   --color-border:         #E2E6EA;
 
   /* Sidebar */
-  --color-sidebar-bg:     #1B4965;
-  --color-sidebar-text:   #C8D8E4;
+  --color-sidebar-bg:     #1B3D28;
+  --color-sidebar-text:   #B8D4C0;
   --color-sidebar-active: rgba(255, 255, 255, 0.12);
   --color-sidebar-hover:  rgba(255, 255, 255, 0.07);
 
@@ -199,7 +199,7 @@ input {
 .field input:focus {
   outline: none;
   border-color: var(--color-primary-light);
-  box-shadow: 0 0 0 3px rgba(27, 73, 101, 0.12);
+  box-shadow: 0 0 0 3px rgba(27, 61, 40, 0.12);
 }
 
 .field input::placeholder { color: var(--color-text-muted); }
@@ -252,6 +252,20 @@ input {
   text-align: center;
   min-height: 1.2em;
 }
+
+.btn-forgot {
+  display: block;
+  width: 100%;
+  margin-top: var(--space-2);
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  text-align: center;
+  padding: var(--space-1) 0;
+}
+.btn-forgot:hover { color: var(--color-primary); }
 
 /* -----------------------------------------------------------------------------
    App Shell Layout
@@ -726,10 +740,50 @@ select {
   transition: border-color var(--transition-fast);
 }
 
+/* Team assignment rows */
+.team-row {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+  margin-bottom: var(--space-2);
+}
+.team-row select { width: auto; }
+.team-role-select { flex: 0 0 110px; }
+.team-person-select { flex: 1; min-width: 0; }
+.team-remove-btn {
+  flex-shrink: 0;
+  width: 28px; height: 28px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  background: transparent;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+.team-remove-btn:hover { background: var(--color-error); color: #fff; border-color: var(--color-error); }
+
+/* Team role badges (in table) */
+.team-role-badge {
+  display: inline-block;
+  padding: 1px 7px;
+  border-radius: 4px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-right: var(--space-1);
+  vertical-align: middle;
+}
+.role-guide  { background: #D1FAE5; color: #065F46; }
+.role-driver { background: #DBEAFE; color: #1E40AF; }
+.role-host   { background: #FEF3C7; color: #92400E; }
+
 select:focus {
   outline: none;
   border-color: var(--color-primary-light);
-  box-shadow: 0 0 0 3px rgba(27, 73, 101, 0.12);
+  box-shadow: 0 0 0 3px rgba(27, 61, 40, 0.12);
 }
 
 textarea {
@@ -747,7 +801,7 @@ textarea {
 textarea:focus {
   outline: none;
   border-color: var(--color-primary-light);
-  box-shadow: 0 0 0 3px rgba(27, 73, 101, 0.12);
+  box-shadow: 0 0 0 3px rgba(27, 61, 40, 0.12);
 }
 
 .modal-footer {
@@ -764,6 +818,36 @@ textarea:focus {
 }
 
 .required { color: var(--color-error); }
+
+/* Vetting section */
+.vetting-section {
+  margin-top: var(--space-5);
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--color-border);
+}
+.vetting-section-label {
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-4);
+}
+.vetting-rating {
+  font-weight: 600;
+  color: var(--color-text);
+}
+.vetting-platform {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  margin-left: var(--space-1);
+}
+input[type="file"] {
+  font-family: inherit;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  width: 100%;
+}
 
 /* -----------------------------------------------------------------------------
    Line items (quotes & invoices)
@@ -872,7 +956,7 @@ textarea:focus {
   gap: var(--space-5);
 }
 
-.totals-tax, .totals-currency { width: 120px; flex-shrink: 0; }
+.totals-tax, .totals-currency, .totals-rate { width: 120px; flex-shrink: 0; }
 
 .totals-summary {
   flex: 1;
@@ -936,6 +1020,10 @@ textarea:focus {
   padding-top: var(--space-2);
   border-top: 1px solid var(--color-border);
 }
+
+.total-line-secondary { min-height: 0; }
+.total-secondary-value { font-size: 0.75rem; color: var(--color-text-muted); font-style: italic; }
+.td-secondary-currency { font-size: 0.75rem; color: var(--color-text-muted); font-style: italic; }
 
 /* -----------------------------------------------------------------------------
    Briefings

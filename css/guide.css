@@ -4,8 +4,8 @@
    ============================================================================= */
 
 :root {
-  --color-primary:       #0F2940;
-  --color-primary-mid:   #1B4965;
+  --color-primary:       #122A1C;
+  --color-primary-mid:   #1B3D28;
   --color-accent:        #E8A045;
   --color-accent-light:  #FEF3E2;
   --color-bg:            #F2F4F7;
@@ -76,7 +76,7 @@ input, textarea, select { font-family: inherit; font-size: inherit; }
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(160deg, var(--color-primary) 0%, var(--color-primary-mid) 60%, #2A6A8A 100%);
+  background: linear-gradient(160deg, var(--color-primary) 0%, var(--color-primary-mid) 60%, #2A5C3C 100%);
   padding: var(--space-6);
 }
 
@@ -162,6 +162,20 @@ input, textarea, select { font-family: inherit; font-size: inherit; }
   color: var(--color-error);
   min-height: 1.2em;
 }
+
+.btn-forgot {
+  display: block;
+  width: 100%;
+  margin-top: 0.5rem;
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.45);
+  font-size: 0.82rem;
+  cursor: pointer;
+  text-align: center;
+  padding: 0.25rem 0;
+}
+.btn-forgot:hover { color: rgba(255,255,255,0.8); }
 
 /* -----------------------------------------------------------------------
    Buttons

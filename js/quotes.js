@@ -44,6 +44,7 @@
     document.getElementById('add-line-btn').addEventListener('click', function () { addLineRow(); });
     document.getElementById('quote-tax').addEventListener('input', recalcTotals);
     document.getElementById('quote-currency').addEventListener('change', recalcTotals);
+    document.getElementById('quote-exchange-rate').addEventListener('input', recalcTotals);
 
     loadCaches().then(loadQuotes);
   }
@@ -90,7 +91,7 @@
             '<tr>',
               '<td class="td-primary">' + esc(clientName) + '</td>',
               '<td>' + esc(tourName) + '</td>',
-              '<td>' + formatCurrency(d.total, d.currency) + '</td>',
+              '<td>' + formatCurrency(d.total, d.currency) + (d.exchangeRate ? '<br><span class="td-secondary-currency">' + formatSecondary(d.total, d.currency, d.exchangeRate) + '</span>' : '') + '</td>',
               '<td><span class="badge badge-' + quoteStatusClass(d.status) + '">' + esc(d.status || 'draft') + '</span></td>',
               '<td>' + valid + '</td>',
               '<td class="td-actions">',
@@ -154,8 +155,9 @@
       form.elements['clientId'].value  = data.clientId  || '';
       form.elements['tourId'].value    = data.tourId    || '';
       form.elements['status'].value    = data.status    || 'draft';
-      form.elements['currency'].value  = data.currency  || 'USD';
-      form.elements['tax'].value       = data.tax !== undefined ? data.tax : 0;
+      form.elements['currency'].value      = data.currency      || 'USD';
+      form.elements['tax'].value           = data.tax !== undefined ? data.tax : 0;
+      form.elements['exchangeRate'].value  = data.exchangeRate  || '';
       form.elements['notes'].value     = data.notes     || '';
       if (data.validUntil) form.elements['validUntil'].value = toDateInput(data.validUntil.toDate());
 
@@ -265,6 +267,10 @@
     document.getElementById('quote-subtotal').textContent = formatCurrency(subtotal, currency);
     document.getElementById('quote-tax-amt').textContent  = formatCurrency(taxAmt,   currency);
     document.getElementById('quote-total').textContent    = formatCurrency(total,     currency);
+
+    var rate = parseFloat(document.getElementById('quote-exchange-rate').value) || 0;
+    var secEl = document.getElementById('quote-total-secondary');
+    if (secEl) secEl.textContent = rate > 0 ? formatSecondary(total, currency, rate) : '';
   }
 
   // -------------------------------------------------------------------------
@@ -295,17 +301,18 @@
     var validVal = form.elements['validUntil'].value;
 
     var payload = {
-      clientId:   form.elements['clientId'].value   || null,
-      tourId:     form.elements['tourId'].value      || null,
-      status:     form.elements['status'].value      || 'draft',
-      currency:   form.elements['currency'].value    || 'USD',
-      notes:      form.elements['notes'].value.trim(),
-      items:      items,
-      tax:        taxRate,
-      subtotal:   subtotal,
-      total:      total,
-      validUntil: validVal ? firebase.firestore.Timestamp.fromDate(new Date(validVal)) : null,
-      updatedAt:  firebase.firestore.FieldValue.serverTimestamp()
+      clientId:     form.elements['clientId'].value   || null,
+      tourId:       form.elements['tourId'].value      || null,
+      status:       form.elements['status'].value      || 'draft',
+      currency:     form.elements['currency'].value    || 'USD',
+      exchangeRate: parseFloat(form.elements['exchangeRate'].value) || null,
+      notes:        form.elements['notes'].value.trim(),
+      items:        items,
+      tax:          taxRate,
+      subtotal:     subtotal,
+      total:        total,
+      validUntil:   validVal ? firebase.firestore.Timestamp.fromDate(new Date(validVal)) : null,
+      updatedAt:    firebase.firestore.FieldValue.serverTimestamp()
     };
 
     saveBtn.disabled    = true;
@@ -475,10 +482,15 @@
                   '<label for="quote-currency">Currency</label>',
                   '<select id="quote-currency" name="currency">' + currOpts + '</select>',
                 '</div>',
+                '<div class="field totals-rate">',
+                  '<label for="quote-exchange-rate">MXN Rate <span style="font-size:0.75rem;font-weight:400;color:var(--color-text-muted)">(1 unit = ? MXN)</span></label>',
+                  '<input type="number" id="quote-exchange-rate" name="exchangeRate" step="0.01" min="0" placeholder="e.g. 17.50" autocomplete="off">',
+                '</div>',
                 '<div class="totals-summary">',
                   '<div class="total-line"><span>Subtotal</span><span id="quote-subtotal">—</span></div>',
                   '<div class="total-line"><span>Tax</span><span id="quote-tax-amt">—</span></div>',
                   '<div class="total-line total-line-grand"><span>Total</span><span id="quote-total">—</span></div>',
+                  '<div class="total-line total-line-secondary"><span></span><span id="quote-total-secondary" class="total-secondary-value"></span></div>',
                 '</div>',
               '</div>',
             '</div>',
@@ -525,6 +537,14 @@
         style: 'currency', currency: currency || 'USD', minimumFractionDigits: 2
       }).format(amount);
     } catch (e) { return (currency || '') + ' ' + amount; }
+  }
+
+  function formatSecondary(amount, currency, rate) {
+    if (!amount || !rate) return '';
+    if (currency === 'MXN') {
+      return '≈ ' + formatCurrency(amount / rate, 'USD');
+    }
+    return '≈ ' + formatCurrency(amount * rate, 'MXN');
   }
 
   function quoteStatusClass(status) {

@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Amig0 Travel — Partner Check-In</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/portal.css">
+  <style>
+    .checkin-page {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(150deg, #0C180E 0%, #1B3D28 60%, #2A5C3C 150%);
+      padding: var(--space-6);
+    }
+    .checkin-card {
+      background: var(--color-surface);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      padding: var(--space-10) var(--space-8);
+      width: 100%;
+      max-width: 420px;
+      text-align: center;
+    }
+    .checkin-brand {
+      display: flex;
+      align-items: baseline;
+      gap: var(--space-2);
+      justify-content: center;
+      margin-bottom: var(--space-6);
+    }
+    .checkin-brand-name {
+      font-family: var(--font-display);
+      font-size: 1.8rem;
+      color: var(--color-primary);
+      font-weight: 700;
+    }
+    .checkin-brand-sub {
+      font-size: 0.85rem;
+      color: var(--color-text-muted);
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .checkin-state { display: flex; flex-direction: column; align-items: center; gap: var(--space-4); }
+    .checkin-icon {
+      width: 64px; height: 64px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.8rem;
+    }
+    .checkin-icon-success { background: var(--color-success-bg); }
+    .checkin-icon-warn    { background: var(--color-warning-bg); }
+    .checkin-icon-error   { background: var(--color-error-bg); }
+    .checkin-icon-spin    { background: var(--color-bg); animation: spin 1s linear infinite; }
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+    .checkin-title {
+      font-family: var(--font-display);
+      font-size: 1.3rem;
+      color: var(--color-text);
+      line-height: 1.3;
+    }
+    .checkin-body {
+      font-size: 0.9rem;
+      color: var(--color-text-secondary);
+      line-height: 1.6;
+      max-width: 300px;
+    }
+    .checkin-perk-box {
+      background: var(--color-accent-light);
+      border: 1.5px solid var(--color-accent);
+      border-radius: var(--radius-md);
+      padding: var(--space-4) var(--space-5);
+      width: 100%;
+      text-align: center;
+    }
+    .checkin-perk-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--color-warning);
+      margin-bottom: var(--space-2);
+    }
+    .checkin-perk-value {
+      font-family: var(--font-display);
+      font-size: 1.15rem;
+      color: var(--color-text);
+    }
+    .checkin-partner-name {
+      font-weight: 600;
+      color: var(--color-primary);
+      font-size: 1rem;
+    }
+    .checkin-meta {
+      font-size: 0.78rem;
+      color: var(--color-text-muted);
+    }
+    .checkin-back-link {
+      margin-top: var(--space-2);
+      font-size: 0.85rem;
+      color: var(--color-primary);
+      text-decoration: underline;
+      cursor: pointer;
+    }
+    .checkin-back-link:hover { opacity: 0.75; }
+    .checkin-already {
+      background: var(--color-info-bg);
+      border-radius: var(--radius-sm);
+      padding: var(--space-2) var(--space-4);
+      font-size: 0.82rem;
+      color: var(--color-info);
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="checkin-page">
+    <div class="checkin-card">
+
+      <div class="checkin-brand">
+        <span class="checkin-brand-name">Amig<svg class="brand-zero" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 26" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" d="M10,1.5 C14.97,1.5 19,6.65 19,13 C19,19.35 14.97,24.5 10,24.5 C5.03,24.5 1,19.35 1,13 C1,6.65 5.03,1.5 10,1.5 Z M10,7 C7.51,7 5.5,9.69 5.5,13 C5.5,16.31 7.51,19 10,19 C12.49,19 14.5,16.31 14.5,13 C14.5,9.69 12.49,7 10,7 Z"/><line x1="6.5" y1="21" x2="13.5" y2="5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/></svg></span>
+        <span class="checkin-brand-sub">Partner Check-In</span>
+      </div>
+
+      <div id="checkin-root" class="checkin-state">
+        <!-- State injected by JS -->
+        <div class="checkin-icon checkin-icon-spin">&#9696;</div>
+        <p class="checkin-body">Verifying your access…</p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Firebase compat SDK v10.12 -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
+  <!-- App config — gitignored -->
+  <script src="firebase-config.js"></script>
+
+  <script>
+  (function () {
+    'use strict';
+
+    var auth = firebase.auth();
+    var db   = firebase.firestore();
+    var root = document.getElementById('checkin-root');
+
+    var params = new URLSearchParams(window.location.search);
+    var token  = (params.get('token') || '').trim();
+
+    // -------------------------------------------------------------------------
+    // Render helpers
+    // -------------------------------------------------------------------------
+    function showLoading(msg) {
+      root.innerHTML =
+        '<div class="checkin-icon checkin-icon-spin" style="border:3px solid var(--color-border);border-top-color:var(--color-primary)"></div>' +
+        '<p class="checkin-body">' + esc(msg) + '</p>';
+    }
+
+    function showSuccess(partner, alreadyCheckedIn) {
+      var alreadyBanner = alreadyCheckedIn
+        ? '<div class="checkin-already">You already checked in here today — enjoy your perk!</div>'
+        : '';
+      root.innerHTML =
+        '<div class="checkin-icon checkin-icon-success" style="font-size:2rem">&#10003;</div>' +
+        '<p class="checkin-title">Welcome to ' + esc(partner.name) + '!</p>' +
+        (partner.discount
+          ? '<div class="checkin-perk-box">' +
+              '<div class="checkin-perk-label">Your Amig0 Exclusive Perk</div>' +
+              '<div class="checkin-perk-value">' + esc(partner.discount) + '</div>' +
+            '</div>'
+          : '') +
+        alreadyBanner +
+        '<p class="checkin-meta">' + esc(partner.city || partner.address || '') + '</p>' +
+        '<a class="checkin-back-link" href="portal.html">Back to My Trip Portal</a>';
+    }
+
+    function showGate() {
+      root.innerHTML =
+        '<div class="checkin-icon checkin-icon-warn" style="font-size:1.8rem">&#128274;</div>' +
+        '<p class="checkin-title">Sign in to claim your perk</p>' +
+        '<p class="checkin-body">Open your Amig0 portal and scan this QR code again, or tap the link below.</p>' +
+        '<a class="pbtn pbtn-primary" href="portal.html" style="width:100%;margin-top:0.5rem">Go to My Trip Portal</a>';
+    }
+
+    function showError(msg) {
+      root.innerHTML =
+        '<div class="checkin-icon checkin-icon-error" style="font-size:1.8rem">&#33;</div>' +
+        '<p class="checkin-title">Something went wrong</p>' +
+        '<p class="checkin-body">' + esc(msg) + '</p>' +
+        '<a class="checkin-back-link" href="portal.html">Back to My Trip Portal</a>';
+    }
+
+    function showInvalid() {
+      root.innerHTML =
+        '<div class="checkin-icon checkin-icon-error" style="font-size:1.8rem">&#63;</div>' +
+        '<p class="checkin-title">Check-in link not found</p>' +
+        '<p class="checkin-body">This QR code is not recognised. Please contact your tour operator.</p>' +
+        '<a class="checkin-back-link" href="portal.html">Back to My Trip Portal</a>';
+    }
+
+    function esc(str) {
+      return String(str || '')
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    // -------------------------------------------------------------------------
+    // No token — invalid link
+    // -------------------------------------------------------------------------
+    if (!token) {
+      showInvalid();
+      return;
+    }
+
+    // -------------------------------------------------------------------------
+    // Auth state
+    // -------------------------------------------------------------------------
+    auth.onAuthStateChanged(function (user) {
+      if (!user) {
+        showGate();
+        return;
+      }
+
+      // Verify user is a client
+      db.collection('user_profiles').doc(user.uid).get()
+        .then(function (doc) {
+          if (!doc.exists || doc.data().role !== 'client') {
+            showGate();
+            return;
+          }
+
+          processCheckin(user, doc.data());
+        })
+        .catch(function (err) {
+          console.error('[checkin] profile:', err.message);
+          showError('Failed to verify your account. Please try again.');
+        });
+    });
+
+    // -------------------------------------------------------------------------
+    // Process check-in
+    // -------------------------------------------------------------------------
+    function processCheckin(user, profile) {
+      showLoading('Finding this partner…');
+
+      // Look up partner by token
+      db.collection('partners')
+        .where('qrToken', '==', token)
+        .where('active', '==', true)
+        .limit(1)
+        .get()
+        .then(function (snap) {
+          if (snap.empty) {
+            showInvalid();
+            return;
+          }
+
+          var partnerDoc = snap.docs[0];
+          var partner    = partnerDoc.data();
+          var partnerId  = partnerDoc.id;
+
+          // Check if already checked in today
+          var todayStart = new Date();
+          todayStart.setHours(0, 0, 0, 0);
+
+          return db.collection('checkins')
+            .where('userId',    '==', user.uid)
+            .where('partnerId', '==', partnerId)
+            .where('timestamp', '>=', firebase.firestore.Timestamp.fromDate(todayStart))
+            .limit(1)
+            .get()
+            .then(function (existingSnap) {
+              if (!existingSnap.empty) {
+                showSuccess(partner, true);
+                return;
+              }
+
+              // Log new check-in
+              var checkinData = {
+                userId:    user.uid,
+                partnerId: partnerId,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                country:   profile.country || null,
+                clientId:  profile.clientId || null,
+                tourId:    null // enriched if portal auth exposes it
+              };
+
+              return db.collection('checkins').add(checkinData)
+                .then(function () {
+                  showSuccess(partner, false);
+                })
+                .catch(function (err) {
+                  console.error('[checkin] write:', err.message);
+                  // Still show perk even if write fails — degrade gracefully
+                  showSuccess(partner, false);
+                });
+            });
+        })
+        .catch(function (err) {
+          console.error('[checkin] partner lookup:', err.message);
+          showError('Failed to load partner details. Please try again.');
+        });
+    }
+
+  })();
+  </script>
+
+</body>
+</html>

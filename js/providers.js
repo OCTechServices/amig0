@@ -86,6 +86,8 @@
               '<td>' + esc(d.email || '—') + '</td>',
               '<td>' + esc(d.phone || '—') + '</td>',
               '<td>' + esc(d.country || '—') + '</td>',
+              '<td>' + fmtRating(d.vetting) + '</td>',
+              '<td>' + fmtVerified(d.verificationStatus) + '</td>',
               '<td class="td-actions">',
                 '<button class="btn-table-action" data-action="edit" data-id="' + doc.id + '">Edit</button>',
                 '<button class="btn-table-action btn-table-danger" data-action="delete" data-id="' + doc.id + '">Delete</button>',
@@ -97,7 +99,7 @@
         wrap.innerHTML = [
           '<table class="data-table">',
             '<thead><tr>',
-              '<th>Name</th><th>Type</th><th>Contact</th><th>Email</th><th>Phone</th><th>Country</th><th></th>',
+              '<th>Name</th><th>Type</th><th>Contact</th><th>Email</th><th>Phone</th><th>Country</th><th>Rating</th><th>Verified</th><th></th>',
             '</tr></thead>',
             '<tbody>' + rows.join('') + '</tbody>',
           '</table>'
@@ -141,9 +143,23 @@
       form.elements['address'].value = data.address || '';
       form.elements['country'].value = data.country || '';
       form.elements['notes'].value   = data.notes   || '';
+      var v = data.vetting || {};
+      form.elements['vettingPlatform'].value    = v.platform    || '';
+      form.elements['vettingRating'].value      = v.rating      || '';
+      form.elements['vettingCount'].value       = v.reviewCount || '';
+      form.elements['verificationStatus'].value = data.verificationStatus || 'pending';
+      form.dataset.screenshotUrl = v.screenshotUrl || '';
+      var ssLink = document.getElementById('provider-screenshot-link');
+      if (ssLink) ssLink.innerHTML = v.screenshotUrl
+        ? '<a href="' + esc(v.screenshotUrl) + '" target="_blank" class="field-hint">View current screenshot ↗</a>'
+        : '';
       form.dataset.editId = data._id;
     } else {
-      form.elements['type'].value = 'accommodation';
+      form.elements['type'].value               = 'accommodation';
+      form.elements['verificationStatus'].value = 'pending';
+      form.dataset.screenshotUrl = '';
+      var ssLink = document.getElementById('provider-screenshot-link');
+      if (ssLink) ssLink.innerHTML = '';
       delete form.dataset.editId;
     }
 
@@ -182,36 +198,73 @@
       return;
     }
 
+    var platform  = form.elements['vettingPlatform'].value;
+    var rating    = parseFloat(form.elements['vettingRating'].value) || null;
+    var count     = parseInt(form.elements['vettingCount'].value, 10) || null;
+    var verStatus = form.elements['verificationStatus'].value || 'pending';
+
     var payload = {
-      name:      form.elements['name'].value.trim(),
-      type:      form.elements['type'].value,
-      contact:   form.elements['contact'].value.trim(),
-      email:     form.elements['email'].value.trim(),
-      phone:     form.elements['phone'].value.trim(),
-      address:   form.elements['address'].value.trim(),
-      country:   form.elements['country'].value.trim(),
-      notes:     form.elements['notes'].value.trim(),
+      name:               form.elements['name'].value.trim(),
+      type:               form.elements['type'].value,
+      contact:            form.elements['contact'].value.trim(),
+      email:              form.elements['email'].value.trim(),
+      phone:              form.elements['phone'].value.trim(),
+      address:            form.elements['address'].value.trim(),
+      country:            form.elements['country'].value.trim(),
+      notes:              form.elements['notes'].value.trim(),
+      verificationStatus: verStatus,
+      vetting: {
+        platform:      platform || null,
+        rating:        rating,
+        reviewCount:   count,
+        screenshotUrl: form.dataset.screenshotUrl || null
+      },
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     };
 
     saveBtn.disabled    = true;
     saveBtn.textContent = 'Saving…';
 
-    var op = editId ? col.doc(editId).update(payload) : (payload.createdAt = firebase.firestore.FieldValue.serverTimestamp(), col.add(payload));
+    function doSave(finalPayload) {
+      var op = editId
+        ? col.doc(editId).update(finalPayload)
+        : (finalPayload.createdAt = firebase.firestore.FieldValue.serverTimestamp(), col.add(finalPayload));
+      op.then(function () {
+        closeModal();
+        var activeFilter = document.querySelector('.filter-btn.active');
+        loadProviders(activeFilter ? activeFilter.getAttribute('data-type') : 'all');
+      })
+      .catch(function (err) {
+        console.error('[providers] save:', err.message);
+        showFormError('Failed to save. Please try again.');
+      })
+      .finally(function () {
+        saveBtn.disabled    = false;
+        saveBtn.textContent = 'Save ' + cfg('provider');
+      });
+    }
 
-    op.then(function () {
-      closeModal();
-      var activeFilter = document.querySelector('.filter-btn.active');
-      loadProviders(activeFilter ? activeFilter.getAttribute('data-type') : 'all');
-    })
-    .catch(function (err) {
-      console.error('[providers] save:', err.message);
-      showFormError('Failed to save. Please try again.');
-    })
-    .finally(function () {
-      saveBtn.disabled    = false;
-      saveBtn.textContent = 'Save ' + cfg('provider');
-    });
+    var fileInput = form.querySelector('[name="screenshotFile"]');
+    var file      = fileInput && fileInput.files[0];
+
+    if (file) {
+      saveBtn.textContent = 'Uploading…';
+      var storageRef = firebase.storage().ref('vetting/providers/' + Date.now() + '_' + file.name);
+      storageRef.put(file)
+        .then(function () { return storageRef.getDownloadURL(); })
+        .then(function (url) {
+          payload.vetting.screenshotUrl = url;
+          doSave(payload);
+        })
+        .catch(function (err) {
+          console.error('[providers] screenshot upload:', err.message);
+          showFormError('Screenshot upload failed. Save without a screenshot or check Storage settings.');
+          saveBtn.disabled    = false;
+          saveBtn.textContent = 'Save ' + cfg('provider');
+        });
+    } else {
+      doSave(payload);
+    }
   }
 
   // -------------------------------------------------------------------------
@@ -284,6 +337,50 @@
                 '<textarea name="notes" placeholder="Internal notes about this provider…" rows="3"></textarea>',
               '</div>',
             '</div>',
+
+            '<div class="vetting-section">',
+              '<p class="vetting-section-label">Operator Vetting</p>',
+              '<div class="form-grid">',
+                '<div class="field">',
+                  '<label>Platform</label>',
+                  '<select name="vettingPlatform">',
+                    '<option value="">— Not specified —</option>',
+                    '<option value="uber">Uber</option>',
+                    '<option value="cabify">Cabify</option>',
+                    '<option value="airbnb">Airbnb</option>',
+                    '<option value="getyourguide">GetYourGuide</option>',
+                    '<option value="viator">Viator</option>',
+                    '<option value="tripadvisor">TripAdvisor</option>',
+                    '<option value="instagram">Instagram</option>',
+                    '<option value="youtube">YouTube</option>',
+                    '<option value="other">Other</option>',
+                  '</select>',
+                '</div>',
+                '<div class="field">',
+                  '<label>Rating ★</label>',
+                  '<input type="number" name="vettingRating" placeholder="e.g. 4.9" min="1" max="5" step="0.1">',
+                '</div>',
+                '<div class="field">',
+                  '<label>Review / Trip Count</label>',
+                  '<input type="number" name="vettingCount" placeholder="e.g. 2400" min="0">',
+                '</div>',
+                '<div class="field">',
+                  '<label>Verification Status</label>',
+                  '<select name="verificationStatus">',
+                    '<option value="pending">Pending</option>',
+                    '<option value="verified">Verified ✓</option>',
+                    '<option value="rejected">Rejected</option>',
+                  '</select>',
+                '</div>',
+                '<div class="field field-full">',
+                  '<label>Rating Screenshot</label>',
+                  '<div id="provider-screenshot-link"></div>',
+                  '<input type="file" name="screenshotFile" accept="image/*" style="margin-top:var(--space-1)">',
+                  '<span class="field-hint">Upload a screenshot of their platform rating — stored securely</span>',
+                '</div>',
+              '</div>',
+            '</div>',
+
             '<p id="provider-form-error" class="form-error" role="alert"></p>',
             '<div class="modal-footer">',
               '<button type="button" class="btn btn-ghost" onclick="document.getElementById(\'provider-modal-overlay\').classList.add(\'hidden\')">Cancel</button>',
@@ -301,6 +398,18 @@
   function showFormError(msg) { var el = document.getElementById('provider-form-error'); if (el) el.textContent = msg; }
   function clearFormError()   { var el = document.getElementById('provider-form-error'); if (el) el.textContent = ''; }
   function capitalise(s)      { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+  function fmtRating(vetting) {
+    if (!vetting || !vetting.rating) return '—';
+    return '<span class="vetting-rating">' + vetting.rating.toFixed(1) + '★</span>'
+      + (vetting.platform ? '<span class="vetting-platform">' + esc(vetting.platform) + '</span>' : '');
+  }
+
+  function fmtVerified(status) {
+    var map = { verified: 'badge-success', rejected: 'badge-error', pending: 'badge-neutral' };
+    var s   = status || 'pending';
+    return '<span class="badge ' + (map[s] || 'badge-neutral') + '">' + esc(s) + '</span>';
+  }
 
   function typeClass(type) {
     var map = {

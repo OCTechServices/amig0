@@ -10,7 +10,10 @@
     overview:  { label: 'My Trip',   module: function (el) { window.PortalOverview  && window.PortalOverview.render(el); } },
     itinerary: { label: 'Itinerary', module: function (el) { window.PortalItinerary && window.PortalItinerary.render(el); } },
     quotes:    { label: 'Quotes',    module: function (el) { window.PortalQuotes    && window.PortalQuotes.render(el); } },
-    invoices:  { label: 'Invoices',  module: function (el) { window.PortalInvoices  && window.PortalInvoices.render(el); } }
+    invoices:  { label: 'Invoices',  module: function (el) { window.PortalInvoices  && window.PortalInvoices.render(el); } },
+    perks:       { label: 'Perks',       module: function (el) { window.PortalPerks       && window.PortalPerks.render(el); } },
+    map:         { label: 'Map',         module: function (el) { window.PortalMap         && window.PortalMap.render(el); } },
+    marketplace: { label: 'Marketplace', module: function (el) { window.PortalMarketplace && window.PortalMarketplace.render(el); } }
   };
 
   function init() {

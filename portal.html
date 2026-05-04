@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/portal.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
 </head>
 <body>
 
@@ -15,7 +16,7 @@
   <div id="portal-login" class="portal-login">
     <div class="portal-login-inner">
       <div class="portal-brand">
-        <span class="portal-brand-name">Amig<svg class="brand-zero" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 26" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" d="M10,1.5 C14.97,1.5 19,6.65 19,13 C19,19.35 14.97,24.5 10,24.5 C5.03,24.5 1,19.35 1,13 C1,6.65 5.03,1.5 10,1.5 Z M10,7 C7.51,7 5.5,9.69 5.5,13 C5.5,16.31 7.51,19 10,19 C12.49,19 14.5,16.31 14.5,13 C14.5,9.69 12.49,7 10,7 Z"/></svg></span>
+        <span class="portal-brand-name">Amig<svg class="brand-zero" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 26" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" d="M10,1.5 C14.97,1.5 19,6.65 19,13 C19,19.35 14.97,24.5 10,24.5 C5.03,24.5 1,19.35 1,13 C1,6.65 5.03,1.5 10,1.5 Z M10,7 C7.51,7 5.5,9.69 5.5,13 C5.5,16.31 7.51,19 10,19 C12.49,19 14.5,16.31 14.5,13 C14.5,9.69 12.49,7 10,7 Z"/><line x1="6.5" y1="21" x2="13.5" y2="5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/></svg></span>
         <span class="portal-brand-sub">Travel</span>
       </div>
       <h1 class="portal-login-title">My Trip Portal</h1>
@@ -31,6 +32,7 @@
         </div>
         <p id="portal-login-error" class="portal-error" role="alert" aria-live="polite"></p>
         <button type="submit" id="portal-login-btn" class="pbtn pbtn-primary pbtn-full">Sign In</button>
+        <button type="button" id="portal-forgot-btn" class="btn-forgot">Forgot password?</button>
       </form>
     </div>
   </div>
@@ -41,13 +43,16 @@
     <!-- Top Nav -->
     <header class="portal-nav">
       <div class="portal-nav-brand">
-        <span class="portal-nav-logo">Amig<svg class="brand-zero" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 26" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" d="M10,1.5 C14.97,1.5 19,6.65 19,13 C19,19.35 14.97,24.5 10,24.5 C5.03,24.5 1,19.35 1,13 C1,6.65 5.03,1.5 10,1.5 Z M10,7 C7.51,7 5.5,9.69 5.5,13 C5.5,16.31 7.51,19 10,19 C12.49,19 14.5,16.31 14.5,13 C14.5,9.69 12.49,7 10,7 Z"/></svg></span>
+        <span class="portal-nav-logo">Amig<svg class="brand-zero" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 26" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" d="M10,1.5 C14.97,1.5 19,6.65 19,13 C19,19.35 14.97,24.5 10,24.5 C5.03,24.5 1,19.35 1,13 C1,6.65 5.03,1.5 10,1.5 Z M10,7 C7.51,7 5.5,9.69 5.5,13 C5.5,16.31 7.51,19 10,19 C12.49,19 14.5,16.31 14.5,13 C14.5,9.69 12.49,7 10,7 Z"/><line x1="6.5" y1="21" x2="13.5" y2="5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/></svg></span>
       </div>
       <nav class="portal-nav-links">
         <a href="#" class="pnav-link active" data-section="overview">My Trip</a>
         <a href="#" class="pnav-link" data-section="itinerary">Itinerary</a>
         <a href="#" class="pnav-link" data-section="quotes">Quotes</a>
         <a href="#" class="pnav-link" data-section="invoices">Invoices</a>
+        <a href="#" class="pnav-link" data-section="perks">Perks</a>
+        <a href="#" class="pnav-link" data-section="map">Map</a>
+        <a href="#" class="pnav-link" data-section="marketplace">Marketplace</a>
       </nav>
       <div class="portal-nav-right">
         <span id="portal-client-name" class="portal-greeting"></span>
@@ -76,7 +81,13 @@
   <script src="js/portal-itinerary.js"></script>
   <script src="js/portal-quotes.js"></script>
   <script src="js/portal-invoices.js"></script>
+  <script src="js/portal-perks.js"></script>
+  <script src="js/portal-map.js"></script>
+  <script src="js/portal-marketplace.js"></script>
   <script src="js/portal-nav.js"></script>
+
+  <!-- Leaflet JS — loaded after app modules so L is available when map tab opens -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV/XN/WPeM=" crossorigin=""></script>
 
 </body>
 </html>

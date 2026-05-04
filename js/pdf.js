@@ -231,15 +231,32 @@
     var valueX = margin + contentW;
 
     var lines = [
-      { label: 'Subtotal',             value: formatCurrency(subtotal, currency), bold: false },
-      { label: 'Tax (' + taxRate + '%)', value: formatCurrency(taxAmt, currency),   bold: false },
-      { label: 'TOTAL',                value: formatCurrency(total,    currency),   bold: true  }
+      { label: 'Subtotal',               value: formatCurrency(subtotal, currency), bold: false },
+      { label: 'Tax (' + taxRate + '%)', value: formatCurrency(taxAmt,   currency), bold: false },
+      { label: 'TOTAL',                  value: formatCurrency(total,     currency), bold: true  }
     ];
+
+    // Secondary currency line
+    if (data.exchangeRate) {
+      var secLabel, secValue;
+      if (currency === 'MXN') {
+        secLabel = '≈ USD equivalent';
+        secValue = formatCurrency(total / data.exchangeRate, 'USD');
+      } else {
+        secLabel = '≈ MXN equivalent';
+        secValue = formatCurrency(total * data.exchangeRate, 'MXN');
+      }
+      lines.push({ label: secLabel, value: secValue, bold: false, muted: true });
+    }
 
     lines.forEach(function (line) {
       doc.setFontSize(line.bold ? 10 : 8.5);
       doc.setFont('helvetica', line.bold ? 'bold' : 'normal');
-      doc.setTextColor(line.bold ? 27 : 80, line.bold ? 73 : 80, line.bold ? 101 : 80);
+      if (line.muted) {
+        doc.setTextColor(140, 140, 140);
+      } else {
+        doc.setTextColor(line.bold ? 27 : 80, line.bold ? 73 : 80, line.bold ? 101 : 80);
+      }
       doc.text(line.label, labelX, y, { align: 'left' });
       doc.text(line.value, valueX, y, { align: 'right' });
 

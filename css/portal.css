@@ -4,8 +4,8 @@
    ============================================================================= */
 
 :root {
-  --color-primary:       #1B4965;
-  --color-primary-dark:  #163D54;
+  --color-primary:       #1B3D28;
+  --color-primary-dark:  #122A1C;
   --color-accent:        #E8A045;
   --color-accent-light:  #FEF3E2;
   --color-bg:            #F7F5F2;
@@ -109,6 +109,20 @@ input, textarea, select { font-family: inherit; font-size: inherit; }
 .pfield input::placeholder { color: var(--color-text-muted); }
 .portal-error { font-size: 0.85rem; color: var(--color-error); min-height: 1.2em; text-align: center; }
 
+.btn-forgot {
+  display: block;
+  width: 100%;
+  margin-top: 0.5rem;
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.5);
+  font-size: 0.82rem;
+  cursor: pointer;
+  text-align: center;
+  padding: 0.25rem 0;
+}
+.btn-forgot:hover { color: rgba(255,255,255,0.85); }
+
 /* -----------------------------------------------------------------------
    Login screen
    ----------------------------------------------------------------------- */
@@ -117,7 +131,7 @@ input, textarea, select { font-family: inherit; font-size: inherit; }
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(150deg, #1B4965 0%, #2A6A94 60%, #E8A045 150%);
+  background: linear-gradient(150deg, #0C180E 0%, #1B3D28 60%, #2A5C3C 150%);
   padding: var(--space-6);
 }
 
@@ -422,14 +436,317 @@ input, textarea, select { font-family: inherit; font-size: inherit; }
 /* Empty & error */
 .portal-empty { padding: var(--space-10); text-align: center; color: var(--color-text-muted); font-size: 0.9rem; }
 .portal-error-state { padding: var(--space-6); text-align: center; color: var(--color-error); font-size: 0.875rem; }
+.portal-secondary-currency { font-size: 0.72rem; color: var(--color-text-muted); font-style: italic; }
+
+/* -----------------------------------------------------------------------
+   Perks — partner directory + check-in history
+   ----------------------------------------------------------------------- */
+.perks-category-group { margin-bottom: var(--space-5); }
+.perks-category-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-text-muted);
+  padding: var(--space-3) var(--space-6) var(--space-2);
+  border-bottom: 1px solid var(--color-border);
+}
+.perks-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-6);
+}
+.perks-card {
+  background: var(--color-bg);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4) var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.perks-card-top { display: flex; align-items: center; gap: var(--space-2); }
+.perks-category-badge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted);
+  background: var(--color-border);
+  border-radius: 999px;
+  padding: 2px 8px;
+}
+.perks-verified-badge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--color-success);
+  background: var(--color-success-bg);
+  border-radius: 999px;
+  padding: 2px 8px;
+}
+.perks-card-name {
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--color-text);
+  line-height: 1.3;
+}
+.perks-card-address { font-size: 0.78rem; color: var(--color-text-muted); }
+.perks-card-perk {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: var(--space-1);
+  background: var(--color-accent-light);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-3);
+}
+.perks-card-perk-label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--color-warning);
+}
+.perks-card-perk-value { font-size: 0.9rem; font-weight: 600; color: var(--color-text); }
+.perks-card-desc { font-size: 0.82rem; color: var(--color-text-secondary); line-height: 1.5; }
+
+/* Check-in history */
+.checkin-history-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4) var(--space-6);
+  border-bottom: 1px solid var(--color-border);
+  gap: var(--space-4);
+}
+.checkin-history-row:last-child { border-bottom: none; }
+.checkin-history-left { display: flex; flex-direction: column; gap: 2px; }
+.checkin-history-name { font-weight: 600; font-size: 0.9rem; color: var(--color-text); }
+.checkin-history-perk { font-size: 0.78rem; color: var(--color-text-muted); }
+.checkin-history-date { font-size: 0.78rem; color: var(--color-text-muted); white-space: nowrap; }
+
+/* -----------------------------------------------------------------------
+   Partner Map
+   ----------------------------------------------------------------------- */
+.portal-map-el {
+  height: 420px;
+  width: 100%;
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
+  z-index: 0;
+}
+
+/* Custom marker pin */
+.map-pin {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2.5px solid #fff;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.3);
+}
+
+/* Leaflet popup override */
+.amigo-popup .leaflet-popup-content-wrapper {
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  padding: 0;
+}
+.amigo-popup .leaflet-popup-content { margin: 0; }
+
+.map-popup {
+  padding: var(--space-4);
+  min-width: 180px;
+}
+.map-popup-name {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--color-text);
+  margin-bottom: var(--space-1);
+}
+.map-popup-address {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-2);
+}
+.map-popup-perk {
+  background: var(--color-accent-light);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-3);
+  margin-bottom: var(--space-2);
+  font-size: 0.82rem;
+}
+.map-popup-perk-label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--color-warning);
+  display: block;
+  margin-bottom: 2px;
+}
+.map-popup-perk-value { font-weight: 600; color: var(--color-text); }
+.map-popup-desc { font-size: 0.8rem; color: var(--color-text-secondary); line-height: 1.5; }
+
+/* User pass card */
+.map-pass-body {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  padding: var(--space-4) var(--space-6) var(--space-5);
+}
+.map-pass-qr {
+  flex-shrink: 0;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--color-border);
+  display: block;
+}
+.map-pass-name {
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--color-text);
+  margin-bottom: var(--space-1);
+}
+.map-pass-hint {
+  font-size: 0.82rem;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+/* -----------------------------------------------------------------------
+   Marketplace
+   ----------------------------------------------------------------------- */
+.mkt-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: var(--space-5);
+}
+.mkt-card {
+  background: var(--color-surface);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-5) var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  position: relative;
+  box-shadow: var(--shadow-sm);
+}
+.mkt-card-featured {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 1px var(--color-accent), var(--shadow-sm);
+}
+.mkt-card-featured-badge {
+  position: absolute;
+  top: -1px;
+  right: var(--space-5);
+  background: var(--color-accent);
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 3px 10px;
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+}
+.mkt-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.mkt-card-dest {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-primary);
+}
+.mkt-card-seats {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-error);
+  background: var(--color-error-bg);
+  border-radius: 999px;
+  padding: 2px 8px;
+}
+.mkt-card-title {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  color: var(--color-text);
+  line-height: 1.3;
+  margin: 0;
+}
+.mkt-card-dates {
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+  margin: 0;
+}
+.mkt-card-desc {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  margin: 0;
+  flex: 1;
+}
+.mkt-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-top: auto;
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-border);
+}
+.mkt-card-price {
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--color-text);
+}
 
 /* -----------------------------------------------------------------------
    Responsive
    ----------------------------------------------------------------------- */
-@media (max-width: 600px) {
-  .portal-nav-links { display: none; }
+@media (max-width: 700px) {
+  /* Two-row nav: brand+signout top, scrollable tabs below */
+  .portal-nav {
+    flex-wrap: wrap;
+    height: auto;
+    padding: var(--space-3) var(--space-5) 0;
+    gap: 0;
+    align-items: center;
+  }
+  .portal-nav-brand {
+    flex: 1;
+    padding-bottom: var(--space-3);
+  }
+  .portal-nav-right {
+    padding-bottom: var(--space-3);
+    flex-shrink: 0;
+  }
+  .portal-nav-links {
+    display: flex;
+    width: calc(100% + var(--space-10));
+    margin-left: calc(-1 * var(--space-5));
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    gap: 0;
+    border-top: 1px solid rgba(255,255,255,0.12);
+    padding: var(--space-1) var(--space-5) var(--space-2);
+    flex: none;
+  }
+  .portal-nav-links::-webkit-scrollbar { display: none; }
+  .pnav-link {
+    white-space: nowrap;
+    font-size: 0.8rem;
+    padding: var(--space-2) var(--space-3);
+    flex-shrink: 0;
+  }
+  .portal-greeting { display: none; }
   .portal-content { padding: var(--space-5) var(--space-4); }
   .tour-hero { padding: var(--space-6); }
   .tour-hero-name { font-size: 1.4rem; }
-  .portal-greeting { display: none; }
+  .mkt-card-grid { grid-template-columns: 1fr; }
+  .map-pass-body { flex-direction: column; align-items: flex-start; gap: var(--space-3); }
+  .portal-map-el { height: 320px; }
+  .perks-card-grid { grid-template-columns: 1fr; padding: var(--space-4); }
 }

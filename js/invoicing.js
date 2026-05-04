@@ -53,6 +53,7 @@
     document.getElementById('inv-add-line-btn').addEventListener('click', function () { addLineRow(); });
     document.getElementById('inv-tax').addEventListener('input', recalcTotals);
     document.getElementById('inv-currency').addEventListener('change', recalcTotals);
+    document.getElementById('inv-exchange-rate').addEventListener('input', recalcTotals);
     document.getElementById('inv-amount-paid').addEventListener('input', recalcBalance);
 
     // Auto-populate from quote
@@ -65,6 +66,7 @@
       if (q.tourId)   form.elements['tourId'].value   = q.tourId;
       if (q.currency) form.elements['currency'].value = q.currency;
       if (q.tax !== undefined) form.elements['tax'].value = q.tax;
+      if (q.exchangeRate) form.elements['exchangeRate'].value = q.exchangeRate;
       // Replace line items
       document.getElementById('inv-line-items-body').innerHTML = '';
       (q.items || []).forEach(function (item) { addLineRow(item); });
@@ -149,9 +151,9 @@
               '<td class="td-primary">' + esc(d.invoiceNumber || '—') + '</td>',
               '<td>' + esc(clientName) + '</td>',
               '<td>' + esc(tourName) + '</td>',
-              '<td>' + formatCurrency(d.total, d.currency) + '</td>',
+              '<td>' + formatCurrency(d.total, d.currency) + (d.exchangeRate ? '<br><span class="td-secondary-currency">' + formatSecondary(d.total, d.currency, d.exchangeRate) + '</span>' : '') + '</td>',
               '<td>' + formatCurrency(d.amountPaid || 0, d.currency) + '</td>',
-              '<td class="' + (balance > 0 ? 'td-balance-due' : '') + '">' + formatCurrency(balance, d.currency) + '</td>',
+              '<td class="' + (balance > 0 ? 'td-balance-due' : '') + '">' + formatCurrency(balance, d.currency) + (d.exchangeRate ? '<br><span class="td-secondary-currency">' + formatSecondary(balance, d.currency, d.exchangeRate) + '</span>' : '') + '</td>',
               '<td><span class="badge badge-' + invoiceStatusClass(d.status) + '">' + esc(d.status || 'draft') + '</span></td>',
               '<td>' + due + '</td>',
               '<td class="td-actions">',
@@ -234,6 +236,7 @@
       form.elements['status'].value        = data.status        || 'draft';
       form.elements['currency'].value      = data.currency      || 'USD';
       form.elements['tax'].value           = data.tax !== undefined ? data.tax : 0;
+      form.elements['exchangeRate'].value  = data.exchangeRate  || '';
       form.elements['amountPaid'].value    = data.amountPaid    || 0;
       form.elements['notes'].value         = data.notes         || '';
       if (data.dueDate) form.elements['dueDate'].value = toDateInput(data.dueDate.toDate());
@@ -361,6 +364,10 @@
     document.getElementById('inv-tax-amt').textContent  = formatCurrency(taxAmt,   currency);
     document.getElementById('inv-total').textContent    = formatCurrency(total,     currency);
 
+    var rate = parseFloat(document.getElementById('inv-exchange-rate').value) || 0;
+    var secEl = document.getElementById('inv-total-secondary');
+    if (secEl) secEl.textContent = rate > 0 ? formatSecondary(total, currency, rate) : '';
+
     recalcBalance(total);
   }
 
@@ -412,6 +419,7 @@
       quoteId:       form.elements['quoteId'].value     || null,
       status:        form.elements['status'].value      || 'draft',
       currency:      form.elements['currency'].value    || 'USD',
+      exchangeRate:  parseFloat(form.elements['exchangeRate'].value) || null,
       notes:         form.elements['notes'].value.trim(),
       items:         items,
       tax:           taxRate,
@@ -742,10 +750,15 @@
                   '<label for="inv-currency">Currency</label>',
                   '<select id="inv-currency" name="currency">' + currOpts + '</select>',
                 '</div>',
+                '<div class="field totals-rate">',
+                  '<label for="inv-exchange-rate">MXN Rate <span style="font-size:0.75rem;font-weight:400;color:var(--color-text-muted)">(1 unit = ? MXN)</span></label>',
+                  '<input type="number" id="inv-exchange-rate" name="exchangeRate" step="0.01" min="0" placeholder="e.g. 17.50" autocomplete="off">',
+                '</div>',
                 '<div class="totals-summary">',
                   '<div class="total-line"><span>Subtotal</span><span id="inv-subtotal">—</span></div>',
                   '<div class="total-line"><span>Tax</span><span id="inv-tax-amt">—</span></div>',
                   '<div class="total-line total-line-grand"><span>Total</span><span id="inv-total">—</span></div>',
+                  '<div class="total-line total-line-secondary"><span></span><span id="inv-total-secondary" class="total-secondary-value"></span></div>',
                 '</div>',
               '</div>',
             '</div>',
@@ -855,6 +868,14 @@
         style: 'currency', currency: currency || 'USD', minimumFractionDigits: 2
       }).format(amount);
     } catch (e) { return (currency || '') + ' ' + amount; }
+  }
+
+  function formatSecondary(amount, currency, rate) {
+    if (!amount || !rate) return '';
+    if (currency === 'MXN') {
+      return '≈ ' + formatCurrency(amount / rate, 'USD');
+    }
+    return '≈ ' + formatCurrency(amount * rate, 'MXN');
   }
 
   function invoiceStatusClass(status) {

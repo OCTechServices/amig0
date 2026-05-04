@@ -14,7 +14,10 @@
     quotes:     'Quotes',
     invoicing:  'Invoicing',
     providers:  cfg('providers'),
-    guides:     cfg('guides'),
+    partners:    'Partner Network',
+    marketplace: 'Marketplace',
+    invites:     'Invite Codes',
+    guides:      cfg('guides'),
     briefings:  cfg('briefings'),
     operators:  'Operators',
     reports:    'Reports',
@@ -67,6 +70,12 @@
       window.Invoicing.render(contentArea);
     } else if (section === 'providers' && window.Providers) {
       window.Providers.render(contentArea);
+    } else if (section === 'partners' && window.Partners) {
+      window.Partners.render(contentArea);
+    } else if (section === 'marketplace' && window.Marketplace) {
+      window.Marketplace.render(contentArea);
+    } else if (section === 'invites' && window.Invites) {
+      window.Invites.render(contentArea);
     } else if (section === 'guides' && window.Guides) {
       window.Guides.render(contentArea);
     } else if (section === 'briefings' && window.Briefings) {

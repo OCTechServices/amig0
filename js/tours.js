@@ -50,6 +50,9 @@
       if (e.target === this) closeModal();
     });
     document.getElementById('tour-form').addEventListener('submit', handleSubmit);
+    document.getElementById('add-team-btn').addEventListener('click', function () {
+      addTeamRow(null, 'guide');
+    });
 
     loadGuidesCache().then(loadTours);
   }
@@ -69,14 +72,77 @@
       .catch(function (err) { console.error('[tours] guides cache:', err.message); });
   }
 
-  function populateGuideDropdown(form) {
-    var sel  = form.querySelector('[name="guideId"]');
-    if (!sel) return;
-    var opts = '<option value="">— No guide assigned —</option>';
+  // -------------------------------------------------------------------------
+  // Team assignment helpers
+  // -------------------------------------------------------------------------
+  var ROLES = ['guide', 'driver', 'host'];
+
+  function buildPersonOptions(selectedId) {
+    var opts = '<option value="">— Select person —</option>';
     Object.keys(guidesCache).forEach(function (id) {
-      opts += '<option value="' + id + '">' + esc(guidesCache[id]) + '</option>';
+      opts += '<option value="' + id + '"' + (id === selectedId ? ' selected' : '') + '>' + esc(guidesCache[id]) + '</option>';
     });
-    sel.innerHTML = opts;
+    return opts;
+  }
+
+  function addTeamRow(guideId, role) {
+    var container = document.getElementById('team-rows');
+    if (!container) return;
+    var div = document.createElement('div');
+    div.className = 'team-row';
+
+    var roleOpts = ROLES.map(function (r) {
+      return '<option value="' + r + '"' + (r === (role || 'guide') ? ' selected' : '') + '>' + r.charAt(0).toUpperCase() + r.slice(1) + '</option>';
+    }).join('');
+
+    div.innerHTML = [
+      '<select class="team-role-select">' + roleOpts + '</select>',
+      '<select class="team-person-select">' + buildPersonOptions(guideId || '') + '</select>',
+      '<button type="button" class="team-remove-btn" aria-label="Remove">&#215;</button>'
+    ].join('');
+
+    div.querySelector('.team-remove-btn').addEventListener('click', function () { div.remove(); });
+    container.appendChild(div);
+  }
+
+  function renderTeamRows(assignments) {
+    var container = document.getElementById('team-rows');
+    if (!container) return;
+    container.innerHTML = '';
+    if (assignments && assignments.length) {
+      assignments.forEach(function (a) { addTeamRow(a.guideId, a.role); });
+    } else {
+      addTeamRow(null, 'guide');
+    }
+  }
+
+  function collectTeamData() {
+    var rows = document.querySelectorAll('#team-rows .team-row');
+    var assignments = [];
+    var teamIds = [];
+    rows.forEach(function (row) {
+      var role    = row.querySelector('.team-role-select').value;
+      var guideId = row.querySelector('.team-person-select').value;
+      if (guideId) {
+        assignments.push({ guideId: guideId, role: role, name: guidesCache[guideId] || '' });
+        if (teamIds.indexOf(guideId) === -1) teamIds.push(guideId);
+      }
+    });
+    return { assignments: assignments, teamIds: teamIds };
+  }
+
+  function buildTeamBadges(assignments, fallbackGuideId) {
+    if (assignments && assignments.length) {
+      return assignments.map(function (a) {
+        return '<span class="team-role-badge role-' + esc(a.role) + '">' + esc(a.role) + '</span>'
+          + '<span style="font-size:0.82rem">' + esc(a.name || guidesCache[a.guideId] || '—') + '</span>';
+      }).join('<br>');
+    }
+    if (fallbackGuideId && guidesCache[fallbackGuideId]) {
+      return '<span class="team-role-badge role-guide">guide</span>'
+        + '<span style="font-size:0.82rem">' + esc(guidesCache[fallbackGuideId]) + '</span>';
+    }
+    return '—';
   }
 
   // -------------------------------------------------------------------------
@@ -97,7 +163,7 @@
           var d = doc.data();
           var start     = d.startDate ? formatDate(d.startDate.toDate()) : '—';
           var end       = d.endDate   ? formatDate(d.endDate.toDate())   : '—';
-          var guideName = d.guideId   ? (guidesCache[d.guideId] || '—') : '—';
+          var teamCell = buildTeamBadges(d.guideAssignments, d.guideId);
           return [
             '<tr>',
               '<td class="td-primary">' + esc(d.name || '—') + '</td>',
@@ -105,7 +171,7 @@
               '<td>' + start + ' → ' + end + '</td>',
               '<td>' + esc(d.capacity || '—') + '</td>',
               '<td>' + formatPrice(d.price, d.currency) + '</td>',
-              '<td>' + esc(guideName) + '</td>',
+              '<td>' + teamCell + '</td>',
               '<td><span class="badge badge-' + statusClass(d.status) + '">' + esc(d.status || 'draft') + '</span></td>',
               '<td class="td-actions">',
                 '<button class="btn-table-action" data-action="itinerary" data-id="' + doc.id + '" data-name="' + esc(d.name || 'Tour') + '">Itinerary</button>',
@@ -125,7 +191,7 @@
                 '<th>Dates</th>',
                 '<th>Capacity</th>',
                 '<th>Price</th>',
-                '<th>' + cfg('guide') + '</th>',
+                '<th>Team</th>',
                 '<th>Status</th>',
                 '<th></th>',
               '</tr>',
@@ -165,7 +231,7 @@
     title.textContent = data ? 'Edit ' + cfg('tour') : 'Add ' + cfg('tour');
     form.reset();
     clearFormError();
-    populateGuideDropdown(form);
+    renderTeamRows([]);
 
     if (data) {
       form.elements['name'].value        = data.name        || '';
@@ -174,8 +240,11 @@
       form.elements['price'].value       = data.price       || '';
       form.elements['currency'].value    = data.currency    || 'USD';
       form.elements['status'].value      = data.status      || 'draft';
-      form.elements['guideId'].value     = data.guideId     || '';
       form.elements['notes'].value       = data.notes       || '';
+      var existing = data.guideAssignments && data.guideAssignments.length
+        ? data.guideAssignments
+        : (data.guideId ? [{ guideId: data.guideId, role: 'guide', name: guidesCache[data.guideId] || '' }] : []);
+      renderTeamRows(existing);
 
       if (data.startDate) {
         form.elements['startDate'].value = toDateInput(data.startDate.toDate());
@@ -234,18 +303,22 @@
       return;
     }
 
+    var teamData     = collectTeamData();
+    var primaryGuide = teamData.assignments.find(function (a) { return a.role === 'guide'; }) || teamData.assignments[0];
     var payload = {
-      name:        form.elements['name'].value.trim(),
-      destination: form.elements['destination'].value.trim(),
-      capacity:    parseInt(form.elements['capacity'].value, 10) || 0,
-      price:       parseFloat(form.elements['price'].value) || 0,
-      currency:    form.elements['currency'].value || 'USD',
-      status:      form.elements['status'].value || 'draft',
-      guideId:     form.elements['guideId'].value || null,
-      notes:       form.elements['notes'].value.trim(),
-      startDate:   startVal ? firebase.firestore.Timestamp.fromDate(new Date(startVal)) : null,
-      endDate:     endVal   ? firebase.firestore.Timestamp.fromDate(new Date(endVal))   : null,
-      updatedAt:   firebase.firestore.FieldValue.serverTimestamp()
+      name:             form.elements['name'].value.trim(),
+      destination:      form.elements['destination'].value.trim(),
+      capacity:         parseInt(form.elements['capacity'].value, 10) || 0,
+      price:            parseFloat(form.elements['price'].value) || 0,
+      currency:         form.elements['currency'].value || 'USD',
+      status:           form.elements['status'].value || 'draft',
+      guideId:          primaryGuide ? primaryGuide.guideId : null,
+      guideAssignments: teamData.assignments,
+      teamIds:          teamData.teamIds,
+      notes:            form.elements['notes'].value.trim(),
+      startDate:        startVal ? firebase.firestore.Timestamp.fromDate(new Date(startVal)) : null,
+      endDate:          endVal   ? firebase.firestore.Timestamp.fromDate(new Date(endVal))   : null,
+      updatedAt:        firebase.firestore.FieldValue.serverTimestamp()
     };
 
     saveBtn.disabled    = true;
@@ -589,8 +662,9 @@
                 '<select id="tour-status" name="status">' + statusOptions + '</select>',
               '</div>',
               '<div class="field field-full">',
-                '<label for="tour-guide">' + cfg('guide') + '</label>',
-                '<select id="tour-guide" name="guideId"><option value="">— No ' + cfg('guide').toLowerCase() + ' assigned —</option></select>',
+                '<label>Team</label>',
+                '<div id="team-rows"></div>',
+                '<button type="button" class="btn btn-ghost" id="add-team-btn" style="margin-top:var(--space-2);font-size:var(--font-size-sm)">+ Add team member</button>',
               '</div>',
               '<div class="field">',
                 '<label for="tour-price">Price per Person</label>',

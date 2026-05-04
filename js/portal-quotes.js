@@ -39,7 +39,10 @@
               '</div>',
               '<div style="display:flex;align-items:center;gap:var(--space-3)">',
                 '<span class="pbadge pbadge-' + quoteStatusClass(d.status) + '">' + esc(d.status || 'draft') + '</span>',
-                '<span class="portal-list-amount">' + formatCurrency(d.total, d.currency) + '</span>',
+                '<div style="text-align:right">' +
+                  '<div class="portal-list-amount">' + formatCurrency(d.total, d.currency) + '</div>' +
+                  (d.exchangeRate ? '<div class="portal-secondary-currency">' + formatSecondary(d.total, d.currency, d.exchangeRate) + '</div>' : '') +
+                '</div>',
               '</div>',
             '</div>'
           ].join('');
@@ -54,6 +57,14 @@
         console.error('[portal-quotes]', err.message);
         container.innerHTML = '<p class="portal-error-state">Failed to load quotes.</p>';
       });
+  }
+
+  function formatSecondary(amount, currency, rate) {
+    if (!amount || !rate) return '';
+    try {
+      if (currency === 'MXN') return '≈ ' + formatCurrency(amount / rate, 'USD');
+      return '≈ ' + formatCurrency(amount * rate, 'MXN');
+    } catch (e) { return ''; }
   }
 
   function quoteStatusClass(status) {

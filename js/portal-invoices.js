@@ -48,6 +48,7 @@
                 '<span class="pbadge pbadge-' + invoiceStatusClass(d.status) + '">' + esc(d.status || 'draft') + '</span>',
                 '<div style="text-align:right">',
                   '<div class="portal-list-amount">' + formatCurrency(d.total, d.currency) + '</div>',
+                  (d.exchangeRate ? '<div class="portal-secondary-currency">' + formatSecondary(d.total, d.currency, d.exchangeRate) + '</div>' : ''),
                   balance > 0 ? '<div style="font-size:0.75rem;' + balanceStyle + '">Balance: ' + formatCurrency(balance, d.currency) + '</div>' : '<div style="font-size:0.75rem;color:var(--color-success)">Paid in full</div>',
                 '</div>',
               '</div>',
@@ -83,6 +84,14 @@
         console.error('[portal-invoices]', err.message);
         container.innerHTML = '<p class="portal-error-state">Failed to load invoices.</p>';
       });
+  }
+
+  function formatSecondary(amount, currency, rate) {
+    if (!amount || !rate) return '';
+    try {
+      if (currency === 'MXN') return '≈ ' + formatCurrency(amount / rate, 'USD');
+      return '≈ ' + formatCurrency(amount * rate, 'MXN');
+    } catch (e) { return ''; }
   }
 
   function invoiceStatusClass(status) {

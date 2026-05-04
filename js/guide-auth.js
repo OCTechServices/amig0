@@ -16,7 +16,8 @@
   window.GuideAuth = {
     guideId:   null,
     guideName: null,
-    tourId:    null
+    tourId:    null,
+    role:      null
   };
 
   var loginScreen = document.getElementById('guide-login');
@@ -68,10 +69,16 @@
               : 'Guide';
             window.GuideAuth.guideName = name;
 
-            // Find guide's active or confirmed tour (guideId field on tour = guides doc ID)
+            // Find guide's active or confirmed tour — check teamIds array first, fall back to legacy guideId field
             return db.collection('tours')
-              .where('guideId', '==', profile.guideId)
+              .where('teamIds', 'array-contains', profile.guideId)
               .get()
+              .then(function (snap) {
+                if (!snap.empty) return snap;
+                return db.collection('tours')
+                  .where('guideId', '==', profile.guideId)
+                  .get();
+              })
               .then(function (toursSnap) {
                 // Prefer active, then confirmed, then first available
                 var tours = toursSnap.docs.map(function (d) {
@@ -90,6 +97,10 @@
 
                 window.GuideAuth.tourId = chosen.id;
                 tourNameEl.textContent  = chosen.data.name || '';
+
+                var assignments = chosen.data.guideAssignments || [];
+                var myAssignment = assignments.find(function (a) { return a.guideId === profile.guideId; });
+                window.GuideAuth.role = myAssignment ? myAssignment.role : 'guide';
 
                 showGuide();
               });
@@ -121,12 +132,32 @@
   });
 
   // ---------------------------------------------------------------------------
+  // Forgot password
+  // ---------------------------------------------------------------------------
+  document.getElementById('guide-forgot-btn').addEventListener('click', function () {
+    clearError();
+    var email = document.getElementById('g-email').value.trim();
+    if (!email) {
+      showError('Enter your email above, then click Forgot password.');
+      return;
+    }
+    auth.sendPasswordResetEmail(email)
+      .then(function () {
+        showError('Reset link sent — check your email.');
+      })
+      .catch(function (err) {
+        showError(friendlyError(err.code));
+      });
+  });
+
+  // ---------------------------------------------------------------------------
   // Sign out
   // ---------------------------------------------------------------------------
   signOutBtn.addEventListener('click', function () {
     window.GuideAuth.guideId   = null;
     window.GuideAuth.guideName = null;
     window.GuideAuth.tourId    = null;
+    window.GuideAuth.role      = null;
     auth.signOut().catch(function (err) {
       console.error('[guide-auth] sign out:', err.message);
     });
