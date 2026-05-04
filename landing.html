@@ -19,19 +19,19 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --ink:           #0C180E;
-      --ink-secondary: #1D3323;
-      --ink-muted:     #4A6855;
-      --primary:       #1B3D28;
-      --primary-dark:  #122A1C;
-      --primary-light: #2A5C3C;
+      --ink:           #0E0E0F;
+      --ink-secondary: #1C1C1E;
+      --ink-muted:     #5C5C60;
+      --primary:       #1A1A1C;
+      --primary-dark:  #111113;
+      --primary-light: #2C2C30;
       --accent:        #8B1A1A;
       --accent-light:  #C42B2B;
       --accent-dark:   #6B1212;
       --white:         #FFFFFF;
-      --off-white:     #F4F0EB;
-      --border:        #D2DAD0;
-      --border-light:  #E5EDE3;
+      --off-white:     #F5F4F2;
+      --border:        #D4D4D6;
+      --border-light:  #EBEBED;
       --success:       #1A5C26;
       --success-bg:    #E2F0E5;
       --warning-bg:    #FFF5E6;
@@ -41,6 +41,8 @@
     }
 
     html { scroll-behavior: smooth; font-size: 16px; }
+    h2 { font-family: 'Playfair Display', Georgia, serif; }
+    h3 { font-family: 'Playfair Display', Georgia, serif; }
     body {
       font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
       color: var(--ink);
@@ -76,9 +78,9 @@
       border-bottom: 1px solid rgba(255,255,255,0.05);
     }
     .nav-logo {
-      font-family: 'Playfair Display', Georgia, serif;
-      font-size: 1.35rem; font-weight: 600; color: var(--white);
-      text-decoration: none; letter-spacing: -0.01em;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1.55rem; font-weight: 400; color: var(--white);
+      text-decoration: none; letter-spacing: -0.03em;
       display: flex; align-items: center;
     }
     .brand-zero {
@@ -105,6 +107,12 @@
       text-decoration: none; transition: border-color 0.2s, background 0.2s, color 0.2s; white-space: nowrap;
     }
     .nav-demo:hover { border-color: var(--accent); color: var(--accent-light); background: rgba(139,26,26,0.08); }
+    .nav-access {
+      font-size: 0.83rem; font-weight: 400; color: rgba(255,255,255,0.55);
+      text-decoration: none; white-space: nowrap;
+      transition: color 0.2s;
+    }
+    .nav-access:hover { color: var(--white); }
 
     /* Hero */
     @keyframes gradient-drift {
@@ -154,46 +162,16 @@
       position: absolute; bottom: 2.5rem; right: 3rem; z-index: 3;
       display: flex; align-items: center; gap: 0.5rem;
     }
-    .hero-carousel-dot {
-      width: 6px; height: 6px; border-radius: 50%; padding: 0; border: none;
-      background: rgba(255,255,255,0.25); cursor: pointer;
-      transition: background 0.25s, transform 0.25s;
-    }
-    .hero-carousel-dot.active { background: var(--accent-light); transform: scale(1.4); }
+    .hero-carousel-dot { display: none; }
     /* Per-slide caption tag */
     .hero-slide-tag {
-      position: absolute; bottom: 4.5rem; left: 3rem; z-index: 3;
-      font-size: 0.68rem; font-weight: 600; letter-spacing: 0.18em;
-      text-transform: uppercase; color: rgba(255,255,255,0.55);
-      border-left: 2px solid var(--accent); padding-left: 0.75rem;
-      transition: opacity 0.4s;
-    }
-    /* Photo filmstrip — full image visible, no cropping */
-    .filmstrip {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 12px;
-      background: var(--ink);
-      padding: 1.5rem 3rem;
-    }
-    .filmstrip-item {
-      background: rgba(255,255,255,0.04);
-      border-radius: 8px; overflow: hidden;
-      border: 1px solid rgba(255,255,255,0.07);
-    }
-    .filmstrip-item img,
-    .filmstrip-item video {
-      width: 100%; height: auto; display: block;
-      border-radius: 8px;
-    }
-    @media (max-width: 680px) {
-      .filmstrip { grid-template-columns: repeat(2, 1fr); padding: 1rem 1.5rem; }
-    }
-    .hero::after {
-      content: '';
-      position: absolute; inset: 0;
-      background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.015'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-      pointer-events: none;
+      position: absolute; top: 5.5rem; left: 50%; transform: translateX(-50%);
+      z-index: 3; text-align: center;
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 1.05rem; font-style: italic; font-weight: 400;
+      color: rgba(255,255,255,0.62); letter-spacing: 0.01em;
+      max-width: 520px; line-height: 1.65; white-space: normal;
+      transition: opacity 0.5s;
     }
     .hero-inner { max-width: 820px; position: relative; z-index: 1; }
     .hero-label {
@@ -296,7 +274,7 @@
       font-size: 0.68rem; font-weight: 600; letter-spacing: 0.12em;
       text-transform: uppercase; color: rgba(255,255,255,0.2); margin-bottom: 1rem;
     }
-    .stack-flow { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; }
+    .stack-flow { display: flex; flex-wrap: nowrap; align-items: center; gap: 0.4rem; overflow-x: auto; padding-bottom: 0.25rem; }
     .stack-item {
       font-size: 0.75rem; font-weight: 500; color: rgba(255,255,255,0.38);
       padding: 0.4rem 0.85rem; border: 1px solid rgba(255,255,255,0.08);
@@ -696,6 +674,355 @@
       pointer-events: none;
     }
 
+    /* Activate pulse word */
+    @keyframes word-pulse {
+      0%, 100% { color: var(--white); text-shadow: none; }
+      50%       { color: var(--accent-light); text-shadow: 0 0 18px rgba(196,30,58,0.55); }
+    }
+    .pulse-word {
+      display: inline;
+      animation: word-pulse 2.4s ease-in-out infinite;
+      font-style: normal;
+    }
+
+    /* Bracelet Access */
+    @keyframes bracelet-breathe {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(196,30,58,0), 0 0 40px rgba(196,30,58,0.15), inset 0 0 20px rgba(196,30,58,0.05); }
+      50%       { box-shadow: 0 0 0 18px rgba(196,30,58,0), 0 0 80px rgba(196,30,58,0.45), inset 0 0 30px rgba(196,30,58,0.12); }
+    }
+    @keyframes bracelet-spin {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+    .access-section { background: #0a0a0a; padding: 7rem 3rem; text-align: center; }
+    .access-inner { max-width: 680px; margin: 0 auto; }
+    .bracelet-wrap { display: flex; justify-content: center; margin-bottom: 3rem; }
+    .bracelet-ring {
+      width: 140px; height: 140px; border-radius: 50%;
+      border: 10px solid transparent;
+      background: linear-gradient(#0a0a0a, #0a0a0a) padding-box,
+                  linear-gradient(135deg, var(--accent) 0%, rgba(196,30,58,0.2) 50%, var(--accent) 100%) border-box;
+      animation: bracelet-breathe 3s ease-in-out infinite;
+      position: relative;
+    }
+    .bracelet-ring::before {
+      content: '';
+      position: absolute; inset: 12px; border-radius: 50%;
+      border: 1px solid rgba(196,30,58,0.15);
+    }
+    .bracelet-ring::after {
+      content: '';
+      position: absolute; top: -2px; left: 50%; transform: translateX(-50%);
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 12px rgba(196,30,58,0.8);
+    }
+    .access-eyebrow {
+      font-size: 0.65rem; font-weight: 700; letter-spacing: 0.2em;
+      text-transform: uppercase; color: var(--accent);
+      margin-bottom: 1.25rem;
+    }
+    .access-headline {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: clamp(1.35rem, 2.8vw, 2rem); font-weight: 700;
+      color: var(--white); line-height: 1.15; margin-bottom: 1.25rem;
+      white-space: nowrap;
+    }
+    .access-subhead {
+      font-size: 1rem; color: rgba(255,255,255,0.45);
+      line-height: 1.8; max-width: 480px; margin: 0 auto 3.5rem;
+    }
+    .access-criteria {
+      display: flex; flex-direction: column; gap: 0; margin-bottom: 2.5rem;
+      border: 1px solid rgba(255,255,255,0.07); border-radius: 12px; overflow: hidden;
+    }
+    .access-criterion {
+      display: flex; align-items: center; gap: 1.25rem;
+      padding: 1.1rem 1.5rem;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      text-align: left;
+    }
+    .access-criterion:last-child { border-bottom: none; }
+    .criterion-icon {
+      width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
+      border: 1px solid rgba(196,30,58,0.3);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.7rem; color: var(--accent); font-weight: 700;
+    }
+    .criterion-text { flex: 1; }
+    .criterion-name { font-size: 0.9rem; font-weight: 500; color: var(--white); }
+    .criterion-req { font-size: 0.75rem; color: rgba(255,255,255,0.35); margin-top: 0.1rem; }
+    .access-divider {
+      font-size: 0.65rem; font-weight: 700; letter-spacing: 0.15em;
+      text-transform: uppercase; color: rgba(255,255,255,0.18);
+      margin: 1.5rem 0; display: flex; align-items: center; gap: 1rem;
+    }
+    .access-divider::before, .access-divider::after {
+      content: ''; flex: 1; height: 1px; background: rgba(255,255,255,0.06);
+    }
+    .access-referral {
+      font-size: 0.92rem; color: rgba(255,255,255,0.45);
+      line-height: 1.75; margin-bottom: 2.5rem;
+    }
+    .access-referral strong { color: rgba(255,255,255,0.75); font-weight: 500; }
+    .access-platforms { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center; margin-top: 0.75rem; }
+    .access-platform-tag {
+      font-size: 0.72rem; padding: 0.25rem 0.7rem;
+      border: 1px solid rgba(255,255,255,0.1); border-radius: 100px;
+      color: rgba(255,255,255,0.4);
+    }
+    .access-note {
+      font-size: 0.78rem; color: rgba(255,255,255,0.22); line-height: 1.8;
+      font-style: italic;
+    }
+    /* Access application form */
+    .access-form-wrap { margin-top: 3rem; text-align: left; }
+    .access-form-label {
+      display: block; font-size: 0.65rem; font-weight: 700;
+      letter-spacing: 0.16em; text-transform: uppercase;
+      color: rgba(255,255,255,0.28); margin-bottom: 1.25rem; text-align: center;
+    }
+    .access-form { display: flex; flex-direction: column; gap: 0.75rem; max-width: 420px; margin: 0 auto; }
+    .access-input {
+      width: 100%; background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.1); border-radius: 8px;
+      color: var(--white); font-family: inherit; font-size: 0.88rem;
+      padding: 0.85rem 1.1rem; outline: none;
+      transition: border-color 0.2s;
+    }
+    .access-input::placeholder { color: rgba(255,255,255,0.2); }
+    .access-input:focus { border-color: rgba(196,30,58,0.5); }
+    .access-submit {
+      width: 100%; background: transparent;
+      border: 1px solid rgba(255,255,255,0.28); border-radius: 8px;
+      color: var(--white); font-family: inherit; font-size: 0.88rem;
+      font-weight: 500; padding: 0.9rem; cursor: pointer;
+      letter-spacing: 0.02em;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .access-submit:hover { border-color: rgba(255,255,255,0.6); background: rgba(255,255,255,0.04); }
+    .access-form-success {
+      display: none; margin-top: 1rem; font-size: 0.82rem;
+      color: rgba(255,255,255,0.45); text-align: center; line-height: 1.65;
+    }
+    @media (max-width: 680px) {
+      .access-section { padding: 5rem 1.5rem; }
+    }
+
+    /* Persona Selector */
+    .persona-section { background: var(--ink); padding: 7rem 3rem; text-align: center; }
+    .persona-inner { max-width: 960px; margin: 0 auto; }
+    .persona-prompt {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.62rem; font-weight: 500; letter-spacing: 0.22em;
+      text-transform: uppercase; color: rgba(255,255,255,0.2);
+      margin-bottom: 3rem;
+    }
+    .persona-toggle {
+      display: inline-flex; align-items: center; gap: 2rem;
+      margin-bottom: 5rem;
+    }
+    .persona-btn {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: clamp(2rem, 4vw, 3.2rem); font-weight: 600;
+      color: rgba(255,255,255,0.18); background: transparent;
+      border: none; cursor: pointer; padding: 0;
+      letter-spacing: -0.02em; line-height: 1;
+      transition: color 0.4s, opacity 0.4s;
+      outline: none;
+    }
+    .persona-btn:hover { color: rgba(255,255,255,0.5); }
+    .persona-btn.active.pleasure { color: var(--white); }
+    .persona-btn.active.revenue  { color: var(--accent-light); }
+    .persona-divider-word {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.7rem; color: rgba(255,255,255,0.15);
+      letter-spacing: 0.12em; text-transform: uppercase; flex-shrink: 0;
+    }
+    .persona-panel {
+      opacity: 0; transform: translateY(16px);
+      pointer-events: none; position: absolute; left: 0; right: 0;
+      transition: opacity 0.45s cubic-bezier(0.16,1,0.3,1), transform 0.45s cubic-bezier(0.16,1,0.3,1);
+    }
+    .persona-panel.active {
+      opacity: 1; transform: translateY(0);
+      pointer-events: auto; position: relative;
+    }
+    .persona-panel-headline {
+      font-size: clamp(2rem, 3.5vw, 2.8rem); font-weight: 600;
+      color: var(--white); line-height: 1.18; margin-bottom: 1.25rem;
+    }
+    .persona-panel-sub {
+      font-size: 1rem; color: rgba(255,255,255,0.38);
+      max-width: 520px; margin: 0 auto 3.5rem; line-height: 1.85;
+      font-weight: 300;
+    }
+    .persona-items {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 1px; background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.06); border-radius: 12px;
+      overflow: hidden; text-align: left;
+    }
+    .persona-item {
+      padding: 2rem 1.75rem;
+      background: var(--ink);
+      transition: background 0.2s;
+    }
+    .persona-item:hover { background: rgba(255,255,255,0.02); }
+    .persona-item-num {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 1.5rem; font-weight: 600; color: rgba(255,255,255,0.06);
+      line-height: 1; margin-bottom: 1.25rem; display: block;
+    }
+    .persona-item strong {
+      display: block; font-family: 'Playfair Display', Georgia, serif;
+      font-size: 1rem; font-weight: 600;
+      color: var(--white); margin-bottom: 0.6rem; line-height: 1.3;
+    }
+    .persona-item p {
+      font-size: 0.82rem; color: rgba(255,255,255,0.32); line-height: 1.7;
+      font-weight: 300;
+    }
+    @media (max-width: 680px) {
+      .persona-items { grid-template-columns: 1fr; }
+      .persona-btn { font-size: 1.8rem; }
+    }
+
+    /* Pleasure back button */
+    .persona-back {
+      display: block; background: none; border: none; cursor: pointer;
+      font-family: inherit; font-size: 0.78rem; font-weight: 400;
+      color: rgba(255,255,255,0.28); letter-spacing: 0.04em;
+      margin-bottom: 2rem; padding: 0;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.4s ease, color 0.2s;
+    }
+    .persona-back:hover { color: rgba(255,255,255,0.65); }
+    .persona-section.pleasure-focused .persona-back {
+      opacity: 1; pointer-events: auto;
+    }
+
+    /* Persona button — subtle underline enhancement */
+    .persona-btn { position: relative; }
+    .persona-btn::after {
+      content: '';
+      position: absolute; bottom: -5px; left: 50%;
+      transform: translateX(-50%) scaleX(0);
+      width: 70%; height: 1px; background: currentColor; opacity: 0.45;
+      transition: transform 0.35s cubic-bezier(0.16,1,0.3,1), opacity 0.35s;
+    }
+    .persona-btn:hover::after  { transform: translateX(-50%) scaleX(1); }
+    .persona-btn.active::after { transform: translateX(-50%) scaleX(1); opacity: 0.65; }
+
+    /* Pleasure focus mode — toggle fades when traveler selects pleasure */
+    .persona-toggle { transition: opacity 0.5s ease, margin-bottom 0.5s ease; }
+    .persona-prompt { transition: opacity 0.5s ease; }
+    .persona-section.pleasure-focused .persona-toggle {
+      opacity: 0; pointer-events: none; margin-bottom: 0;
+    }
+    .persona-section.pleasure-focused .persona-prompt { opacity: 0; }
+
+    /* Persona CTA button + note */
+    .persona-cta-btn {
+      display: inline-block;
+      font-family: inherit; font-size: 0.92rem; font-weight: 500;
+      color: var(--white); background: transparent;
+      border: 1px solid rgba(255,255,255,0.28);
+      padding: 0.85rem 2.25rem; border-radius: 6px; text-decoration: none;
+      letter-spacing: 0.01em; cursor: pointer;
+      transition: border-color 0.22s, background 0.22s;
+    }
+    .persona-cta-btn:hover { border-color: rgba(255,255,255,0.65); background: rgba(255,255,255,0.05); }
+    .persona-cta-note { font-size: 0.75rem; color: rgba(255,255,255,0.22); letter-spacing: 0.02em; }
+
+    /* Live-stream reaction particles */
+    @keyframes live-float {
+      0%   { transform: translateY(0)     translateX(0)             scale(0.5)  rotate(-4deg); opacity: 0; }
+      14%  { transform: translateY(-10px) translateX(var(--dx,4px)) scale(1.0)  rotate(2deg);  opacity: 0.75; }
+      55%  { transform: translateY(-50px) translateX(calc(var(--dx,4px) * -0.9)) scale(0.85) rotate(-2deg); opacity: 0.5; }
+      100% { transform: translateY(-90px) translateX(0px)           scale(0.35) rotate(1deg);  opacity: 0; }
+    }
+    .live-particle {
+      position: fixed; pointer-events: none; z-index: 9999;
+      line-height: 1; user-select: none;
+      animation: live-float var(--dur, 1.3s) ease-in-out forwards;
+    }
+    .live-particle.emoji { font-size: var(--sz, 1rem); opacity: 0.82; }
+    .live-particle.chip {
+      font-size: 0.64rem; font-weight: 500; color: rgba(255,255,255,0.7);
+      background: rgba(22,22,24,0.75);
+      backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.09);
+      border-radius: 100px; padding: 0.18rem 0.6rem;
+      white-space: nowrap;
+    }
+
+    /* Win-Win */
+    .winwin-section { background: var(--ink); padding: 7rem 3rem; }
+    .winwin-inner { max-width: 1120px; margin: 0 auto; }
+    .winwin-eyebrow {
+      font-size: 0.65rem; font-weight: 700; letter-spacing: 0.2em;
+      text-transform: uppercase; color: rgba(255,255,255,0.28);
+      text-align: center; margin-bottom: 1rem;
+    }
+    .winwin-headline {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: clamp(2rem, 3.5vw, 2.8rem); font-weight: 600;
+      color: var(--white); text-align: center; line-height: 1.2;
+      margin-bottom: 4rem;
+    }
+    .winwin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
+    .winwin-side {
+      padding: 3rem;
+      border: 1px solid rgba(255,255,255,0.07);
+    }
+    .winwin-side:first-child { border-right: none; border-radius: 12px 0 0 12px; }
+    .winwin-side:last-child  { border-radius: 0 12px 12px 0; }
+    .winwin-tag {
+      display: block;
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 1.1rem; font-weight: 600; font-style: italic;
+      color: rgba(255,255,255,0.55); margin-bottom: 1.25rem;
+      letter-spacing: 0; text-transform: none;
+    }
+    .winwin-side h3 {
+      font-size: 1.5rem; font-weight: 600; color: var(--white);
+      margin-bottom: 0.75rem; line-height: 1.25;
+    }
+    .winwin-side > p {
+      font-size: 0.9rem; color: rgba(255,255,255,0.42);
+      line-height: 1.75; margin-bottom: 2rem;
+    }
+    .winwin-list { list-style: none; display: flex; flex-direction: column; gap: 1rem; }
+    .winwin-list li {
+      display: flex; gap: 1rem; align-items: flex-start;
+    }
+    .winwin-list-icon {
+      width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+      border: 1px solid rgba(196,30,58,0.3);
+      display: flex; align-items: center; justify-content: center;
+      margin-top: 0.1rem;
+    }
+    .winwin-list-icon svg { width: 11px; height: 11px; stroke: var(--accent); fill: none; stroke-width: 2; stroke-linecap: round; }
+    .winwin-list-text strong { display: block; font-size: 0.9rem; font-weight: 500; color: var(--white); margin-bottom: 0.15rem; }
+    .winwin-list-text span  { font-size: 0.8rem; color: rgba(255,255,255,0.35); line-height: 1.55; }
+    .winwin-divider {
+      width: 1px; background: rgba(255,255,255,0.07); position: relative;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .winwin-divider-label {
+      position: absolute; background: var(--ink);
+      padding: 0.5rem 0; font-size: 0.62rem; font-weight: 700;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      color: rgba(255,255,255,0.18); writing-mode: vertical-rl;
+    }
+    @media (max-width: 768px) {
+      .winwin-grid { grid-template-columns: 1fr; }
+      .winwin-side:first-child { border-right: 1px solid rgba(255,255,255,0.07); border-bottom: none; border-radius: 12px 12px 0 0; }
+      .winwin-side:last-child  { border-radius: 0 0 12px 12px; }
+      .winwin-divider { display: none; }
+    }
+
     /* World Cup */
     .moment-section { background: var(--ink); padding: 6rem 3rem; }
     .moment-inner { max-width: 1120px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 3rem; flex-wrap: wrap; }
@@ -709,7 +1036,7 @@
     .moment-stat { text-align: center; flex-shrink: 0; }
     .moment-stat-num {
       font-family: 'Playfair Display', Georgia, serif;
-      font-size: 4rem; font-weight: 600; color: var(--accent); line-height: 1; display: block;
+      font-size: 4rem; font-weight: 600; color: var(--white); line-height: 1; display: block;
     }
     .moment-stat-label { font-size: 0.72rem; color: rgba(255,255,255,0.28); letter-spacing: 0.08em; text-transform: uppercase; margin-top: 0.5rem; display: block; }
 
@@ -726,8 +1053,8 @@
     .cta-form { display: flex; border-radius: 8px; overflow: hidden; border: 1px solid rgba(255,255,255,0.12); max-width: 440px; margin: 0 auto; }
     .cta-input { flex: 1; border: none; background: rgba(255,255,255,0.06); color: var(--white); font-family: inherit; font-size: 0.88rem; padding: 0.9rem 1.2rem; outline: none; min-width: 0; }
     .cta-input::placeholder { color: rgba(255,255,255,0.22); }
-    .cta-btn { background: var(--accent); color: var(--white); border: none; font-family: inherit; font-size: 0.83rem; font-weight: 600; padding: 0.9rem 1.4rem; cursor: pointer; white-space: nowrap; flex-shrink: 0; transition: background 0.2s; letter-spacing: 0.01em; }
-    .cta-btn:hover { background: var(--accent-light); }
+    .cta-btn { background: transparent; color: var(--white); border: 1px solid rgba(255,255,255,0.3); border-left: none; font-family: inherit; font-size: 0.83rem; font-weight: 500; padding: 0.9rem 1.4rem; cursor: pointer; white-space: nowrap; flex-shrink: 0; transition: background 0.2s, border-color 0.2s; letter-spacing: 0.01em; }
+    .cta-btn:hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.55); }
     .cta-note { margin-top: 1.25rem; font-size: 0.75rem; color: rgba(255,255,255,0.2); letter-spacing: 0.03em; }
     .cta-success { display: none; margin-top: 1.5rem; font-size: 0.88rem; color: rgba(255,255,255,0.6); }
 
@@ -764,36 +1091,90 @@
     }
     .hero-vignette {
       position: absolute; inset: 0; pointer-events: none;
-      background: radial-gradient(ellipse at 60% 40%, rgba(40,110,65,0.20) 0%, rgba(15,45,22,0.10) 45%, rgba(0,0,0,0.38) 100%);
+      background: radial-gradient(ellipse at 60% 40%, rgba(0,0,0,0.10) 0%, rgba(0,0,0,0.15) 45%, rgba(0,0,0,0.42) 100%);
     }
     .hero-scan {
       position: absolute; left: 0; right: 0; height: 1px; pointer-events: none;
-      background: linear-gradient(90deg, transparent, rgba(140,220,165,0.4) 30%, rgba(180,245,200,0.6) 50%, rgba(140,220,165,0.4) 70%, transparent);
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15) 30%, rgba(255,255,255,0.28) 50%, rgba(255,255,255,0.15) 70%, transparent);
       filter: blur(0.5px);
       animation: scan-sweep 16s linear infinite 1s;
     }
 
-    /* Exclusive CTA — red signals limited access */
+    /* Exclusive CTA — ghost */
     .btn-exclusive {
-      display: inline-block; background: var(--accent); color: var(--white);
-      font-family: inherit; font-size: 0.88rem; font-weight: 600;
+      display: inline-block; background: transparent; color: var(--white);
+      font-family: inherit; font-size: 0.88rem; font-weight: 500;
       padding: 0.9rem 2rem; border-radius: 6px; text-decoration: none;
-      border: none; cursor: pointer; transition: background 0.2s;
+      border: 1px solid rgba(255,255,255,0.35); cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
       letter-spacing: 0.01em;
     }
-    .btn-exclusive:hover { background: var(--accent-light); }
+    .btn-exclusive:hover { border-color: rgba(255,255,255,0.7); background: rgba(255,255,255,0.05); }
+
+    /* Hero follower notification stream */
+    .hero-notifs {
+      position: absolute; right: 3rem; top: 8rem; z-index: 4;
+      display: flex; flex-direction: column; gap: 0.55rem;
+      pointer-events: none; width: 230px;
+    }
+    @keyframes notif-in {
+      from { opacity: 0; transform: translateX(20px); }
+      to   { opacity: 1; transform: none; }
+    }
+    @keyframes notif-out {
+      to { opacity: 0; transform: translateX(12px); }
+    }
+    .hero-notif {
+      display: flex; align-items: center; gap: 0.7rem;
+      background: rgba(8,8,8,0.72);
+      backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px; padding: 0.6rem 0.9rem;
+    }
+    .hero-notif-avatar {
+      width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.62rem; font-weight: 700; color: var(--white);
+    }
+    .hero-notif-name { font-size: 0.75rem; font-weight: 500; color: rgba(255,255,255,0.88); line-height: 1.25; }
+    .hero-notif-sub  { font-size: 0.62rem; color: rgba(255,255,255,0.32); }
+    @media (max-width: 768px) { .hero-notifs { display: none; } }
+
+    /* Pleasure mode — hide operator sections below */
+    body.pleasure-mode .problem-section,
+    body.pleasure-mode .preview-section,
+    body.pleasure-mode .arch-section,
+    body.pleasure-mode .outcomes-section,
+    body.pleasure-mode .usecases-section,
+    body.pleasure-mode .gap-section,
+    body.pleasure-mode .icp-section,
+    body.pleasure-mode .moment-section,
+    body.pleasure-mode .cta-section,
+    body.pleasure-mode .footer { display: none; }
+    body.pleasure-mode .persona-section { padding-bottom: 10rem; }
 
     /* Responsive */
     @media (max-width: 960px) {
       .problem-inner, .gap-inner { grid-template-columns: 1fr; gap: 3rem; }
       .usecases-grid { grid-template-columns: 1fr; }
       .preview-grid { grid-template-columns: 1fr; }
+      /* Persona toggle stacks on tablet */
+      .persona-toggle { gap: 1.25rem; }
+      .winwin-grid { grid-template-columns: 1fr; }
+      .winwin-side:first-child { border-right: 1px solid rgba(255,255,255,0.07); border-bottom: none; border-radius: 12px 12px 0 0; }
+      .winwin-side:last-child  { border-radius: 0 0 12px 12px; }
     }
     @media (max-width: 680px) {
       .nav { padding: 1rem 1.5rem; }
+      /* hide nav secondary links on small screens */
+      .nav-access { display: none; }
       .hero { padding: 8rem 1.5rem 5rem; }
       .hero-stat + .hero-stat { padding-left: 1.5rem; }
       .hero-stat { padding-right: 1.5rem; }
+      /* caption moves lower on mobile so it clears the nav */
+      .hero-slide-tag { top: 4.5rem; font-size: 0.88rem; max-width: 90vw; }
+      /* notifications hidden on mobile — too cramped */
+      .hero-notifs { display: none; }
       .problem-section, .arch-section, .gap-section, .icp-section,
       .moment-section, .cta-section,
       .usecases-section, .preview-section { padding: 4.5rem 1.5rem; }
@@ -805,6 +1186,21 @@
       .moment-inner { flex-direction: column; }
       .metrics-inner { grid-template-columns: 1fr 1fr; border: none; gap: 1px; background: var(--border); }
       .metric { background: var(--white); border-right: none; }
+      /* access section */
+      .access-section { padding: 5rem 1.5rem; }
+      .access-headline { font-size: 1.35rem; white-space: normal; }
+      /* persona section */
+      .persona-section { padding: 5rem 1.5rem; }
+      .persona-btn { font-size: 2rem; }
+      .persona-toggle { flex-direction: column; gap: 0.5rem; margin-bottom: 3rem; }
+      .persona-divider-word { display: none; }
+      .persona-items { grid-template-columns: 1fr; }
+      .persona-panel-headline { font-size: 1.6rem; }
+      /* win-win */
+      .winwin-section { padding: 5rem 1.5rem; }
+      .winwin-side { padding: 2rem 1.5rem; }
+      /* back button */
+      .persona-back { font-size: 0.72rem; }
     }
   </style>
 </head>
@@ -813,7 +1209,7 @@
 <!-- Nav -->
 <nav class="nav">
   <a href="#" class="nav-logo">
-    Amig<svg class="brand-zero" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 26" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" d="M10,1.5 C14.97,1.5 19,6.65 19,13 C19,19.35 14.97,24.5 10,24.5 C5.03,24.5 1,19.35 1,13 C1,6.65 5.03,1.5 10,1.5 Z M10,7 C7.51,7 5.5,9.69 5.5,13 C5.5,16.31 7.51,19 10,19 C12.49,19 14.5,16.31 14.5,13 C14.5,9.69 12.49,7 10,7 Z"/><line x1="6.5" y1="21" x2="13.5" y2="5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/></svg>
+    amig<svg class="brand-zero" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 26" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" d="M10,1.5 C14.97,1.5 19,6.65 19,13 C19,19.35 14.97,24.5 10,24.5 C5.03,24.5 1,19.35 1,13 C1,6.65 5.03,1.5 10,1.5 Z M10,7 C7.51,7 5.5,9.69 5.5,13 C5.5,16.31 7.51,19 10,19 C12.49,19 14.5,16.31 14.5,13 C14.5,9.69 12.49,7 10,7 Z"/><line x1="6.5" y1="21" x2="13.5" y2="5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/></svg>
   </a>
   <div class="nav-right">
     <div class="lang-toggle">
@@ -821,6 +1217,10 @@
       <span class="lang-divider">/</span>
       <button class="lang-btn" id="btn-es" onclick="setLang('es')">ES</button>
     </div>
+    <a href="#access" class="nav-access">
+      <span data-lang="en">Get Access</span>
+      <span data-lang="es">Obtener Acceso</span>
+    </a>
     <a href="mailto:contact@opcoretech.com?subject=Demo%20Request" class="nav-demo">
       <span data-lang="en">Request a Demo</span>
       <span data-lang="es">Solicitar Demo</span>
@@ -828,20 +1228,102 @@
   </div>
 </nav>
 
+<!-- Bracelet Access — first thing you see -->
+<section class="access-section" id="access">
+  <div class="access-inner">
+
+    <div class="bracelet-wrap reveal">
+      <div class="bracelet-ring"></div>
+    </div>
+
+    <p class="access-eyebrow" data-lang="en">The bracelet</p>
+    <p class="access-eyebrow" data-lang="es">La pulsera</p>
+
+    <h2 class="access-headline reveal" data-lang="en">People are going to ask what it is.</h2>
+    <h2 class="access-headline reveal" data-lang="es">La gente va a preguntar que es.</h2>
+
+    <p class="access-subhead reveal" data-lang="en">Not everyone has one. You'll notice it on someone's wrist before they say a word. That's the point. Once you're in, all you do is <span class="pulse-word">activate</span> — the rest is already waiting.</p>
+    <p class="access-subhead reveal" data-lang="es">No todos tienen una. La notaras en la muneca de alguien antes de que digan una palabra. Ese es el punto. Una vez adentro, solo <span class="pulse-word">activas</span> — el resto ya te esta esperando.</p>
+
+    <div class="access-criteria reveal">
+      <div class="access-criterion">
+        <div class="criterion-icon">U</div>
+        <div class="criterion-text">
+          <div class="criterion-name">Uber</div>
+          <div class="criterion-req" data-lang="en">4.8+ rider rating</div>
+          <div class="criterion-req" data-lang="es">Calificacion 4.8+</div>
+        </div>
+      </div>
+      <div class="access-criterion">
+        <div class="criterion-icon">A</div>
+        <div class="criterion-text">
+          <div class="criterion-name">Airbnb</div>
+          <div class="criterion-req" data-lang="en">4.8+ guest rating or Superhost</div>
+          <div class="criterion-req" data-lang="es">Calificacion 4.8+ o Superhost</div>
+        </div>
+      </div>
+      <div class="access-criterion">
+        <div class="criterion-icon">+1</div>
+        <div class="criterion-text">
+          <div class="criterion-name" data-lang="en">One more from the approved list</div>
+          <div class="criterion-name" data-lang="es">Uno mas de la lista aprobada</div>
+          <div class="access-platforms">
+            <span class="access-platform-tag">Google Maps</span>
+            <span class="access-platform-tag">GetYourGuide</span>
+            <span class="access-platform-tag">Viator</span>
+            <span class="access-platform-tag">TripAdvisor</span>
+            <span class="access-platform-tag">LinkedIn</span>
+            <span class="access-platform-tag">Instagram</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="access-divider" data-lang="en">or</div>
+    <div class="access-divider" data-lang="es">o</div>
+
+    <p class="access-referral reveal" data-lang="en">
+      <strong>Know someone who's already in?</strong> Every member gets one introduction per month. Not a form — a person who knows you well enough to spend theirs on you.
+    </p>
+    <p class="access-referral reveal" data-lang="es">
+      <strong>¿Conoces a alguien que ya esta adentro?</strong> Cada miembro tiene una introduccion al mes. No es un formulario — es una persona que te conoce lo suficiente para gastar la suya en ti.
+    </p>
+
+    <p class="access-note reveal" data-lang="en">Not there yet? Keep traveling. The door will still be here.</p>
+    <p class="access-note reveal" data-lang="es">¿Todavia no llegas? Sigue viajando. La puerta seguira aqui.</p>
+
+    <!-- Apply form -->
+    <div class="access-form-wrap reveal">
+      <p class="access-form-label" data-lang="en">Apply for your bracelet</p>
+      <p class="access-form-label" data-lang="es">Solicita tu pulsera</p>
+      <form class="access-form" onsubmit="submitAccess(event)">
+        <input class="access-input" type="text"  id="access-name"  placeholder="Your name" required>
+        <input class="access-input" type="email" id="access-email" placeholder="your@email.com" required>
+        <input class="access-input" type="url"   id="access-proof" placeholder="Link to your Uber / Airbnb profile (or screenshot URL)" required>
+        <button type="submit" class="access-submit" data-lang="en">Submit application →</button>
+        <button type="submit" class="access-submit" data-lang="es">Enviar solicitud →</button>
+      </form>
+      <p class="access-form-success" id="access-success" data-lang="en">Received. We review every application personally and will be in touch within 48 hours.</p>
+      <p class="access-form-success" id="access-success-es" data-lang="es">Recibido. Revisamos cada solicitud personalmente y nos pondremos en contacto en 48 horas.</p>
+    </div>
+
+  </div>
+</section>
+
 <!-- Hero -->
 <section class="hero">
   <div class="hero-carousel">
     <div class="hero-carousel-track" id="hero-carousel-track">
-      <div class="hero-carousel-slide"><video autoplay muted loop playsinline><source src="IMG_0774.mov" type="video/quicktime"></video></div>
-      <div class="hero-carousel-slide" style="background-image:url('IMG_9192.jpg')"></div>
-      <div class="hero-carousel-slide" style="background-image:url('IMG_0661.jpg')"></div>
-      <div class="hero-carousel-slide" style="background-image:url('IMG_7367.jpg')"></div>
-      <div class="hero-carousel-slide" style="background-image:url('IMG_5087.jpg')"></div>
-      <div class="hero-carousel-slide" style="background-image:url('IMG_9188.jpg')"></div>
-      <div class="hero-carousel-slide" style="background-image:url('IMG_0651.jpg')"></div>
-      <div class="hero-carousel-slide" style="background-image:url('IMG_5603.jpg')"></div>
-      <div class="hero-carousel-slide" style="background-image:url('IMG_7364.jpg')"></div>
-      <div class="hero-carousel-slide" style="background-image:url('IMG_0126.jpg')"></div>
+      <div class="hero-carousel-slide" style="background-color:#0a1208;background-position:top center"><video autoplay muted loop playsinline><source src="IMG_0774.mp4" type="video/mp4"><source src="IMG_0774.mov" type="video/quicktime"></video></div>
+      <div class="hero-carousel-slide" style="background-image:url('IMG_9192.jpg');background-position:center 25%"></div>
+      <div class="hero-carousel-slide" style="background-image:url('IMG_0661.jpg');background-position:center"></div>
+      <div class="hero-carousel-slide" style="background-image:url('IMG_7367.jpg');background-position:center"></div>
+      <div class="hero-carousel-slide" style="background-image:url('IMG_5087.jpg');background-position:center 75%"></div>
+      <div class="hero-carousel-slide" style="background-image:url('IMG_9188.jpg');background-position:center 25%"></div>
+      <div class="hero-carousel-slide" style="background-image:url('IMG_0651.jpg');background-position:center 42%"></div>
+      <div class="hero-carousel-slide" style="background-image:url('IMG_5603.jpg');background-position:center 32%"></div>
+      <div class="hero-carousel-slide" style="background-image:url('IMG_7364.jpg');background-position:center 75%"></div>
+      <div class="hero-carousel-slide" style="background-image:url('IMG_0126.jpg');background-position:top center"></div>
     </div>
   </div>
   <!-- Texture + scan overlay -->
@@ -857,10 +1339,10 @@
     <h1 data-lang="es">Experiencias grupales inolvidables.<br><em>Operaciones invisibles.</em></h1>
 
     <p class="hero-body" data-lang="en">
-      The best group experiences feel effortless to the people on them. Behind that feeling is an operator who has their system together. Most operators run on WhatsApp, a shared spreadsheet, and institutional memory — until scale exposes it in front of a paying client. Amig0 is what you build on when the experience is too important to leave to improvisation.
+      Running a great group trip takes a lot of moving parts. Amig0 keeps them all in one place — bookings, guides, itineraries, payments — so nothing falls through the cracks and every traveler feels taken care of from day one.
     </p>
     <p class="hero-body" data-lang="es">
-      Las mejores experiencias grupales se sienten sin esfuerzo para quienes las viven. Detras de esa sensacion hay un operador que tiene su sistema en orden. La mayoria trabajan con WhatsApp y hojas compartidas — hasta que la escala lo expone frente a un cliente que pago. Amig0 es lo que construyes cuando la experiencia es demasiado importante para improvisar.
+      Organizar un viaje grupal tiene muchas partes moviles. Amig0 las une en un solo lugar — reservas, guias, itinerarios, pagos — para que nada se pierda y cada viajero se sienta bien atendido desde el primer dia.
     </p>
 
     <div class="hero-actions">
@@ -889,6 +1371,7 @@
     </div>
   </div>
   <div class="hero-slide-tag" id="hero-slide-tag"></div>
+  <div class="hero-notifs" id="hero-notifs"></div>
   <div class="hero-carousel-nav">
     <button class="hero-carousel-dot active" data-index="0"></button>
     <button class="hero-carousel-dot" data-index="1"></button>
@@ -903,15 +1386,197 @@
   </div>
 </section>
 
-<!-- Photo filmstrip -->
-<div class="filmstrip">
-  <div class="filmstrip-item">
-    <video autoplay muted loop playsinline><source src="IMG_0774.mov" type="video/quicktime"></video>
+
+<!-- Win-Win -->
+<section class="winwin-section">
+  <div class="winwin-inner">
+    <p class="winwin-eyebrow reveal" data-lang="en">Everyone wins</p>
+    <p class="winwin-eyebrow reveal" data-lang="es">Todos ganan</p>
+    <h2 class="winwin-headline reveal" data-lang="en">Pleasure and comfort at your fingertips.<br><em>Revenue and reach at yours.</em></h2>
+    <h2 class="winwin-headline reveal" data-lang="es">Placer y comodidad al alcance de tu mano.<br><em>Ingresos y alcance al tuyo.</em></h2>
+
+    <div class="winwin-grid reveal">
+
+      <!-- Traveler side -->
+      <div class="winwin-side">
+        <span class="winwin-tag" data-lang="en">For travelers</span>
+        <span class="winwin-tag" data-lang="es">Para viajeros</span>
+        <h3 data-lang="en">The experience you came for. Then some.</h3>
+        <h3 data-lang="es">La experiencia que buscabas. Y algo más.</h3>
+        <p data-lang="en">Access to curated group experiences, vetted operators, local partners, and a community of people who travel like you do — all through one bracelet.</p>
+        <p data-lang="es">Acceso a experiencias grupales curadas, operadores verificados, socios locales y una comunidad de personas que viajan como tú — todo a través de una pulsera.</p>
+        <ul class="winwin-list">
+          <li>
+            <div class="winwin-list-icon"><svg viewBox="0 0 12 12"><path d="M2 6l3 3 5-5"/></svg></div>
+            <div class="winwin-list-text">
+              <strong data-lang="en">Curated experiences</strong>
+              <strong data-lang="es">Experiencias curadas</strong>
+              <span data-lang="en">Tours, dinners, events — run by operators who actually care about the detail.</span>
+              <span data-lang="es">Tours, cenas, eventos — a cargo de operadores que realmente cuidan los detalles.</span>
+            </div>
+          </li>
+          <li>
+            <div class="winwin-list-icon"><svg viewBox="0 0 12 12"><path d="M2 6l3 3 5-5"/></svg></div>
+            <div class="winwin-list-text">
+              <strong data-lang="en">Partner perks</strong>
+              <strong data-lang="es">Beneficios con socios</strong>
+              <span data-lang="en">Exclusive discounts and access at verified restaurants, bars, and venues across the city.</span>
+              <span data-lang="es">Descuentos exclusivos y acceso en restaurantes, bares y lugares verificados en toda la ciudad.</span>
+            </div>
+          </li>
+          <li>
+            <div class="winwin-list-icon"><svg viewBox="0 0 12 12"><path d="M2 6l3 3 5-5"/></svg></div>
+            <div class="winwin-list-text">
+              <strong data-lang="en">Your people</strong>
+              <strong data-lang="es">Tu comunidad</strong>
+              <span data-lang="en">A vetted network of travelers who show up, engage, and make the experience worth having.</span>
+              <span data-lang="es">Una red verificada de viajeros que aparecen, participan y hacen que la experiencia valga la pena.</span>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Operator / Guide / Partner side -->
+      <div class="winwin-side">
+        <span class="winwin-tag" data-lang="en">For operators · guides · partners</span>
+        <span class="winwin-tag" data-lang="es">Para operadores · guías · socios</span>
+        <h3 data-lang="en">Your expertise. Finally monetized at scale.</h3>
+        <h3 data-lang="es">Tu experiencia. Por fin monetizada a escala.</h3>
+        <p data-lang="en">Run your operation from one platform. Manage tours, clients, and guides — while reaching a qualified, paying audience that already wants what you offer.</p>
+        <p data-lang="es">Gestiona tu operación desde una sola plataforma. Administra tours, clientes y guías — mientras llegas a un público calificado y con capacidad de pago que ya quiere lo que ofreces.</p>
+        <ul class="winwin-list">
+          <li>
+            <div class="winwin-list-icon"><svg viewBox="0 0 12 12"><path d="M2 6l3 3 5-5"/></svg></div>
+            <div class="winwin-list-text">
+              <strong data-lang="en">Full lifecycle management</strong>
+              <strong data-lang="es">Gestión de ciclo completo</strong>
+              <span data-lang="en">Bookings, itineraries, invoices, guides — all in one place. No WhatsApp, no spreadsheets.</span>
+              <span data-lang="es">Reservas, itinerarios, facturas, guías — todo en un solo lugar. Sin WhatsApp, sin hojas de cálculo.</span>
+            </div>
+          </li>
+          <li>
+            <div class="winwin-list-icon"><svg viewBox="0 0 12 12"><path d="M2 6l3 3 5-5"/></svg></div>
+            <div class="winwin-list-text">
+              <strong data-lang="en">A ready audience</strong>
+              <strong data-lang="es">Una audiencia lista</strong>
+              <span data-lang="en">List your tours to vetted Amig0 members actively looking for exactly what you run.</span>
+              <span data-lang="es">Publica tus tours para miembros verificados de Amig0 que buscan activamente lo que tú ofreces.</span>
+            </div>
+          </li>
+          <li>
+            <div class="winwin-list-icon"><svg viewBox="0 0 12 12"><path d="M2 6l3 3 5-5"/></svg></div>
+            <div class="winwin-list-text">
+              <strong data-lang="en">Revenue on your terms</strong>
+              <strong data-lang="es">Ingresos en tus términos</strong>
+              <span data-lang="en">Quotes, invoices, and payments handled in-platform. Get paid properly, every time.</span>
+              <span data-lang="es">Cotizaciones, facturas y pagos gestionados en la plataforma. Cobra bien, siempre.</span>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+    </div>
   </div>
-  <div class="filmstrip-item"><img src="IMG_0661.jpg" alt="Group experience"></div>
-  <div class="filmstrip-item"><img src="IMG_5087.jpg" alt="Group experience"></div>
-  <div class="filmstrip-item"><img src="IMG_0651.jpg" alt="Group experience"></div>
-</div>
+</section>
+
+<!-- Persona Selector -->
+<section class="persona-section" id="persona">
+  <div class="persona-inner">
+
+    <p class="persona-prompt reveal" data-lang="en">What brings you here?</p>
+    <p class="persona-prompt reveal" data-lang="es">¿Qué te trae aquí?</p>
+
+    <button class="persona-back" onclick="resetPersona()" aria-label="Back to full site">
+      <span data-lang="en">← Back to full site</span>
+      <span data-lang="es">← Volver al sitio completo</span>
+    </button>
+
+    <div class="persona-toggle reveal">
+      <button class="persona-btn pleasure active" onclick="selectPersona('pleasure')">
+        <span data-lang="en">Pleasure</span>
+        <span data-lang="es">Placer</span>
+      </button>
+      <span class="persona-divider-word">or</span>
+      <button class="persona-btn revenue" onclick="selectPersona('revenue')">
+        <span data-lang="en">Revenue</span>
+        <span data-lang="es">Ingresos</span>
+      </button>
+    </div>
+
+    <div style="position:relative;">
+    <!-- Pleasure panel -->
+    <div class="persona-panel active" id="panel-pleasure">
+      <h2 class="persona-panel-headline" data-lang="en">You came for the experience.<br><em>We make sure it's worth it.</em></h2>
+      <h2 class="persona-panel-headline" data-lang="es">Viniste por la experiencia.<br><em>Nos aseguramos de que valga la pena.</em></h2>
+      <p class="persona-panel-sub" data-lang="en">Every detail handled. Every experience vetted. All you have to do is show up — the bracelet takes care of the rest.</p>
+      <p class="persona-panel-sub" data-lang="es">Cada detalle atendido. Cada experiencia verificada. Solo tienes que aparecer — la pulsera se encarga del resto.</p>
+      <div class="persona-items">
+        <div class="persona-item">
+          <span class="persona-item-num">01</span>
+          <strong data-lang="en">Curated group experiences</strong>
+          <strong data-lang="es">Experiencias grupales curadas</strong>
+          <p data-lang="en">Tours, dinners, events — run by operators who care about every detail from start to finish.</p>
+          <p data-lang="es">Tours, cenas, eventos — a cargo de operadores que cuidan cada detalle de principio a fin.</p>
+        </div>
+        <div class="persona-item">
+          <span class="persona-item-num">02</span>
+          <strong data-lang="en">Exclusive partner perks</strong>
+          <strong data-lang="es">Beneficios exclusivos con socios</strong>
+          <p data-lang="en">Scan your bracelet at verified venues across the city. Discounts, priority access, and more.</p>
+          <p data-lang="es">Escanea tu pulsera en lugares verificados de la ciudad. Descuentos, acceso prioritario y más.</p>
+        </div>
+        <div class="persona-item">
+          <span class="persona-item-num">03</span>
+          <strong data-lang="en">People worth traveling with</strong>
+          <strong data-lang="es">Personas con quienes vale la pena viajar</strong>
+          <p data-lang="en">A vetted community of travelers who show up, engage, and make every trip better than the last.</p>
+          <p data-lang="es">Una comunidad verificada de viajeros que aparecen, participan y hacen cada viaje mejor que el anterior.</p>
+        </div>
+      </div>
+
+      <!-- Pleasure CTA -->
+      <div style="margin-top:3rem; display:flex; flex-direction:column; align-items:center; gap:0.75rem;">
+        <a href="portal.html" class="persona-cta-btn" data-lang="en">Check if you qualify →</a>
+        <a href="portal.html" class="persona-cta-btn" data-lang="es">Verifica si calificas →</a>
+        <p class="persona-cta-note" data-lang="en">Takes 2 minutes. Your ratings do the talking.</p>
+        <p class="persona-cta-note" data-lang="es">Toma 2 minutos. Tus calificaciones hablan por ti.</p>
+      </div>
+    </div>
+
+    <!-- Revenue panel -->
+    <div class="persona-panel" id="panel-revenue">
+      <h2 class="persona-panel-headline" data-lang="en">You built something worth paying for.<br><em>Now build the operation around it.</em></h2>
+      <h2 class="persona-panel-headline" data-lang="es">Construiste algo que vale la pena pagar.<br><em>Ahora construye la operación a su alrededor.</em></h2>
+      <p class="persona-panel-sub" data-lang="en">Run tours, manage clients, brief guides, send invoices — all from one platform. Reach an audience that's already vetted and ready to book.</p>
+      <p class="persona-panel-sub" data-lang="es">Gestiona tours, administra clientes, informa a guías, envía facturas — todo desde una plataforma. Llega a una audiencia ya verificada y lista para reservar.</p>
+      <div class="persona-items">
+        <div class="persona-item">
+          <span class="persona-item-num">01</span>
+          <strong data-lang="en">One platform, full operation</strong>
+          <strong data-lang="es">Una plataforma, operación completa</strong>
+          <p data-lang="en">Bookings, itineraries, guides, invoicing — managed in one place. No more duct-tape tools.</p>
+          <p data-lang="es">Reservas, itinerarios, guías, facturación — gestionados en un solo lugar. Sin más herramientas improvisadas.</p>
+        </div>
+        <div class="persona-item">
+          <span class="persona-item-num">02</span>
+          <strong data-lang="en">A qualified audience waiting</strong>
+          <strong data-lang="es">Una audiencia calificada esperando</strong>
+          <p data-lang="en">List your tours to Amig0 members actively looking for exactly what you offer. No cold outreach.</p>
+          <p data-lang="es">Publica tus tours para miembros de Amig0 que buscan activamente lo que ofreces. Sin contacto en frío.</p>
+        </div>
+        <div class="persona-item">
+          <span class="persona-item-num">03</span>
+          <strong data-lang="en">Get paid properly, every time</strong>
+          <strong data-lang="es">Cobra bien, siempre</strong>
+          <p data-lang="en">Quotes and invoices in-platform. Professional documents sent in seconds. Revenue tracked automatically.</p>
+          <p data-lang="es">Cotizaciones y facturas en la plataforma. Documentos profesionales enviados en segundos. Ingresos rastreados automáticamente.</p>
+        </div>
+      </div>
+    </div>
+
+    </div><!-- end panels wrapper -->
+  </div>
+</section>
 
 <!-- Problem -->
 <section class="problem-section">
@@ -1491,7 +2156,7 @@
 <!-- Footer -->
 <footer class="footer">
   <a href="#" class="footer-logo">
-    Amig<svg class="brand-zero" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 26" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" d="M10,1.5 C14.97,1.5 19,6.65 19,13 C19,19.35 14.97,24.5 10,24.5 C5.03,24.5 1,19.35 1,13 C1,6.65 5.03,1.5 10,1.5 Z M10,7 C7.51,7 5.5,9.69 5.5,13 C5.5,16.31 7.51,19 10,19 C12.49,19 14.5,16.31 14.5,13 C14.5,9.69 12.49,7 10,7 Z"/><line x1="6.5" y1="21" x2="13.5" y2="5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/></svg>
+    amig<svg class="brand-zero" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 26" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" d="M10,1.5 C14.97,1.5 19,6.65 19,13 C19,19.35 14.97,24.5 10,24.5 C5.03,24.5 1,19.35 1,13 C1,6.65 5.03,1.5 10,1.5 Z M10,7 C7.51,7 5.5,9.69 5.5,13 C5.5,16.31 7.51,19 10,19 C12.49,19 14.5,16.31 14.5,13 C14.5,9.69 12.49,7 10,7 Z"/><line x1="6.5" y1="21" x2="13.5" y2="5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/></svg>
   </a>
   <div class="footer-right">
     <a href="mailto:contact@opcoretech.com">contact@opcoretech.com</a>
@@ -1506,6 +2171,11 @@
     document.documentElement.className = 'lang-' + lang;
     document.getElementById('btn-en').classList.toggle('active', lang === 'en');
     document.getElementById('btn-es').classList.toggle('active', lang === 'es');
+    // Force repaint on animated hero elements so newly-visible ES siblings render correctly
+    document.querySelectorAll('[data-lang]').forEach(function(el) {
+      el.style.animation = 'none';
+    });
+    document.dispatchEvent(new Event('langchange'));
   }
 
   // Scroll reveal
@@ -1579,6 +2249,37 @@
     });
   })();
 
+  // Persona reset — restores full page, resets toggle to neutral prompt
+  function resetPersona() {
+    document.querySelectorAll('.persona-btn').forEach(function(b) { b.classList.remove('active'); });
+    document.querySelectorAll('.persona-panel').forEach(function(p) { p.classList.remove('active'); });
+    var section = document.querySelector('.persona-section');
+    section.classList.remove('pleasure-focused');
+    document.body.classList.remove('pleasure-mode');
+    // restore toggle opacity/margin immediately so it's visible on return
+    var toggle = section.querySelector('.persona-toggle');
+    var prompt = section.querySelector('.persona-prompt');
+    if (toggle) { toggle.style.opacity = ''; toggle.style.marginBottom = ''; }
+    if (prompt) { prompt.style.opacity = ''; }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // Persona selector
+  function selectPersona(type) {
+    document.querySelectorAll('.persona-btn').forEach(function(b) { b.classList.remove('active'); });
+    document.querySelectorAll('.persona-panel').forEach(function(p) { p.classList.remove('active'); });
+    document.querySelector('.persona-btn.' + type).classList.add('active');
+    document.getElementById('panel-' + type).classList.add('active');
+    var section = document.querySelector('.persona-section');
+    if (type === 'pleasure') {
+      section.classList.add('pleasure-focused');
+      document.body.classList.add('pleasure-mode');
+    } else {
+      section.classList.remove('pleasure-focused');
+      document.body.classList.remove('pleasure-mode');
+    }
+  }
+
   // Hero background carousel
   (function () {
     var track   = document.getElementById('hero-carousel-track');
@@ -1588,31 +2289,53 @@
     var current = 0;
     var timer;
 
-    var captions = [
-      'An entry into Mexico City at night — movement, light, and the start of the experience.',
-      'A Xochimilco trajinera experience — drinks, lotería, and time shared on the water.',
-      'A fine dining experience in Mexico City — good food, good company, and a well-spent evening.',
-      'Mexico City after dark — historic buildings lit up across the city center.',
-      'Time spent with others — the kind of moments that stay with you.',
-      'Drinks and conversation in one of the city\'s bars and speakeasy-style spots.',
-      'Walking around the Angel of Independence and its surrounding areas.',
-      'Exploring art and gallery spaces across the city.',
-      'A night at Lucha Libre — meeting other travelers and experiencing the energy together.',
-      'Time spent visiting museums and learning more about the city\'s history and culture.'
-    ];
+    var captions = {
+      en: [
+        'An entry into Mexico City at night — movement, light, and the start of the experience.',
+        'A fine dining experience in Mexico City — good food, great company, and a well-spent evening.',
+        'Catching a foul ball at Estadio Harp Helú — a moment shared with the crowd.',
+        'Time spent with others — the moments that stay with you.',
+        'Mexico City after dark — historic buildings lit across the city center.',
+        'Drinks and conversation in one of the city\'s bars and speakeasy-style spots.',
+        'Walking around the Angel of Independence and the surrounding area.',
+        'Exploring art and gallery spaces throughout the city.',
+        'A night at Lucha Libre — sharing the experience with travelers from around the world.',
+        'Visiting museums and exploring the city\'s history and culture.'
+      ],
+      es: [
+        'Una entrada a la Ciudad de México de noche — movimiento, luz y el inicio de la experiencia.',
+        'Una experiencia gastronómica en la Ciudad de México — buena comida, gran compañía y una noche bien vivida.',
+        'Atrapar una pelota en el Estadio Harp Helú — un momento compartido con la multitud.',
+        'Tiempo compartido con otros — los momentos que se quedan contigo.',
+        'La Ciudad de México de noche — edificios históricos iluminados en el centro de la ciudad.',
+        'Tragos y conversación en uno de los bares y cantinas speakeasy de la ciudad.',
+        'Caminando por el Ángel de la Independencia y sus alrededores.',
+        'Explorando espacios de arte y galerías por toda la ciudad.',
+        'Una noche en la Lucha Libre — compartiendo la experiencia con viajeros de todo el mundo.',
+        'Visitando museos y explorando la historia y cultura de la ciudad.'
+      ]
+    };
+
+    function getCurrentCaptions() {
+      return captions[document.documentElement.lang === 'es' ? 'es' : 'en'];
+    }
 
     function goTo(i) {
       current = (i + total) % total;
       track.style.transform = 'translateX(-' + (current * 100) + '%)';
       dots.forEach(function (d, idx) { d.classList.toggle('active', idx === current); });
-      if (tag) { tag.style.opacity = '0'; setTimeout(function () { tag.textContent = captions[current]; tag.style.opacity = '1'; }, 200); }
+      if (tag) { tag.style.opacity = '0'; setTimeout(function () { tag.textContent = getCurrentCaptions()[current]; tag.style.opacity = '1'; }, 200); }
     }
 
     function startAuto() { timer = setInterval(function () { goTo(current + 1); }, 5000); }
     function stopAuto()  { clearInterval(timer); }
 
-    // Set first caption immediately
-    if (tag) tag.textContent = captions[0];
+    // Update caption on language switch
+    document.addEventListener('langchange', function () {
+      if (tag) tag.textContent = getCurrentCaptions()[current];
+    });
+
+    if (tag) tag.textContent = getCurrentCaptions()[0];
 
     dots.forEach(function (d) {
       d.addEventListener('click', function () { stopAuto(); goTo(parseInt(d.dataset.index)); startAuto(); });
@@ -1626,6 +2349,166 @@
     }, { passive: true });
     startAuto();
   })();
+
+  // Hero follower notification stream
+  (function () {
+    var container = document.getElementById('hero-notifs');
+    if (!container) return;
+    var people = [
+      { name: 'Alex R.',     flag: '🇺🇸', color: '#8B1A1A',  init: 'A' },
+      { name: 'Sofia M.',    flag: '🇲🇽', color: '#1A5C26',  init: 'S' },
+      { name: 'Jordan K.',   flag: '🇨🇦', color: '#1E40AF',  init: 'J' },
+      { name: 'Priya S.',    flag: '🇮🇳', color: '#7C3AED',  init: 'P' },
+      { name: 'Luca B.',     flag: '🇮🇹', color: '#B45309',  init: 'L' },
+      { name: 'Yuki T.',     flag: '🇯🇵', color: '#0E7490',  init: 'Y' },
+      { name: 'Marco V.',    flag: '🇧🇷', color: '#065F46',  init: 'M' },
+      { name: 'Camille D.',  flag: '🇫🇷', color: '#9D174D',  init: 'C' },
+      { name: 'Omar A.',     flag: '🇦🇪', color: '#92400E',  init: 'O' },
+      { name: 'Ines F.',     flag: '🇵🇹', color: '#1E3A5F',  init: 'I' },
+      { name: 'Ravi N.',     flag: '🇿🇦', color: '#3B0764',  init: 'R' },
+      { name: 'Hannah G.',   flag: '🇩🇪', color: '#134E4A',  init: 'H' },
+    ];
+    var shown = [];
+    var idx = 0;
+
+    function showNotif() {
+      var p = people[idx % people.length]; idx++;
+      var el = document.createElement('div');
+      el.className = 'hero-notif';
+      el.style.cssText = 'animation: notif-in 0.42s cubic-bezier(0.16,1,0.3,1) forwards; opacity:0;';
+      el.innerHTML =
+        '<div class="hero-notif-avatar" style="background:' + p.color + '">' + p.init + '</div>' +
+        '<div>' +
+          '<div class="hero-notif-name">' + p.flag + '&nbsp;' + p.name + '</div>' +
+          '<div class="hero-notif-sub">joined the community · now</div>' +
+        '</div>';
+      container.appendChild(el);
+      shown.push(el);
+      // keep max 3 visible — fade out oldest
+      if (shown.length > 3) {
+        var old = shown.shift();
+        old.style.animation = 'notif-out 0.32s ease forwards';
+        setTimeout(function () { if (old.parentNode) old.parentNode.removeChild(old); }, 340);
+      }
+    }
+
+    function next() {
+      showNotif();
+      setTimeout(next, 2000 + Math.random() * 1200);
+    }
+    setTimeout(next, 1800);
+  })();
+
+  // Live-stream reaction particles on persona panel cards
+  (function () {
+    var pleasureEmojis = ['✈️', '🌍', '🌅', '🎭', '🍷'];
+    var revenueEmojis  = ['🪙', '💰', '💵', '📈', '💳'];
+    var followerChips  = ['+1 client', '+1 booking', 'new inquiry'];
+
+    function spawn(item, type, text) {
+      var rect = item.getBoundingClientRect();
+      var el = document.createElement('span');
+      el.className = 'live-particle ' + type;
+
+      // spawn from bottom third of the card, spread across width
+      var x = rect.left + 16 + Math.random() * (rect.width - 32);
+      var y = rect.bottom - 16 - Math.random() * (rect.height * 0.45);
+      el.style.left = x + 'px';
+      el.style.top  = y + 'px';
+
+      // wobble direction alternates randomly
+      var dx = (Math.random() * 8 + 3) * (Math.random() > 0.5 ? 1 : -1);
+      el.style.setProperty('--dx',  dx + 'px');
+      el.style.setProperty('--dur', (1.0 + Math.random() * 0.55) + 's');
+
+      if (type === 'emoji') {
+        el.style.setProperty('--sz', (0.85 + Math.random() * 0.3) + 'rem');
+      }
+
+      el.textContent = text;
+      document.body.appendChild(el);
+      setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 1700);
+    }
+
+    function attachReactions(items, emojiSet, includeChips) {
+      items.forEach(function (item) {
+        var iv = null;
+
+        item.addEventListener('mouseenter', function () {
+          // initial burst — 2 particles only
+          for (var i = 0; i < 2; i++) {
+            (function (d) {
+              setTimeout(function () {
+                spawn(item, 'emoji', emojiSet[Math.floor(Math.random() * emojiSet.length)]);
+              }, d);
+            })(i * 120);
+          }
+          // gentle continuous stream
+          iv = setInterval(function () {
+            if (Math.random() > 0.35) {
+              spawn(item, 'emoji', emojiSet[Math.floor(Math.random() * emojiSet.length)]);
+            }
+            if (includeChips && Math.random() > 0.75) {
+              spawn(item, 'chip', followerChips[Math.floor(Math.random() * followerChips.length)]);
+            }
+          }, 420);
+        });
+
+        item.addEventListener('mouseleave', function () {
+          if (iv) { clearInterval(iv); iv = null; }
+        });
+      });
+    }
+
+    attachReactions(
+      Array.prototype.slice.call(document.querySelectorAll('#panel-pleasure .persona-item')),
+      pleasureEmojis, false
+    );
+    attachReactions(
+      Array.prototype.slice.call(document.querySelectorAll('#panel-revenue .persona-item')),
+      revenueEmojis, true
+    );
+  })();
+
+  // Access / bracelet application form
+  function submitAccess(e) {
+    e.preventDefault();
+    var name  = document.getElementById('access-name').value;
+    var email = document.getElementById('access-email').value;
+    var proof = document.getElementById('access-proof').value;
+    var btn   = e.target.querySelectorAll('button[type="submit"]');
+    var sucEn = document.getElementById('access-success');
+    var sucEs = document.getElementById('access-success-es');
+
+    btn.forEach(function(b) { b.disabled = true; b.textContent = '…'; });
+
+    fetch('https://formspree.io/f/mykoekrv', {
+      method: 'POST',
+      headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        _subject: 'Bracelet Application — ' + name,
+        name: name, email: email, proof: proof
+      })
+    })
+    .then(function(res) {
+      if (res.ok) {
+        e.target.style.display = 'none';
+        sucEn.style.display = 'block';
+        sucEs.style.display = 'block';
+      } else { throw new Error(); }
+    })
+    .catch(function() {
+      window.location.href =
+        'mailto:contact@opcoretech.com' +
+        '?subject=' + encodeURIComponent('Bracelet Application — ' + name) +
+        '&body='    + encodeURIComponent('Name: ' + name + '\nEmail: ' + email + '\nProfile: ' + proof);
+      sucEn.style.display = 'block';
+      sucEs.style.display = 'block';
+    })
+    .finally(function() {
+      btn.forEach(function(b) { b.disabled = false; });
+    });
+  }
 
   // Demo form
   function submitDemo(e) {
