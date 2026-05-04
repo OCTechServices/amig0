@@ -125,43 +125,33 @@
     .hero-stats   { animation: rise-in 0.85s cubic-bezier(0.16,1,0.3,1) 0.68s both; }
     .hero {
       min-height: 100vh;
-      background: #0C180E;
+      background: linear-gradient(135deg, #0C180E 0%, #1B3D28 35%, #0A1A0C 65%, #122A1C 100%);
+      background-size: 300% 300%;
+      animation: gradient-drift 14s ease infinite;
       display: flex; flex-direction: column; justify-content: center;
       padding: 10rem 3rem 6rem; position: relative; overflow: hidden;
     }
-    /* Hero background carousel */
-    .hero-carousel {
-      position: absolute; inset: 0; z-index: 0; overflow: hidden;
+    /* Photo filmstrip — full image visible, no cropping */
+    .filmstrip {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      background: var(--ink);
+      padding: 1.5rem 3rem;
     }
-    .hero-carousel-track {
-      display: flex; height: 100%;
-      transition: transform 0.9s cubic-bezier(0.16,1,0.3,1);
-      will-change: transform;
+    .filmstrip-item {
+      background: rgba(255,255,255,0.04);
+      border-radius: 8px; overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.07);
     }
-    .hero-carousel-slide {
-      min-width: 100%; height: 100%; position: relative; flex-shrink: 0;
-      background-size: cover; background-position: center;
+    .filmstrip-item img,
+    .filmstrip-item video {
+      width: 100%; height: auto; display: block;
+      border-radius: 8px;
     }
-    .hero-carousel-slide video {
-      position: absolute; inset: 0; width: 100%; height: 100%;
-      object-fit: cover; pointer-events: none;
+    @media (max-width: 680px) {
+      .filmstrip { grid-template-columns: repeat(2, 1fr); padding: 1rem 1.5rem; }
     }
-    /* Dark gradient overlay — keeps text readable over any media */
-    .hero-carousel::after {
-      content: ''; position: absolute; inset: 0; z-index: 1;
-      background: linear-gradient(105deg, rgba(8,18,10,0.82) 0%, rgba(12,24,14,0.55) 55%, rgba(8,18,10,0.30) 100%);
-    }
-    /* Carousel dots — bottom right of hero */
-    .hero-carousel-nav {
-      position: absolute; bottom: 2.5rem; right: 3rem; z-index: 3;
-      display: flex; align-items: center; gap: 0.5rem;
-    }
-    .hero-carousel-dot {
-      width: 6px; height: 6px; border-radius: 50%; padding: 0; border: none;
-      background: rgba(255,255,255,0.25); cursor: pointer;
-      transition: background 0.25s, transform 0.25s;
-    }
-    .hero-carousel-dot.active { background: var(--accent-light); transform: scale(1.4); }
     .hero::after {
       content: '';
       position: absolute; inset: 0;
@@ -803,17 +793,6 @@
 
 <!-- Hero -->
 <section class="hero">
-  <!-- Background carousel -->
-  <div class="hero-carousel">
-    <div class="hero-carousel-track" id="hero-carousel-track">
-      <div class="hero-carousel-slide">
-        <video autoplay muted loop playsinline><source src="IMG_0774.mov" type="video/quicktime"></video>
-      </div>
-      <div class="hero-carousel-slide" style="background-image:url('IMG_0661.jpg')"></div>
-      <div class="hero-carousel-slide" style="background-image:url('IMG_5087.jpg')"></div>
-      <div class="hero-carousel-slide" style="background-image:url('IMG_0651.jpg')"></div>
-    </div>
-  </div>
   <!-- Texture + scan overlay -->
   <div class="hero-bars">
     <div class="hero-texture"></div>
@@ -858,13 +837,17 @@
       </div>
     </div>
   </div>
-  <div class="hero-carousel-nav">
-    <button class="hero-carousel-dot active" data-index="0" aria-label="Slide 1"></button>
-    <button class="hero-carousel-dot" data-index="1" aria-label="Slide 2"></button>
-    <button class="hero-carousel-dot" data-index="2" aria-label="Slide 3"></button>
-    <button class="hero-carousel-dot" data-index="3" aria-label="Slide 4"></button>
-  </div>
 </section>
+
+<!-- Photo filmstrip -->
+<div class="filmstrip">
+  <div class="filmstrip-item">
+    <video autoplay muted loop playsinline><source src="IMG_0774.mov" type="video/quicktime"></video>
+  </div>
+  <div class="filmstrip-item"><img src="IMG_0661.jpg" alt="Group experience"></div>
+  <div class="filmstrip-item"><img src="IMG_5087.jpg" alt="Group experience"></div>
+  <div class="filmstrip-item"><img src="IMG_0651.jpg" alt="Group experience"></div>
+</div>
 
 <!-- Problem -->
 <section class="problem-section">
@@ -1530,39 +1513,6 @@
       if (e.key === 'ArrowLeft')  icpNav(-1);
       if (e.key === 'ArrowRight') icpNav(1);
     });
-  })();
-
-  // Hero background carousel
-  (function () {
-    var track   = document.getElementById('hero-carousel-track');
-    var dots    = document.querySelectorAll('.hero-carousel-dot');
-    var total   = 4;
-    var current = 0;
-    var timer;
-
-    function goTo(i) {
-      current = (i + total) % total;
-      track.style.transform = 'translateX(-' + (current * 100) + '%)';
-      dots.forEach(function (d, idx) { d.classList.toggle('active', idx === current); });
-    }
-
-    function startAuto() { timer = setInterval(function () { goTo(current + 1); }, 6000); }
-    function stopAuto()  { clearInterval(timer); }
-
-    dots.forEach(function (d) {
-      d.addEventListener('click', function () { stopAuto(); goTo(parseInt(d.dataset.index)); startAuto(); });
-    });
-
-    // Touch swipe
-    var startX = 0;
-    track.addEventListener('touchstart', function (e) { startX = e.touches[0].clientX; stopAuto(); }, { passive: true });
-    track.addEventListener('touchend', function (e) {
-      var dx = e.changedTouches[0].clientX - startX;
-      if (Math.abs(dx) > 40) dx < 0 ? goTo(current + 1) : goTo(current - 1);
-      startAuto();
-    }, { passive: true });
-
-    startAuto();
   })();
 
   // Demo form
