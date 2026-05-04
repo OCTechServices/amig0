@@ -1359,13 +1359,43 @@
   // Demo form
   function submitDemo(e) {
     e.preventDefault();
-    var email = document.getElementById('demo-email').value;
-    window.location.href =
-      'mailto:contact@opcoretech.com' +
-      '?subject=' + encodeURIComponent('Demo Request') +
-      '&body='    + encodeURIComponent('Contact email: ' + email);
-    document.getElementById('demo-success').style.display    = 'block';
-    document.getElementById('demo-success-es').style.display = 'block';
+    var email  = document.getElementById('demo-email').value;
+    var btns   = e.target.querySelectorAll('button[type="submit"]');
+    var btn    = btns[0];
+    var successEn = document.getElementById('demo-success');
+    var successEs = document.getElementById('demo-success-es');
+
+    btns.forEach(function (b) { b.disabled = true; b.textContent = '…'; });
+
+    fetch('https://formspree.io/f/mykoekrv', {
+      method:  'POST',
+      headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ email: email, _subject: 'Demo Request — Amig0' })
+    })
+    .then(function (res) {
+      if (res.ok) {
+        successEn.style.display = 'block';
+        successEs.style.display = 'block';
+        e.target.reset();
+      } else {
+        return res.json().then(function (data) { throw new Error(data.error || 'error'); });
+      }
+    })
+    .catch(function () {
+      // Graceful fallback — open mail client if Formspree is unreachable
+      window.location.href =
+        'mailto:contact@opcoretech.com' +
+        '?subject=' + encodeURIComponent('Demo Request') +
+        '&body='    + encodeURIComponent('Contact email: ' + email);
+      successEn.style.display = 'block';
+      successEs.style.display = 'block';
+    })
+    .finally(function () {
+      btns.forEach(function (b) {
+        b.disabled    = false;
+        b.textContent = b.getAttribute('data-lang') === 'es' ? 'Solicitar Demo' : 'Request Demo';
+      });
+    });
   }
 </script>
 
