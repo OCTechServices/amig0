@@ -578,9 +578,8 @@
       ──────────────────────────────────────────────────────────────────────── */
       background-size: cover; background-position: center;
     }
-    /* Placeholder tones until real photos are added */
     .carousel-slide-1 { background-color: #0f2a18; }
-    .carousel-slide-2 { background-color: #0a1f2a; }
+    .carousel-slide-2 { background-color: #0a1f2a; background-image: url('IMG_0661.jpg'); }
     .carousel-slide-3 { background-color: #1a1a0f; }
     /* Dark gradient overlay — text always readable over any photo */
     .carousel-slide::after {
@@ -1380,8 +1379,11 @@
     ═══════════════════════════════════════════════════════════════
     -->
 
-    <!-- SLIDE 1 — replace .carousel-slide-1 background-image in CSS with your photo -->
+    <!-- SLIDE 1 — IMG_0774.mov -->
     <div class="carousel-slide carousel-slide-1">
+      <video class="carousel-video" autoplay muted loop playsinline>
+        <source src="IMG_0774.mov" type="video/quicktime">
+      </video>
       <div class="carousel-caption">
         <span class="carousel-tag" data-lang="en">Mexico City · World Cup 2026</span>
         <span class="carousel-tag" data-lang="es">Ciudad de Mexico · Mundial 2026</span>
@@ -1392,7 +1394,7 @@
       </div>
     </div>
 
-    <!-- SLIDE 2 — replace .carousel-slide-2 background-image in CSS with your photo -->
+    <!-- SLIDE 2 — IMG_0661.jpg -->
     <div class="carousel-slide carousel-slide-2">
       <div class="carousel-caption">
         <span class="carousel-tag" data-lang="en">Pueblos Magicos · Small Group</span>
@@ -1404,8 +1406,11 @@
       </div>
     </div>
 
-    <!-- SLIDE 3 — replace .carousel-slide-3 background-image in CSS with your photo -->
+    <!-- SLIDE 3 — angel.MOV -->
     <div class="carousel-slide carousel-slide-3">
+      <video class="carousel-video" autoplay muted loop playsinline>
+        <source src="angel.MOV" type="video/quicktime">
+      </video>
       <div class="carousel-caption">
         <span class="carousel-tag" data-lang="en">Private Transport · VIP Transfer</span>
         <span class="carousel-tag" data-lang="es">Transporte Privado · Traslado VIP</span>

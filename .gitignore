@@ -33,3 +33,17 @@ storage.rules.bak
 
 # OS
 Thumbs.db
+
+# Media assets — deployed via Firebase, not committed to git
+*.mov
+*.MOV
+*.mp4
+*.MP4
+*.jpg
+*.jpeg
+*.JPG
+*.JPEG
+*.png
+*.PNG
+*.heic
+*.HEIC
