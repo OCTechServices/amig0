@@ -125,12 +125,43 @@
     .hero-stats   { animation: rise-in 0.85s cubic-bezier(0.16,1,0.3,1) 0.68s both; }
     .hero {
       min-height: 100vh;
-      background: linear-gradient(135deg, #0C180E 0%, #1B3D28 35%, #0A1A0C 65%, #122A1C 100%);
-      background-size: 300% 300%;
-      animation: gradient-drift 14s ease infinite;
+      background: #0C180E;
       display: flex; flex-direction: column; justify-content: center;
       padding: 10rem 3rem 6rem; position: relative; overflow: hidden;
     }
+    /* Hero background carousel */
+    .hero-carousel {
+      position: absolute; inset: 0; z-index: 0; overflow: hidden;
+    }
+    .hero-carousel-track {
+      display: flex; height: 100%;
+      transition: transform 0.9s cubic-bezier(0.16,1,0.3,1);
+      will-change: transform;
+    }
+    .hero-carousel-slide {
+      min-width: 100%; height: 100%; position: relative; flex-shrink: 0;
+      background-size: cover; background-position: center;
+    }
+    .hero-carousel-slide video {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      object-fit: cover; pointer-events: none;
+    }
+    /* Dark gradient overlay — keeps text readable over any media */
+    .hero-carousel::after {
+      content: ''; position: absolute; inset: 0; z-index: 1;
+      background: linear-gradient(105deg, rgba(8,18,10,0.82) 0%, rgba(12,24,14,0.55) 55%, rgba(8,18,10,0.30) 100%);
+    }
+    /* Carousel dots — bottom right of hero */
+    .hero-carousel-nav {
+      position: absolute; bottom: 2.5rem; right: 3rem; z-index: 3;
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .hero-carousel-dot {
+      width: 6px; height: 6px; border-radius: 50%; padding: 0; border: none;
+      background: rgba(255,255,255,0.25); cursor: pointer;
+      transition: background 0.25s, transform 0.25s;
+    }
+    .hero-carousel-dot.active { background: var(--accent-light); transform: scale(1.4); }
     .hero::after {
       content: '';
       position: absolute; inset: 0;
@@ -772,10 +803,22 @@
 
 <!-- Hero -->
 <section class="hero">
+  <!-- Background carousel -->
+  <div class="hero-carousel">
+    <div class="hero-carousel-track" id="hero-carousel-track">
+      <div class="hero-carousel-slide">
+        <video autoplay muted loop playsinline><source src="IMG_0774.mov" type="video/quicktime"></video>
+      </div>
+      <div class="hero-carousel-slide" style="background-image:url('IMG_0661.jpg')"></div>
+      <div class="hero-carousel-slide">
+        <video autoplay muted loop playsinline><source src="angel.MOV" type="video/quicktime"></video>
+      </div>
+    </div>
+  </div>
+  <!-- Texture + scan overlay -->
   <div class="hero-bars">
     <div class="hero-texture"></div>
     <div class="hero-texture-fine"></div>
-    <div class="hero-vignette"></div>
     <div class="hero-scan"></div>
   </div>
   <div class="hero-inner">
@@ -815,6 +858,11 @@
         <span class="hero-stat-label" data-lang="es">Exportaciones manuales</span>
       </div>
     </div>
+  </div>
+  <div class="hero-carousel-nav">
+    <button class="hero-carousel-dot active" data-index="0" aria-label="Slide 1"></button>
+    <button class="hero-carousel-dot" data-index="1" aria-label="Slide 2"></button>
+    <button class="hero-carousel-dot" data-index="2" aria-label="Slide 3"></button>
   </div>
 </section>
 
@@ -1355,83 +1403,6 @@
   </div>
 </section>
 
-<!-- Experience carousel -->
-<section class="carousel-section">
-  <div class="carousel-track" id="carousel-track">
-
-    <!--
-    ═══════════════════════════════════════════════════════════════
-    VIDEO SLIDE — to use a .mov or .mp4, replace any slide with:
-
-    <div class="carousel-slide carousel-slide-1">
-      <video class="carousel-video" autoplay muted loop playsinline>
-        <source src="your-video.mov" type="video/quicktime">
-        <source src="your-video.mp4" type="video/mp4">
-      </video>
-      <div class="carousel-caption">
-        ... your caption here ...
-      </div>
-    </div>
-
-    Place the .mov file in the same folder as landing.html.
-    NOTE: .mov plays natively in Safari. For Chrome/Firefox add
-    an .mp4 version of the same file as a second <source> tag.
-    ═══════════════════════════════════════════════════════════════
-    -->
-
-    <!-- SLIDE 1 — IMG_0774.mov -->
-    <div class="carousel-slide carousel-slide-1">
-      <video class="carousel-video" autoplay muted loop playsinline>
-        <source src="IMG_0774.mov" type="video/quicktime">
-      </video>
-      <div class="carousel-caption">
-        <span class="carousel-tag" data-lang="en">Mexico City · World Cup 2026</span>
-        <span class="carousel-tag" data-lang="es">Ciudad de Mexico · Mundial 2026</span>
-        <h2 class="carousel-title" data-lang="en">Every client. Every moment. Coordinated.</h2>
-        <h2 class="carousel-title" data-lang="es">Cada cliente. Cada momento. Coordinado.</h2>
-        <p class="carousel-body" data-lang="en">From airport transfer to final whistle — your group moves as one.</p>
-        <p class="carousel-body" data-lang="es">Del traslado al aeropuerto hasta el silbatazo final — tu grupo se mueve como uno.</p>
-      </div>
-    </div>
-
-    <!-- SLIDE 2 — IMG_0661.jpg -->
-    <div class="carousel-slide carousel-slide-2">
-      <div class="carousel-caption">
-        <span class="carousel-tag" data-lang="en">Pueblos Magicos · Small Group</span>
-        <span class="carousel-tag" data-lang="es">Pueblos Magicos · Grupo Pequeno</span>
-        <h2 class="carousel-title" data-lang="en">A guide and a driver. One unforgettable route.</h2>
-        <h2 class="carousel-title" data-lang="es">Un guia y un chofer. Una ruta inolvidable.</h2>
-        <p class="carousel-body" data-lang="en">Both briefed independently. One seamless experience for the group.</p>
-        <p class="carousel-body" data-lang="es">Cada uno informado por separado. Una experiencia perfecta para el grupo.</p>
-      </div>
-    </div>
-
-    <!-- SLIDE 3 — angel.MOV -->
-    <div class="carousel-slide carousel-slide-3">
-      <video class="carousel-video" autoplay muted loop playsinline>
-        <source src="angel.MOV" type="video/quicktime">
-      </video>
-      <div class="carousel-caption">
-        <span class="carousel-tag" data-lang="en">Private Transport · VIP Transfer</span>
-        <span class="carousel-tag" data-lang="es">Transporte Privado · Traslado VIP</span>
-        <h2 class="carousel-title" data-lang="en">Professional from the first message to the last drop-off.</h2>
-        <h2 class="carousel-title" data-lang="es">Profesional desde el primer mensaje hasta el ultimo traslado.</h2>
-        <p class="carousel-body" data-lang="en">Invoices sent automatically. Clients always in the loop.</p>
-        <p class="carousel-body" data-lang="es">Facturas enviadas automaticamente. Clientes siempre informados.</p>
-      </div>
-    </div>
-
-  </div>
-
-  <div class="carousel-nav">
-    <button class="carousel-arrow" id="carousel-prev" aria-label="Previous">&#8592;</button>
-    <button class="carousel-dot active" data-index="0" aria-label="Slide 1"></button>
-    <button class="carousel-dot" data-index="1" aria-label="Slide 2"></button>
-    <button class="carousel-dot" data-index="2" aria-label="Slide 3"></button>
-    <button class="carousel-arrow" id="carousel-next" aria-label="Next">&#8594;</button>
-  </div>
-</section>
-
 <!-- World Cup -->
 <section class="moment-section">
   <div class="moment-inner">
@@ -1561,11 +1532,11 @@
     });
   })();
 
-  // Experience carousel
+  // Hero background carousel
   (function () {
-    var track  = document.getElementById('carousel-track');
-    var dots   = document.querySelectorAll('.carousel-dot');
-    var total  = 3;
+    var track   = document.getElementById('hero-carousel-track');
+    var dots    = document.querySelectorAll('.hero-carousel-dot');
+    var total   = 3;
     var current = 0;
     var timer;
 
@@ -1575,13 +1546,9 @@
       dots.forEach(function (d, idx) { d.classList.toggle('active', idx === current); });
     }
 
-    function next() { goTo(current + 1); }
-
-    function startAuto() { timer = setInterval(next, 5000); }
+    function startAuto() { timer = setInterval(function () { goTo(current + 1); }, 6000); }
     function stopAuto()  { clearInterval(timer); }
 
-    document.getElementById('carousel-next').addEventListener('click', function () { stopAuto(); next(); startAuto(); });
-    document.getElementById('carousel-prev').addEventListener('click', function () { stopAuto(); goTo(current - 1); startAuto(); });
     dots.forEach(function (d) {
       d.addEventListener('click', function () { stopAuto(); goTo(parseInt(d.dataset.index)); startAuto(); });
     });
@@ -1591,7 +1558,7 @@
     track.addEventListener('touchstart', function (e) { startX = e.touches[0].clientX; stopAuto(); }, { passive: true });
     track.addEventListener('touchend', function (e) {
       var dx = e.changedTouches[0].clientX - startX;
-      if (Math.abs(dx) > 40) dx < 0 ? next() : goTo(current - 1);
+      if (Math.abs(dx) > 40) dx < 0 ? goTo(current + 1) : goTo(current - 1);
       startAuto();
     }, { passive: true });
 
