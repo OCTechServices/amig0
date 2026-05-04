@@ -140,11 +140,11 @@
     }
     .hero-carousel-slide {
       min-width: 100%; height: 100%; position: relative; flex-shrink: 0;
-      background-size: contain; background-position: center; background-repeat: no-repeat;
+      background-size: cover; background-position: center;
     }
     .hero-carousel-slide video {
       position: absolute; inset: 0; width: 100%; height: 100%;
-      object-fit: contain; pointer-events: none;
+      object-fit: cover; pointer-events: none;
     }
     .hero-carousel::after {
       content: ''; position: absolute; inset: 0; z-index: 1;
@@ -160,6 +160,14 @@
       transition: background 0.25s, transform 0.25s;
     }
     .hero-carousel-dot.active { background: var(--accent-light); transform: scale(1.4); }
+    /* Per-slide caption tag */
+    .hero-slide-tag {
+      position: absolute; bottom: 4.5rem; left: 3rem; z-index: 3;
+      font-size: 0.68rem; font-weight: 600; letter-spacing: 0.18em;
+      text-transform: uppercase; color: rgba(255,255,255,0.55);
+      border-left: 2px solid var(--accent); padding-left: 0.75rem;
+      transition: opacity 0.4s;
+    }
     /* Photo filmstrip — full image visible, no cropping */
     .filmstrip {
       display: grid;
@@ -831,6 +839,9 @@
       <div class="hero-carousel-slide" style="background-image:url('IMG_5087.jpg')"></div>
       <div class="hero-carousel-slide" style="background-image:url('IMG_9188.jpg')"></div>
       <div class="hero-carousel-slide" style="background-image:url('IMG_0651.jpg')"></div>
+      <div class="hero-carousel-slide" style="background-image:url('IMG_5603.jpg')"></div>
+      <div class="hero-carousel-slide" style="background-image:url('IMG_7364.jpg')"></div>
+      <div class="hero-carousel-slide" style="background-image:url('IMG_0126.jpg')"></div>
     </div>
   </div>
   <!-- Texture + scan overlay -->
@@ -877,6 +888,7 @@
       </div>
     </div>
   </div>
+  <div class="hero-slide-tag" id="hero-slide-tag"></div>
   <div class="hero-carousel-nav">
     <button class="hero-carousel-dot active" data-index="0"></button>
     <button class="hero-carousel-dot" data-index="1"></button>
@@ -885,6 +897,9 @@
     <button class="hero-carousel-dot" data-index="4"></button>
     <button class="hero-carousel-dot" data-index="5"></button>
     <button class="hero-carousel-dot" data-index="6"></button>
+    <button class="hero-carousel-dot" data-index="7"></button>
+    <button class="hero-carousel-dot" data-index="8"></button>
+    <button class="hero-carousel-dot" data-index="9"></button>
   </div>
 </section>
 
@@ -1568,16 +1583,37 @@
   (function () {
     var track   = document.getElementById('hero-carousel-track');
     var dots    = document.querySelectorAll('.hero-carousel-dot');
-    var total   = 7;
+    var tag     = document.getElementById('hero-slide-tag');
+    var total   = 10;
     var current = 0;
     var timer;
+
+    var captions = [
+      'Nightlife in the heart of Mexico City · Reforma',
+      'Local culture, Carta Blanca, and a game of lotería · Roma Norte',
+      'Group dining at a curated Mexico City restaurant · Polanco',
+      'Walking the historic centre after dark · Zócalo',
+      'Exclusive rooftop experience with your group · Condesa',
+      'In the moment — memories made on every corner · Mexico City',
+      'Street food tour with your crew · Mercado de Medellín',
+      'Art and architecture walk · San Ángel',
+      'World Cup energy — the city comes alive · Estadio Azteca',
+      'Group transfer — professional from door to door · CDMX'
+    ];
+
     function goTo(i) {
       current = (i + total) % total;
       track.style.transform = 'translateX(-' + (current * 100) + '%)';
       dots.forEach(function (d, idx) { d.classList.toggle('active', idx === current); });
+      if (tag) { tag.style.opacity = '0'; setTimeout(function () { tag.textContent = captions[current]; tag.style.opacity = '1'; }, 200); }
     }
+
     function startAuto() { timer = setInterval(function () { goTo(current + 1); }, 5000); }
     function stopAuto()  { clearInterval(timer); }
+
+    // Set first caption immediately
+    if (tag) tag.textContent = captions[0];
+
     dots.forEach(function (d) {
       d.addEventListener('click', function () { stopAuto(); goTo(parseInt(d.dataset.index)); startAuto(); });
     });
