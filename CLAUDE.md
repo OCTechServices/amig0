@@ -13,7 +13,7 @@ The platform consists of three apps in one codebase:
 **Target Users:** Tour operators, travel agents, clients, tour guides
 **Tier:** 1 — Enterprise Grade
 **Status:** Active
-**Last Updated:** 2026-05-03
+**Last Updated:** 2026-05-04
 
 ## 2. Architecture Overview
 **Stack:**
@@ -58,6 +58,21 @@ The platform consists of three apps in one codebase:
 - css/portal.css: Perks, map, secondary currency, marketplace cards, mobile nav fix (8-tab scrollable strip)
 - css/main.css: KPI strip, bar charts, country pills, marketplace stats, dual-currency helpers
 - landing.html: contact@opcoretech.com replacing demo@amig0travel.com (I11 closed)
+
+**Session 10 additions (2026-05-04):**
+- landing.html: Full landing page sprint — all changes in one file
+  - Bracelet access form: name/email/proof fields, Formspree submit + mailto fallback
+  - Persona gate: page stops at Pleasure/Revenue toggle — content below hidden until selection
+  - Pleasure mode: hides operator sections, toggle fades, CTA takes focus
+  - Revenue mode: reveals full operator page below persona section
+  - Back button: appears in pleasure-focused state, resets gate + scrolls to top
+  - Live-stream reaction particles: pleasure (✈️ travel emojis), revenue (🪙 coins + follower chips)
+  - Hero notification stream: 12 international travelers cycle top-right of hero
+  - Hero carousel captions repositioned to top (visible on load)
+  - Bracelet headline: single-line, smaller clamp
+  - Stack flow: nowrap single line with horizontal scroll
+  - Mobile responsive pass: persona stacks, captions scale, nav trimmed, win-win single column
+  - Video slide 1: MP4 primary source (user converted .mov → .mp4 via QuickTime)
 
 **Pending:**
 - None — all planned items complete

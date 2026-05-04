@@ -1,6 +1,6 @@
 # RAID Log: amig0-travel-company
 # Tier 1 — Enterprise Grade | OCTech Services
-# Last Updated: 2026-05-03 (Session 9)
+# Last Updated: 2026-05-04 (Session 10)
 
 ---
 
@@ -38,6 +38,8 @@
 | I09 | No email delivery for quotes and invoices | Session 5 review | Medium | Closed — mailto: deep links added to Quotes and Invoicing modules (2026-05-02). Email button opens operator's email client pre-filled with client address, subject, and structured body. Falls back to alert if no client email on record. |
 | I10 | Guide passengers rule-level scoping incomplete | Session 6 | Low | Open — passengers collection allows read by any authenticated guide (no tour-level restriction at rules layer). Guide app scopes in JS via booking-filtered passenger IDs. Full rules scoping requires adding tourId to passenger docs (denormalization). Accepted limitation for single-tenant. |
 | I11 | landing.html contact email is placeholder — demo@amig0travel.com used in 5 locations (nav CTA, hero CTA x2, form handler, footer) | Session 7 | Low | Closed — replaced with contact@opcoretech.com across all 5 occurrences in landing.html, and portal-marketplace.js. (2026-05-03) |
+| I12 | landing.html bracelet access section had no submission path — users read criteria then hit a dead end | Session 10 | Medium | Closed — apply form added (name, email, proof URL). Formspree submit + mailto fallback. (2026-05-04) |
+| I13 | landing.html persona selector showed all page content by default — no progressive disclosure | Session 10 | Low | Closed — persona gate implemented. Sections below persona hidden until Pleasure or Revenue selected. Revenue reveals full operator page. Pleasure keeps gate closed, focuses onboarding CTA. (2026-05-04) |
 
 ## Vision Backlog
 Product ideas and strategic opportunities — captured for future prioritization. Not yet scoped or committed.
