@@ -1,0 +1,40 @@
+// storage.rules — amig0-travel-company | OCTech Services
+// Firebase Storage security rules
+// Covers: vetting documents (guides + providers)
+
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // -------------------------------------------------------------------------
+    // Helpers
+    // -------------------------------------------------------------------------
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOperator() {
+      return isSignedIn() && request.auth.token.operator == true;
+    }
+
+    // -------------------------------------------------------------------------
+    // Vetting documents — guide and provider ID/passport uploads
+    // Operators: full read/write
+    // Guides/clients: no access (sensitive documents)
+    // -------------------------------------------------------------------------
+    match /vetting/guides/{guideId}/{fileName} {
+      allow read, write: if isOperator();
+    }
+
+    match /vetting/providers/{providerId}/{fileName} {
+      allow read, write: if isOperator();
+    }
+
+    // -------------------------------------------------------------------------
+    // All other paths — deny by default
+    // -------------------------------------------------------------------------
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

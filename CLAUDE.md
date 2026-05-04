@@ -13,7 +13,7 @@ The platform consists of three apps in one codebase:
 **Target Users:** Tour operators, travel agents, clients, tour guides
 **Tier:** 1 — Enterprise Grade
 **Status:** Active
-**Last Updated:** 2026-05-02
+**Last Updated:** 2026-05-03
 
 ## 2. Architecture Overview
 **Stack:**
@@ -30,26 +30,37 @@ The platform consists of three apps in one codebase:
 - Target: ~18,600 lines across 17 JS files and 3 CSS files (planned)
 - No build step — pure vanilla. Zero npm dependencies beyond Firebase, Leaflet, jsPDF
 
-**Completed Modules (as of 2026-05-02):**
-- CRM: auth.js, nav.js, dashboard.js, clients.js, tours.js, passengers.js, bookings.js, quotes.js, invoicing.js, providers.js, briefings.js, guides.js
-- Client Portal: portal-auth.js, portal-nav.js, portal-overview.js, portal-itinerary.js, portal-quotes.js, portal-invoices.js
+**Completed Modules (as of 2026-05-03):**
+- CRM: auth.js, nav.js, dashboard.js, clients.js, tours.js, passengers.js, bookings.js, quotes.js, invoicing.js, providers.js, briefings.js, guides.js, partners.js, marketplace.js, invites.js, reports.js
+- Client Portal: portal-auth.js, portal-nav.js, portal-overview.js, portal-itinerary.js, portal-quotes.js, portal-invoices.js, portal-perks.js, portal-map.js, portal-marketplace.js
 - Guide App: guide-auth.js, guide-nav.js, guide-today.js, guide-itinerary.js, guide-passengers.js, guide-briefings.js, sw.js
-- PDF: pdf.js (quotes + invoices)
+- PDF: pdf.js (quotes + invoices, with dual-currency secondary line)
 - CSS: css/main.css, css/portal.css, css/guide.css
-- Rules: firestore.rules (role-based: operators + user_profiles) — privilege escalation fix deployed 2026-05-02
+- Rules: firestore.rules (role-based: operators + user_profiles + partners + checkins + marketplace_listings + invites), storage.rules (vetting paths, operator-only)
 - Hooks: .claude/hooks/pre-commit.sh, .claude/hooks/session-end.sh
+- Standalone: checkin.html (QR deep-link check-in), landing.html
 
-**Session 5 additions (2026-05-02):**
-- firestore.rules: user_profiles write scoped to own UID — privilege escalation blocked, deployed
-- guides.js: Firebase Auth UID field + App Access (Linked/Not linked) column
-- clients.js: Firebase Auth UID field + Portal Access (Linked/Not linked) column
-- quotes.js + invoicing.js: Email button — mailto: deep link pre-filled with client address, subject, structured body
-- clientsCache shape updated to { name, email } in quotes.js and invoicing.js
+**Session 6–9 additions (2026-05-03):**
+- partners.js: Partner Network CRM module with lat/lng map pin fields
+- marketplace.js + invites.js: Marketplace listings and invite code CRM modules
+- portal-perks.js: Partner perks + check-in history tab in portal
+- portal-map.js: Leaflet partner map with category pins + user QR pass tab
+- portal-marketplace.js: Invite-gated marketplace tab with code redemption
+- checkin.html: Standalone QR check-in deep-link page
+- reports.js: Rewritten — KPI strip, check-in analytics, marketplace stats, bar charts
+- quotes.js + invoicing.js + portal-quotes.js + portal-invoices.js + pdf.js: Dual-currency MXN/USD display + PDF secondary line
+- tours.js + portal-overview.js: Group chat link field + portal card (I05)
+- firestore.rules: partners, checkins, marketplace_listings, invites rules added
+- storage.rules: Created — vetting/guides/ and vetting/providers/ operator-only
+- firebase.json: storage.rules config added
+- portal.html: Leaflet CSS/JS, Perks/Map/Marketplace tabs, new scripts
+- index.html: Partners, Marketplace, Invites nav + scripts
+- css/portal.css: Perks, map, secondary currency, marketplace cards, mobile nav fix (8-tab scrollable strip)
+- css/main.css: KPI strip, bar charts, country pills, marketplace stats, dual-currency helpers
+- landing.html: contact@opcoretech.com replacing demo@amig0travel.com (I11 closed)
 
 **Pending:**
-- SVG logo/wordmark for "Amig0" brand mark
-- Operator role hardening — Firebase Auth custom claims (RAID I02)
-- GitHub Pages → Firebase Hosting migration (RAID I04)
+- None — all planned items complete
 
 **Key Modules:**
 Auth · Dashboard · CRM · Clients · Tours · Passengers · Quotes · Invoicing · Email · PDF · Providers · Briefings · Data · Guide App · Client Portal
@@ -168,3 +179,12 @@ and confirm all three are accurate before we sign off.
 - [x] SVG logo/wordmark for "Amig0" brand mark — inline SVG "0" approved (Session 5)
 - [x] Operator role hardening — Firebase Auth custom claims via Cloud Functions. CRM gated on operator claim. (RAID I02, Session 5)
 - [x] Firebase Hosting migration — firebase.json hosting block configured, deployed (RAID I04, Session 5)
+- [x] Partner Network — partners.js CRM module with lat/lng + portal Perks + Map tabs (P07–P09, Session 6–9)
+- [x] Marketplace — marketplace.js CRM + portal-marketplace.js invite-gated portal tab (P02–P03, Session 6–9)
+- [x] Invite codes — invites.js CRM module + portal redemption flow (P03, Session 6–9)
+- [x] QR check-in — checkin.html deep-link + portal-perks.js history (P08, Session 6–9)
+- [x] Dual-currency display — MXN/USD on quotes, invoices, portal, PDF (P10, Session 6–9)
+- [x] Group chat link — tours.js field + portal-overview.js card (I05, Session 9)
+- [x] Firebase Storage rules — storage.rules created for vetting paths (Session 9)
+- [x] Contact email — contact@opcoretech.com across all surfaces (I11, Session 6–9)
+- [x] Mobile portal nav — 8-tab scrollable strip, all tabs reachable on mobile (Session 6–9)

@@ -136,6 +136,19 @@
         '</div>',
       '</div>',
 
+      // Group chat link (if set)
+      tour.groupChatLink ? [
+        '<div class="portal-card">',
+          '<div class="portal-card-header">',
+            '<span class="portal-card-title">Group Chat</span>',
+          '</div>',
+          '<div class="portal-card-body" style="font-size:0.9rem">',
+            '<p style="margin-bottom:var(--space-3);color:var(--color-text-secondary)">Join your fellow travellers in the group chat.</p>',
+            '<a href="' + esc(tour.groupChatLink) + '" target="_blank" rel="noopener noreferrer" class="pbtn pbtn-primary" style="display:inline-block">Join Group Chat</a>',
+          '</div>',
+        '</div>',
+      ].join('') : '',
+
       // Fellow passengers
       '<div class="portal-card">',
         '<div class="portal-card-header">',

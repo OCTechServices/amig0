@@ -2,6 +2,9 @@
   "firestore": {
     "rules": "firestore.rules"
   },
+  "storage": {
+    "rules": "storage.rules"
+  },
   "functions": {
     "source": "functions"
   },
@@ -11,6 +14,7 @@
       "firebase.json",
       ".firebaserc",
       "firestore.rules",
+      "storage.rules",
       "CLAUDE.md",
       "RAID.md",
       "README.md",

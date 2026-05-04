@@ -240,7 +240,8 @@
       form.elements['price'].value       = data.price       || '';
       form.elements['currency'].value    = data.currency    || 'USD';
       form.elements['status'].value      = data.status      || 'draft';
-      form.elements['notes'].value       = data.notes       || '';
+      form.elements['notes'].value          = data.notes          || '';
+      form.elements['groupChatLink'].value  = data.groupChatLink  || '';
       var existing = data.guideAssignments && data.guideAssignments.length
         ? data.guideAssignments
         : (data.guideId ? [{ guideId: data.guideId, role: 'guide', name: guidesCache[data.guideId] || '' }] : []);
@@ -316,6 +317,7 @@
       guideAssignments: teamData.assignments,
       teamIds:          teamData.teamIds,
       notes:            form.elements['notes'].value.trim(),
+      groupChatLink:    form.elements['groupChatLink'].value.trim() || null,
       startDate:        startVal ? firebase.firestore.Timestamp.fromDate(new Date(startVal)) : null,
       endDate:          endVal   ? firebase.firestore.Timestamp.fromDate(new Date(endVal))   : null,
       updatedAt:        firebase.firestore.FieldValue.serverTimestamp()
@@ -679,6 +681,11 @@
             '<div class="field">',
               '<label for="tour-notes">Notes</label>',
               '<textarea id="tour-notes" name="notes" placeholder="Internal notes about this tour…" rows="3"></textarea>',
+            '</div>',
+
+            '<div class="field">',
+              '<label for="tour-chat-link">Group Chat Link <span style="font-size:0.75rem;font-weight:400;color:var(--color-text-muted)">(optional — WhatsApp, Telegram, etc.)</span></label>',
+              '<input type="url" id="tour-chat-link" name="groupChatLink" placeholder="https://chat.whatsapp.com/…" autocomplete="off">',
             '</div>',
 
             '<p id="tour-form-error" class="form-error" role="alert"></p>',

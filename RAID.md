@@ -1,6 +1,6 @@
 # RAID Log: amig0-travel-company
 # Tier 1 — Enterprise Grade | OCTech Services
-# Last Updated: 2026-05-02 (Session 5)
+# Last Updated: 2026-05-03 (Session 9)
 
 ---
 
@@ -31,13 +31,13 @@
 | I02 | Firestore Security Rules — operator role enforcement | Project intake | Medium | Closed — Firebase Auth custom claims implemented via Cloud Functions (addOperator, removeOperator). Firestore rules updated to isOperator() for all CRM collections. Operators module added to CRM. Bootstrap: Firebase Console → Custom Claims: {"operator":true} on first account, then sign out/in. (2026-05-02) |
 | I03 | Service worker cache versioning strategy not documented | Project intake | Medium | Closed — bump CACHE_NAME version on every guide app deploy. Activate handler purges old caches automatically. Documented in sw.js header. |
 | I04 | GitHub Pages → Firebase Hosting migration decision pending | Project intake | Low | Closed — firebase.json hosting block configured and deployed (2026-05-02). sw.js no-cache header added. |
-| I05 | Client Portal scoped as read-only (bookings + itineraries) — no pre-trip social layer designed yet | Session 2 design input | Low | Open — evaluate during portal design phase |
+| I05 | Client Portal scoped as read-only (bookings + itineraries) — no pre-trip social layer designed yet | Session 2 design input | Low | Closed — Group chat link field added to tours.js. Portal Overview surfaces "Join Group Chat" card when link is set. (2026-05-03) |
 | I06 | Fellow Travellers list requires cross-client booking reads — blocked by correct security rules | Session 3 | Low | Closed — resolved by current auth != null rules which allow all authenticated reads. Graceful fallback retained for network errors. |
 | I07 | No in-CRM provisioning flow for client/guide Firebase Auth accounts | Session 5 review | High | Partially closed — Firebase Auth UID field added to clients form (2026-05-02). Portal Access column shows Linked/Not linked. Operator pastes UID from Firebase Console → Authentication → Users; user_profiles doc still created via Console. Full automation requires custom claims + Admin SDK (RAID I02). |
 | I08 | guides.js form has no UID field — guide records cannot be linked to Firebase Auth for guide app login | Session 5 review | High | Closed — Firebase Auth UID field added to guide form (2026-05-02). App Access column in table shows Linked/Not linked. Operator pastes UID from Firebase Console → Authentication → Users. |
 | I09 | No email delivery for quotes and invoices | Session 5 review | Medium | Closed — mailto: deep links added to Quotes and Invoicing modules (2026-05-02). Email button opens operator's email client pre-filled with client address, subject, and structured body. Falls back to alert if no client email on record. |
 | I10 | Guide passengers rule-level scoping incomplete | Session 6 | Low | Open — passengers collection allows read by any authenticated guide (no tour-level restriction at rules layer). Guide app scopes in JS via booking-filtered passenger IDs. Full rules scoping requires adding tourId to passenger docs (denormalization). Accepted limitation for single-tenant. |
-| I11 | landing.html contact email is placeholder — demo@amig0travel.com used in 5 locations (nav CTA, hero CTA x2, form handler, footer) | Session 7 | Low | Open — replace with real contact email or Formspree endpoint before sales outreach begins. Currently backed by mailto: fallback which is functional. |
+| I11 | landing.html contact email is placeholder — demo@amig0travel.com used in 5 locations (nav CTA, hero CTA x2, form handler, footer) | Session 7 | Low | Closed — replaced with contact@opcoretech.com across all 5 occurrences in landing.html, and portal-marketplace.js. (2026-05-03) |
 
 ## Vision Backlog
 Product ideas and strategic opportunities — captured for future prioritization. Not yet scoped or committed.
@@ -66,15 +66,15 @@ Features confirmed for future build — not yet in active sprint.
 | ID  | Feature | Priority | Notes |
 |-----|---------|----------|-------|
 | P01 | Multi-guide/role assignment per tour | High | **Shipped Session 8.** tours doc now stores guideAssignments [{guideId, role, name}] + teamIds []. guide-auth.js queries teamIds array-contains with legacy guideId fallback. window.GuideAuth.role set on login. Role badges (Guide/Driver/Host) in CRM tours table. |
-| P02 | Marketplace listings module | Medium | New Firestore collection: marketplace_listings. Operator creates listing with tourId, seatsAvailable, pricePerSeat. Traveler portal shows available listings (access-gated). |
-| P03 | Invite-only access system | Medium | Firestore invites collection: {code, createdBy, usedBy, expiresAt, accessLevel}. On registration, user submits invite code, receives marketplace custom claim if valid. |
+| P02 | Marketplace listings module | Medium | **Shipped Session 9.** marketplace.js CRM module + portal-marketplace.js invite-gated portal tab. Collection: marketplace_listings. Fields: tourId, title, destination, seatsAvailable, pricePerSeat, currency, status, featured, startDate, endDate. |
+| P03 | Invite-only access system | Medium | **Shipped Session 9.** invites.js CRM module. Collection: invites {code XXXX-XXXX, createdBy, usedByUid, usedByEmail, usedAt, expiresAt, accessLevel}. Portal redemption flow in portal-marketplace.js. Batch write grants marketplaceAccess on user_profiles. |
 | P04 | Revenue split tracking between co-operators | Low | Extend invoices/bookings with splitConfig: [{operatorId, percentage}]. Reporting shows split breakdown. Required before marketplace commissions can be calculated. |
 | P05 | Replace contact form mailto: with Formspree or backend handler | High | Current demo form opens user's mail client — leads may be lost. Formspree endpoint captures email server-side. 5-minute change when real contact email is confirmed (RAID I11). |
 | P06 | Cross-platform reputation import — provider vetting | High | Screenshot upload field on provider/guide record for Uber, GetYourGuide, Viator, Airbnb Experiences ratings. Minimum thresholds: driver 4.7⭐, guide 4.8⭐, host Superhost or equivalent. Operator reviews and sets Verified badge. MVP: screenshot stored in Firebase Storage linked to provider doc. Long-term: API pull where available. |
-| P07 | Partner/merchant Firestore collection + QR token generation | Medium | New collection: partners {name, location (GeoPoint), category, discountOffer, qrToken, verifiedAt, active}. QR token = unique string, generate on partner creation. QR encodes a check-in URL. Required for V11/V12. |
-| P08 | Check-in collection + portal check-in flow | Medium | New collection: checkins {userId, partnerId, timestamp, country, tourId}. Portal: QR scanner or deep link → logs check-in → displays perk/discount confirmation. Bracelet NFC writes to same endpoint. Required for V12/V13. |
-| P09 | Portal map tab — verified partner discovery | Medium | New tab in client portal using existing Leaflet.js dependency. Pins = verified partner locations. Tap pin → partner detail (name, discount, hours). User's Amig0 QR displayed for scan at venue. Required for V11/V12. |
-| P10 | Dual-currency display on quotes, invoices, and portal | Medium | Add exchangeRate field to quote/invoice. Display price in both USD and MXN on all pricing surfaces. Short-term: operator inputs exchange rate manually on quote form. Required for V15. |
+| P07 | Partner/merchant Firestore collection + QR token generation | Medium | **Shipped Session 9.** partners.js CRM module. Collection: partners {name, category, location, country, discountOffer, perks, contactName, contactPhone, website, lat, lng, qrToken, active, verifiedAt}. qrToken = 12-char alphanumeric, auto-generated on create. |
+| P08 | Check-in collection + portal check-in flow | Medium | **Shipped Session 9.** checkin.html standalone QR deep-link page. portal-perks.js shows active partners + check-in history. Collection: checkins {userId, partnerId, clientId, country, timestamp, tourId}. Firestore rule: client creates own check-in only. |
+| P09 | Portal map tab — verified partner discovery | Medium | **Shipped Session 9.** portal-map.js Leaflet map tab with category-colored divIcon pins. Partner popup on click. User QR pass (api.qrserver.com) shown below map. mapInstance.remove() prevents "already initialised" error on tab revisit. |
+| P10 | Dual-currency display on quotes, invoices, and portal | Medium | **Shipped Session 9.** exchangeRate field on quotes/invoices. formatSecondary() helper: MXN÷rate=USD or USD×rate=MXN. Shown in table TD, portal rows, and PDF totals block (muted secondary line). |
 
 ## Dependencies
 | ID | Dependency | Type | Notes |
