@@ -631,6 +631,14 @@
       .carousel-nav { right: 1.5rem; bottom: 1.5rem; }
     }
 
+    /* Carousel video slide */
+    .carousel-video {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover; z-index: 0;
+      pointer-events: none;
+    }
+
     /* World Cup */
     .moment-section { background: var(--ink); padding: 6rem 3rem; }
     .moment-inner { max-width: 1120px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 3rem; flex-wrap: wrap; }
@@ -1351,6 +1359,26 @@
 <!-- Experience carousel -->
 <section class="carousel-section">
   <div class="carousel-track" id="carousel-track">
+
+    <!--
+    ═══════════════════════════════════════════════════════════════
+    VIDEO SLIDE — to use a .mov or .mp4, replace any slide with:
+
+    <div class="carousel-slide carousel-slide-1">
+      <video class="carousel-video" autoplay muted loop playsinline>
+        <source src="your-video.mov" type="video/quicktime">
+        <source src="your-video.mp4" type="video/mp4">
+      </video>
+      <div class="carousel-caption">
+        ... your caption here ...
+      </div>
+    </div>
+
+    Place the .mov file in the same folder as landing.html.
+    NOTE: .mov plays natively in Safari. For Chrome/Firefox add
+    an .mp4 version of the same file as a second <source> tag.
+    ═══════════════════════════════════════════════════════════════
+    -->
 
     <!-- SLIDE 1 — replace .carousel-slide-1 background-image in CSS with your photo -->
     <div class="carousel-slide carousel-slide-1">
