@@ -94,6 +94,25 @@
   });
 
   // -------------------------------------------------------------------------
+  // Forgot password
+  // -------------------------------------------------------------------------
+  document.getElementById('portal-forgot-btn').addEventListener('click', function () {
+    clearError();
+    var email = document.getElementById('p-email').value.trim();
+    if (!email) {
+      showError('Enter your email above, then click Forgot password.');
+      return;
+    }
+    auth.sendPasswordResetEmail(email)
+      .then(function () {
+        showError('Reset link sent — check your email.');
+      })
+      .catch(function (err) {
+        showError(friendlyError(err.code));
+      });
+  });
+
+  // -------------------------------------------------------------------------
   // Sign out
   // -------------------------------------------------------------------------
   signOutBtn.addEventListener('click', function () {

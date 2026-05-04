@@ -59,6 +59,25 @@
   });
 
   // -------------------------------------------------------------------------
+  // Forgot password
+  // -------------------------------------------------------------------------
+  document.getElementById('forgot-btn').addEventListener('click', function () {
+    clearError();
+    var email = document.getElementById('email').value.trim();
+    if (!email) {
+      showError('Enter your email above, then click Forgot password.');
+      return;
+    }
+    auth.sendPasswordResetEmail(email)
+      .then(function () {
+        showError('Reset link sent — check your email.');
+      })
+      .catch(function (err) {
+        showError(friendlyAuthError(err.code));
+      });
+  });
+
+  // -------------------------------------------------------------------------
   // Sign out
   // -------------------------------------------------------------------------
   signOutBtn.addEventListener('click', function () {
