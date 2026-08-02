@@ -86,4 +86,11 @@ Features confirmed for future build — not yet in active sprint.
 | D03 | jsPDF | External | PDF generation — loaded via script tag |
 | D04 | GitHub Pages + custom domain | Hosting | Current deployment target |
 | D05 | Google Fonts (DM Sans + Playfair Display) | External | Typography — requires internet |
+
+---
+
+## Governance Backlog
+| ID | Item | Priority | Notes |
+|---|---|---|---|
+| GB-01 | Trim CLAUDE.md to PP01 200-line limit | Medium | CLAUDE.md is 206 lines as of 2026-08-02 audit (PP01 limit: 200). Fix: move sprint changelogs and historical detail to `docs/changelog.md`; keep CLAUDE.md to current-state facts only. Foundation BL17. |
 | D06 | Native mobile app (iOS/Android) | Future decision | Dan confirmed intent to ship a mobile app — stack decision (React Native vs Flutter vs PWA-only) pending; guide.html already scoped as installable PWA which may be sufficient |
