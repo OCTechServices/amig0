@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Habit Tracker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg:      #09090b;
+      --surface: #18181b;
+      --border:  #27272a;
+      --text:    #fafafa;
+      --muted:   #71717a;
+      --green:   #4ade80;
+      --red:     #f87171;
+      --blue:    #60a5fa;
+      --p1:      #818cf8;
+      --p2:      #fb923c;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding-top: 40px; /* offset for fixed fact banner */
+    }
+
+    /* ── Fact banner (fixed) ── */
+    .ticker-wrap {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      background: rgba(9, 9, 11, 0.92);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border-bottom: 1px solid rgba(74, 222, 128, 0.12);
+      padding: 10px 24px;
+      text-align: center;
+    }
+    .ticker-fact {
+      font-size: 0.76rem;
+      color: rgba(74, 222, 128, 0.75);
+      letter-spacing: 0.01em;
+      opacity: 0;
+      transition: opacity 0.8s ease;
+    }
+    .ticker-sep { color: rgba(74, 222, 128, 0.3); margin-right: 7px; }
+
+
+    /* ── Main container ── */
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 32px 24px;
+    }
+
+    /* ── Header ── */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 36px;
+    }
+    header h1 { font-size: 1.1rem; font-weight: 600; color: var(--muted); }
+    header h1 strong { color: var(--text); }
+    .header-right { display: flex; align-items: center; gap: 12px; }
+    #lastUpdated { font-size: 0.72rem; color: var(--muted); }
+    .btn {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-family: inherit;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .btn:hover { color: var(--text); border-color: var(--p1); }
+
+    /* ── Section label ── */
+    .section-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+
+    /* ── Year progress bar ── */
+    .year-bar {
+      margin-bottom: 28px;
+    }
+    .year-bar-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 8px;
+    }
+    .year-bar-title {
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+    }
+    .year-bar-meta {
+      display: flex;
+      gap: 20px;
+    }
+    .year-bar-stat {
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+    .year-bar-stat strong { color: var(--text); font-weight: 600; }
+    .year-bar-track {
+      height: 5px;
+      background: var(--border);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .year-bar-fill {
+      height: 100%;
+      border-radius: 99px;
+      background: linear-gradient(90deg, var(--p1), var(--blue));
+      width: 0%;
+      transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .year-bar-countdown {
+      margin-top: 6px;
+      font-size: 0.72rem;
+      color: var(--muted);
+      text-align: right;
+    }
+    .year-bar-countdown strong { color: var(--text); }
+
+    /* ── Donut cards ── */
+    .donut-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    @media (max-width: 560px) { .donut-row { grid-template-columns: 1fr; } }
+
+    .donut-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 24px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .donut-card.leading { border-color: var(--p1); }
+
+    .donut-person-name {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      margin-bottom: 20px;
+    }
+    .donut-wrap { position: relative; width: 200px; height: 200px; margin-bottom: 24px; }
+    .donut-legend { display: flex; gap: 16px; justify-content: center; margin-bottom: 20px; }
+    .legend-item { display: flex; align-items: center; gap: 6px; font-size: 0.72rem; color: var(--muted); }
+    .legend-dot  { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .donut-stats { display: flex; gap: 28px; justify-content: center; width: 100%; padding-top: 16px; border-top: 1px solid var(--border); }
+    .d-stat { text-align: center; }
+    .d-stat-val { font-size: 1.4rem; font-weight: 700; line-height: 1; margin-bottom: 3px; }
+    .d-stat-lbl { font-size: 0.62rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+
+    .c-green { color: var(--green); }
+    .c-red   { color: var(--red); }
+    .c-blue  { color: var(--blue); }
+    .c-p1    { color: var(--p1); }
+    .c-p2    { color: var(--p2); }
+
+    /* ── Today table ── */
+    .today-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+    table { width: 100%; border-collapse: collapse; }
+    thead th {
+      padding: 14px 20px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+    }
+    thead th:not(:first-child) { text-align: center; }
+    tbody tr { border-bottom: 1px solid var(--border); }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: rgba(255,255,255,0.02); }
+    tbody td { padding: 15px 20px; font-size: 0.875rem; }
+    tbody td:not(:first-child) { text-align: center; }
+    .disc-name { font-weight: 500; }
+    .disc-meta { font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
+    .badge { display: inline-block; font-size: 0.72rem; font-weight: 600; padding: 4px 12px; border-radius: 20px; }
+    .b-done    { background: rgba(74,222,128,0.15);  color: var(--green); }
+    .b-failed  { background: rgba(248,113,113,0.15); color: var(--red); }
+    .b-pending { background: rgba(255,255,255,0.06); color: var(--muted); }
+    .empty-today { padding: 32px; text-align: center; color: var(--muted); font-size: 0.875rem; }
+
+    /* ── Bar chart ── */
+    .bar-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 16px;
+    }
+    .bar-wrap { height: 320px; position: relative; }
+
+    /* ── Recipe section ── */
+    .recipe-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+    .recipe-form { padding: 24px; }
+    .recipe-input {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.9rem;
+      padding: 12px 16px;
+      margin-bottom: 12px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .recipe-input:focus { border-color: var(--p1); }
+    .recipe-input::placeholder { color: var(--muted); }
+    .recipe-controls { display: flex; gap: 10px; }
+    .recipe-select {
+      flex: 1;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--muted);
+      font-family: inherit;
+      font-size: 0.85rem;
+      padding: 10px 12px;
+      outline: none;
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+    .recipe-select:focus { border-color: var(--p1); }
+    .recipe-btn {
+      background: var(--p1);
+      border: none;
+      border-radius: 8px;
+      color: #09090b;
+      font-family: inherit;
+      font-size: 0.85rem;
+      font-weight: 700;
+      padding: 10px 22px;
+      cursor: pointer;
+      transition: opacity 0.15s;
+      white-space: nowrap;
+    }
+    .recipe-btn:hover:not(:disabled) { opacity: 0.85; }
+    .recipe-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* Recipe output */
+    .r-output { border-top: 1px solid var(--border); }
+    .r-header { padding: 24px 24px 0; }
+    .r-name { font-size: 1.4rem; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 12px; }
+    .r-badges { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 0; }
+    .r-badge {
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.06);
+      color: var(--muted);
+    }
+    .r-body {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+      padding: 0;
+    }
+    @media (max-width: 600px) { .r-body { grid-template-columns: 1fr; } }
+    .r-col { padding: 24px; }
+    .r-col:first-child { border-right: 1px solid var(--border); }
+    @media (max-width: 600px) { .r-col:first-child { border-right: none; border-bottom: 1px solid var(--border); } }
+    .r-col-title { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); margin-bottom: 14px; }
+    .r-list { list-style: none; }
+    .r-list li {
+      font-size: 0.875rem;
+      line-height: 1.5;
+      padding: 5px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      color: rgba(250,250,250,0.85);
+    }
+    .r-list li:last-child { border-bottom: none; }
+    ol.r-list { counter-reset: steps; }
+    ol.r-list li { counter-increment: steps; display: flex; gap: 12px; align-items: flex-start; border-bottom: none; padding: 8px 0; }
+    ol.r-list li::before {
+      content: counter(steps);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--p1);
+      color: #09090b;
+      font-size: 0.65rem;
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .r-nutrition {
+      display: flex;
+      justify-content: space-around;
+      padding: 20px 24px;
+      border-top: 1px solid var(--border);
+      background: rgba(255,255,255,0.02);
+    }
+    .r-macro { text-align: center; }
+    .r-macro-val { font-size: 1.3rem; font-weight: 700; line-height: 1; margin-bottom: 4px; }
+    .r-macro-lbl { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+    .r-tip {
+      margin: 0 24px 24px;
+      padding: 12px 16px;
+      border-radius: 8px;
+      background: rgba(129, 140, 248, 0.08);
+      border-left: 3px solid var(--p1);
+      font-size: 0.82rem;
+      color: rgba(250,250,250,0.75);
+      line-height: 1.5;
+    }
+
+    /* Recipe loading/error states */
+    .r-state {
+      padding: 48px 24px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.875rem;
+    }
+    .r-state.err { color: var(--red); }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .r-spinner {
+      display: inline-block;
+      width: 20px; height: 20px;
+      border: 2px solid var(--border);
+      border-top-color: var(--p1);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-bottom: 12px;
+    }
+
+    /* ── Dashboard loading/error ── */
+    .state {
+      text-align: center;
+      padding: 80px 24px;
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.8;
+    }
+    .state.err { color: var(--red); }
+    .spinner {
+      display: inline-block;
+      width: 22px; height: 22px;
+      border: 2px solid var(--border);
+      border-top-color: var(--p1);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-bottom: 14px;
+    }
+
+    /* ── Mobile ── */
+    @media (max-width: 520px) {
+      body { padding-top: 38px; }
+      .ticker-fact { font-size: 0.7rem; }
+
+      .container { padding: 20px 14px; }
+
+      header { flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+      header h1 { font-size: 1rem; }
+      #lastUpdated { display: none; }
+
+      .year-bar { margin-bottom: 20px; }
+      .year-bar-top { flex-direction: column; gap: 6px; align-items: flex-start; }
+      .year-bar-meta { gap: 12px; flex-wrap: wrap; }
+      .year-bar-countdown { text-align: left; }
+
+      .donut-row { gap: 12px; }
+      .donut-card { padding: 18px 14px 16px; }
+      .donut-wrap { width: 160px; height: 160px; margin-bottom: 18px; }
+      .donut-stats { gap: 14px; }
+      .d-stat-val { font-size: 1.15rem; }
+      .donut-legend { gap: 12px; margin-bottom: 14px; }
+
+      thead th { padding: 10px 12px; font-size: 0.62rem; }
+      tbody td { padding: 11px 12px; font-size: 0.8rem; }
+      .badge { padding: 3px 8px; font-size: 0.65rem; }
+      .disc-meta { font-size: 0.65rem; }
+
+      .bar-card { padding: 16px; }
+      .bar-wrap { height: 200px; }
+
+      .recipe-form { padding: 16px; }
+      .recipe-controls { flex-direction: column; }
+      .recipe-btn { width: 100%; padding: 12px; }
+
+      .r-name { font-size: 1.1rem; }
+      .r-col { padding: 16px; }
+      .r-nutrition { padding: 16px 12px; gap: 4px; }
+      .r-macro-val { font-size: 1rem; }
+      .r-tip { margin: 0 14px 14px; font-size: 0.78rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Health fact banner ── -->
+<div class="ticker-wrap">
+  <span class="ticker-fact" id="tickerFact"></span>
+</div>
+
+<div class="container">
+
+  <header>
+    <h1><strong>Habit</strong> Tracker</h1>
+    <div class="header-right">
+      <span id="lastUpdated"></span>
+      <button class="btn" onclick="init()">&#x21BB; Refresh</button>
+    </div>
+  </header>
+
+  <!-- ── Year progress bar ── -->
+  <div class="year-bar">
+    <div class="year-bar-top">
+      <span class="year-bar-title" id="yearLabel">2026</span>
+      <div class="year-bar-meta">
+        <span class="year-bar-stat"><strong id="yearElapsed">—</strong> days in</span>
+        <span class="year-bar-stat"><strong id="yearPct">—</strong> complete</span>
+        <span class="year-bar-stat"><strong id="yearLeft">—</strong> days left</span>
+      </div>
+    </div>
+    <div class="year-bar-track">
+      <div class="year-bar-fill" id="yearFill"></div>
+    </div>
+    <div class="year-bar-countdown" id="yearCountdown"></div>
+  </div>
+
+  <!-- ── Dashboard (dynamic) ── -->
+  <div id="app">
+    <div class="state"><div class="spinner"></div><p>Loading&hellip;</p></div>
+  </div>
+
+  <!-- ── Recipe generator (static section) ── -->
+  <div style="margin-top: 28px;">
+    <div class="section-label">Healthy Recipe Generator</div>
+    <div class="recipe-card">
+      <div class="recipe-form">
+        <input
+          type="text"
+          id="ingredientsInput"
+          class="recipe-input"
+          placeholder="What's in your fridge? e.g. chicken, spinach, garlic, lemon..."
+          onkeydown="if(event.key==='Enter') generateRecipe()"
+        >
+        <div class="recipe-controls">
+          <select id="goalSelect" class="recipe-select">
+            <option value="high protein, muscle building, low calorie">High Protein</option>
+            <option value="low carb, keto-friendly, minimal sugar">Low Carb</option>
+            <option value="quick and easy, under 20 minutes total">Quick &amp; Easy</option>
+            <option value="vegetarian, plant-based, nutritious">Vegetarian</option>
+            <option value="balanced, wholesome, satisfying">Balanced</option>
+          </select>
+          <button class="recipe-btn" id="recipeBtn" onclick="generateRecipe()">
+            Generate
+          </button>
+        </div>
+      </div>
+      <div id="recipeOutput"></div>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<script>
+// ─── Config ───────────────────────────────────────────────────────────────────
+const PEOPLE = [
+  {
+    name: 'Daniel',
+    color: '#818cf8',
+    cls: 'c-p1',
+    url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRf5yuxLMRlwUzaTh4y1yp9O9dbkVxxeyNGrZmHFHayq2CVPYX6JL7oT3FyW1Bgkg/pub?gid=345060606&single=true&output=csv'
+  },
+  {
+    name: 'Lupe',
+    color: '#fb923c',
+    cls: 'c-p2',
+    url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRf5yuxLMRlwUzaTh4y1yp9O9dbkVxxeyNGrZmHFHayq2CVPYX6JL7oT3FyW1Bgkg/pub?gid=788977910&single=true&output=csv'
+  }
+];
+
+// ─── Health facts ─────────────────────────────────────────────────────────────
+const FACTS = [
+  'Drinking water before meals reduces calorie intake by up to 13%',
+  'Walking 10,000 steps burns approximately 400–500 calories',
+  'Sleep deprivation increases hunger hormones (ghrelin) by up to 28%',
+  'Muscle tissue burns 3× more calories at rest than fat tissue',
+  'Dark chocolate (70%+) reduces cortisol, the primary stress hormone',
+  'Zone 2 cardio (conversational pace) maximises fat oxidation',
+  '30 minutes of strength training elevates your metabolism for 48 hours',
+  'Magnesium deficiency affects ~50% of people and disrupts sleep quality',
+  'Intermittent fasting triggers autophagy — your cells self-clean and repair',
+  'Fermented foods feed gut bacteria that regulate mood and immune function',
+  'Morning sunlight exposure regulates your circadian rhythm and cortisol curve',
+  'Blueberries improve memory and reduce age-related cognitive decline',
+  'A 20-minute nap restores alertness better than 200mg of caffeine',
+  'Sauna use 4× per week is associated with 50% lower cardiovascular mortality',
+  'Eggs contain all 9 essential amino acids — one of very few complete protein foods',
+  'Cold showers increase norepinephrine by up to 300%, boosting alertness',
+  'Journaling for 15 minutes/day reduces anxiety and improves immune function',
+  'Avocado fat slows glucose absorption, keeping you fuller for longer',
+  'VO₂ max is the single strongest predictor of long-term health and longevity',
+  'Nasal breathing increases nitric oxide production, improving oxygen delivery',
+  'Broccoli delivers more protein per calorie than most cuts of steak',
+  'Standing desks reduce post-meal blood sugar spikes by up to 43%',
+  'Consistent sleep and wake times improve metabolic health as much as diet',
+  'Compound lifts (squat, deadlift, press) activate over 200 muscles per rep',
+  'Omega-3 fatty acids reduce systemic inflammation linked to chronic disease',
+];
+
+function initTicker() {
+  const el = document.getElementById('tickerFact');
+  // Seed by calendar day — different starting fact each day, consistent within the day
+  let idx = Math.floor(Date.now() / 86400000) % FACTS.length;
+
+  function cycle() {
+    // Fade out current
+    el.style.opacity = '0';
+    setTimeout(() => {
+      // Swap text while invisible
+      el.innerHTML = `<span class="ticker-sep">&#x25C6;</span>${FACTS[idx]}`;
+      idx = (idx + 1) % FACTS.length;
+      // Fade in
+      el.style.opacity = '1';
+    }, 800);
+  }
+
+  // Show first fact immediately
+  el.innerHTML = `<span class="ticker-sep">&#x25C6;</span>${FACTS[idx]}`;
+  idx = (idx + 1) % FACTS.length;
+  el.style.opacity = '1';
+
+  // Cycle every 7 seconds (0.8s fade out + 5.4s hold + 0.8s fade in)
+  setInterval(cycle, 7000);
+}
+
+// ─── CSV parser ───────────────────────────────────────────────────────────────
+function parseCSV(text) {
+  return text.split('\n').map(line => {
+    const cols = []; let cur = '', inQ = false;
+    for (const ch of line) {
+      if (ch === '"') { inQ = !inQ; continue; }
+      if (ch === ',' && !inQ) { cols.push(cur); cur = ''; }
+      else cur += ch;
+    }
+    cols.push(cur);
+    return cols;
+  });
+}
+
+// ─── Dates ───────────────────────────────────────────────────────────────────
+const MON = { Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11 };
+const TODAY = (() => { const t = new Date(); return new Date(t.getFullYear(), t.getMonth(), t.getDate()); })();
+function parseDate(str) {
+  if (!str) return null;
+  const [d, m] = str.trim().split('-');
+  const day = parseInt(d), month = MON[m];
+  if (isNaN(day) || month === undefined) return null;
+  return new Date(month >= 7 ? 2026 : 2027, month, day);
+}
+function sameDay(a, b) { return a && b && a.getTime() === b.getTime(); }
+
+// ─── Extract ─────────────────────────────────────────────────────────────────
+function extract(rows) {
+  const dateRow = rows[0];
+  const dates = [];
+  for (let i = 5; i < dateRow.length - 3; i++) {
+    const date = parseDate(dateRow[i]);
+    dates.push({ str: dateRow[i] || '', date, past: date && date < TODAY, today: date && sameDay(date, TODAY) });
+  }
+
+  const VALID = new Set(['High', 'Medium', 'Low']);
+  const disciplines = [];
+  for (let r = 2; r < rows.length; r++) {
+    const row = rows[r];
+    const priority = row[0]?.trim();
+    const name     = row[4]?.trim();
+    if (!name || !VALID.has(priority)) break;
+
+    const statuses  = row.slice(5, row.length - 3).map(s => s?.trim() || '');
+    const completed = parseInt(row[row.length - 2]) || 0;
+    const failed    = parseInt(row[row.length - 1]) || 0;
+    const ns        = parseInt(row[row.length - 3]) || 0;
+
+    const cutoff = dates.findIndex(d => !d.past && !d.today);
+    const limit  = cutoff > 0 ? cutoff - 1 : dates.length - 1;
+    let streak = 0;
+    for (let i = limit; i >= 0; i--) {
+      if (statuses[i] === 'C') streak++;
+      else if (statuses[i] === 'F') break;
+      // NS = not scheduled that day — skip, don't break streak
+    }
+
+    disciplines.push({ priority, type: row[1]?.trim(), frequency: row[2]?.trim(), name, statuses, completed, failed, ns, streak });
+  }
+
+  const isTemplate = disciplines.every(d => d.name === 'Insert Data Here');
+  const totalC  = disciplines.reduce((s, d) => s + d.completed, 0);
+  const totalF  = disciplines.reduce((s, d) => s + d.failed, 0);
+  const totalNS = disciplines.reduce((s, d) => s + d.ns, 0);
+  const rate    = totalC + totalF > 0 ? Math.round(totalC / (totalC + totalF) * 100) : 0;
+  const rawRate = totalC + totalF + totalNS > 0 ? Math.round(totalC / (totalC + totalF + totalNS) * 100) : 0;
+  // Day-based streak: consecutive past days where ALL scheduled habits were completed
+  const _cutoff = dates.findIndex(d => !d.past && !d.today);
+  const _lim    = _cutoff > 0 ? _cutoff - 1 : dates.length - 1;
+  let streak = 0;
+  for (let i = _lim; i >= 0; i--) {
+    const scheduled = disciplines.filter(d => d.statuses[i] === 'C' || d.statuses[i] === 'F');
+    if (scheduled.length === 0) continue; // nothing scheduled that day — skip, don't break
+    const allDone = scheduled.every(d => d.statuses[i] === 'C');
+    if (allDone) streak++;
+    else break;
+  }
+
+  return { dates, disciplines, stats: { totalC, totalF, totalNS, rate, rawRate, streak }, isTemplate };
+}
+
+// ─── Donut center-label plugin ────────────────────────────────────────────────
+Chart.register({
+  id: 'centerLabel',
+  beforeDraw(chart) {
+    if (chart.config.type !== 'doughnut') return;
+    const { width, height, ctx } = chart;
+    const size = Math.min(width, height);
+    const meta = chart.config.data.meta ?? {};
+    ctx.save();
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    // Outer ring label: win rate
+    ctx.font = `700 ${size * 0.17}px Inter, system-ui, sans-serif`;
+    ctx.fillStyle = '#fafafa';
+    ctx.fillText((meta.rate ?? 0) + '%', width / 2, height / 2 - size * 0.12);
+    ctx.font = `400 ${size * 0.07}px Inter, system-ui, sans-serif`;
+    ctx.fillStyle = '#71717a';
+    ctx.fillText('win rate', width / 2, height / 2 - size * 0.02);
+    // Inner ring label: raw rate since Aug 1
+    ctx.font = `600 ${size * 0.13}px Inter, system-ui, sans-serif`;
+    ctx.fillStyle = 'rgba(250,250,250,0.5)';
+    ctx.fillText((meta.rawRate ?? 0) + '%', width / 2, height / 2 + size * 0.11);
+    ctx.font = `400 ${size * 0.065}px Inter, system-ui, sans-serif`;
+    ctx.fillStyle = '#52525b';
+    ctx.fillText('since Aug 1', width / 2, height / 2 + size * 0.2);
+    ctx.restore();
+  }
+});
+
+// ─── Render: Donuts ───────────────────────────────────────────────────────────
+function renderDonuts(allData) {
+  const [a, b] = allData.map(d => d.stats.rate);
+  const anyData = a > 0 || b > 0;
+
+  const cards = allData.map((pd, i) => {
+    const s = pd.stats;
+    const isLeading = anyData && (i === 0 ? a >= b : b > a);
+
+    if (pd.isTemplate) return `
+      <div class="donut-card" style="justify-content:center;min-height:300px">
+        <div class="donut-person-name" style="color:${PEOPLE[i].color}">${PEOPLE[i].name}</div>
+        <div style="text-align:center;padding:40px 16px">
+          <div style="font-size:2rem;margin-bottom:16px">&#x23F3;</div>
+          <div style="font-size:0.95rem;font-weight:600;margin-bottom:8px">Not set up yet</div>
+          <div style="font-size:0.8rem;color:var(--muted);line-height:1.6">
+            ${PEOPLE[i].name} needs to fill in their<br>discipline names and start logging.
+          </div>
+        </div>
+      </div>`;
+
+    return `
+      <div class="donut-card${isLeading ? ' leading' : ''}">
+        <div class="donut-person-name" style="color:${PEOPLE[i].color}">${PEOPLE[i].name}</div>
+        <div class="donut-wrap"><canvas id="donut${i}"></canvas></div>
+        <div class="donut-legend">
+          <div class="legend-item"><div class="legend-dot" style="background:${PEOPLE[i].color}"></div>Win rate</div>
+          <div class="legend-item"><div class="legend-dot" style="background:${PEOPLE[i].color}88"></div>Since Aug 1</div>
+        </div>
+        <div class="donut-stats">
+          <div class="d-stat"><div class="d-stat-val c-blue">${s.streak}</div><div class="d-stat-lbl">Streak</div></div>
+          <div class="d-stat"><div class="d-stat-val c-green">${s.totalC}</div><div class="d-stat-lbl">Done</div></div>
+          <div class="d-stat"><div class="d-stat-val c-red">${s.totalF}</div><div class="d-stat-lbl">Failed</div></div>
+        </div>
+      </div>`;
+  }).join('');
+
+  return `<div class="section-label">Overall Progress</div><div class="donut-row">${cards}</div>`;
+}
+
+// ─── Render: Today ───────────────────────────────────────────────────────────
+function renderToday(allData) {
+  const active = allData.filter(pd => !pd.isTemplate);
+  if (!active.length) return '';
+  const dates  = active[0].dates;
+  const ti     = dates.findIndex(d => d.today);
+  const dayStr = TODAY.toLocaleDateString('en', { weekday: 'long', month: 'long', day: 'numeric' });
+
+  let body = '';
+  if (ti >= 0) {
+    const rows = active[0].disciplines
+      .map((disc, di) => ({ disc, di }))
+      .filter(({ di }) => active.some(pd => pd.disciplines[di]?.statuses[ti] !== ''))
+      .map(({ disc, di }) => {
+        const cells = active.map(pd => {
+          const s = pd.disciplines[di]?.statuses[ti] || '';
+          const [cls, txt] = s === 'C' ? ['b-done','Done &check;'] : s === 'F' ? ['b-failed','Failed &times;'] : ['b-pending','Pending'];
+          return `<td><span class="badge ${cls}">${txt}</span></td>`;
+        }).join('');
+        return `<tr><td><div class="disc-name">${disc.name}</div><div class="disc-meta">${disc.type} &middot; ${disc.frequency}</div></td>${cells}</tr>`;
+      }).join('');
+
+    body = rows
+      ? `<table>
+          <thead><tr>
+            <th>Discipline</th>
+            ${active.map(pd => { const idx = allData.indexOf(pd); return `<th style="color:${PEOPLE[idx].color}">${PEOPLE[idx].name}</th>`; }).join('')}
+          </tr></thead>
+          <tbody>${rows}</tbody>
+         </table>`
+      : `<div class="empty-today">Nothing scheduled today.</div>`;
+  } else {
+    body = `<div class="empty-today">Today is outside the tracking period.</div>`;
+  }
+
+  return `<div class="section-label">Today &mdash; ${dayStr}</div><div class="today-card">${body}</div>`;
+}
+
+// ─── Render: Bars ────────────────────────────────────────────────────────────
+function renderBars(allData) {
+  return `
+    <div class="section-label">Completion by Discipline</div>
+    <div class="bar-card"><div class="bar-wrap"><canvas id="barChart"></canvas></div></div>`;
+}
+
+// ─── Chart init ───────────────────────────────────────────────────────────────
+function initCharts(allData) {
+  allData.forEach((pd, i) => {
+    if (pd.isTemplate) return;
+    const ctx = document.getElementById(`donut${i}`);
+    if (!ctx) return;
+    const s = pd.stats;
+    const hasData = s.totalC + s.totalF > 0;
+    const clr = PEOPLE[i].color;
+    new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        meta: { rate: s.rate, rawRate: s.rawRate },
+        labels: ['Progress', 'Remaining'],
+        datasets: [
+          {
+            // Outer ring: win rate (C / C+F)
+            data: hasData ? [s.rate, 100 - s.rate] : [0, 100],
+            backgroundColor: hasData ? [clr, '#27272a'] : ['#27272a', '#27272a'],
+            borderColor: '#18181b', borderWidth: 3, hoverOffset: 4
+          },
+          {
+            // Inner ring: raw rate since Aug 1 (C / C+F+NS)
+            data: hasData ? [s.rawRate, 100 - s.rawRate] : [0, 100],
+            backgroundColor: hasData ? [clr + '88', '#1c1c1f'] : ['#1c1c1f', '#1c1c1f'],
+            borderColor: '#18181b', borderWidth: 3, hoverOffset: 4
+          }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false, cutout: '68%',
+        animation: { duration: 800 },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              title: () => '',
+              label: c => {
+                const m = c.chart.config.data.meta;
+                return c.datasetIndex === 0
+                  ? ` Win rate: ${m.rate}%`
+                  : ` Since Aug 1: ${m.rawRate}%`;
+              }
+            }
+          }
+        }
+      }
+    });
+  });
+
+  const barCtx = document.getElementById('barChart');
+  if (!barCtx) return;
+  const active = allData.filter(pd => !pd.isTemplate);
+  if (!active.length) return;
+
+  new Chart(barCtx, {
+    type: 'bar',
+    data: {
+      labels: active[0].disciplines.map(d => d.name),
+      datasets: active.map(pd => {
+        const i = allData.indexOf(pd);
+        return {
+          label: PEOPLE[i].name,
+          data: pd.disciplines.map(d => { const t = d.completed + d.failed; return t > 0 ? Math.round(d.completed / t * 100) : 0; }),
+          backgroundColor: PEOPLE[i].color + 'bb',
+          borderColor: PEOPLE[i].color,
+          borderWidth: 1,
+          borderRadius: 4,
+          minBarLength: 4
+        };
+      })
+    },
+    options: {
+      indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { labels: { color: '#a1a1aa', font: { family: 'Inter', size: 12 }, padding: 20 } }, tooltip: { callbacks: { label: c => ` ${c.dataset.label}: ${c.raw}%` } } },
+      scales: {
+        x: { min: 0, max: 100, ticks: { color: '#71717a', callback: v => v + '%', font: { size: 11 } }, grid: { color: '#27272a' } },
+        y: { ticks: { color: '#a1a1aa', font: { size: 12 } }, grid: { color: '#1e1e21' } }
+      }
+    }
+  });
+}
+
+// ─── Dashboard init ───────────────────────────────────────────────────────────
+async function init() {
+  document.getElementById('app').innerHTML = '<div class="state"><div class="spinner"></div><p>Fetching live data&hellip;</p></div>';
+  document.getElementById('lastUpdated').textContent = '';
+  try {
+    const csvs = await Promise.all(PEOPLE.map(p => fetch(p.url).then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.text(); })));
+    const allData = csvs.map(csv => extract(parseCSV(csv)));
+    document.getElementById('app').innerHTML = [renderDonuts(allData), renderToday(allData), renderBars(allData)].join('');
+    setTimeout(() => initCharts(allData), 50);
+    document.getElementById('lastUpdated').textContent = 'Updated ' + new Date().toLocaleTimeString();
+  } catch (err) {
+    document.getElementById('app').innerHTML = `<div class="state err">Could not load data &mdash; ${err.message}<br><small>Run: python3 health/server.py</small></div>`;
+  }
+}
+
+// ─── Recipe generator ─────────────────────────────────────────────────────────
+async function generateRecipe() {
+  const ingredients = document.getElementById('ingredientsInput').value.trim();
+  const goal        = document.getElementById('goalSelect').value;
+  const btn         = document.getElementById('recipeBtn');
+  const output      = document.getElementById('recipeOutput');
+
+  if (!ingredients) {
+    document.getElementById('ingredientsInput').focus();
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Generating...';
+  output.innerHTML = `<div class="r-state"><div class="r-spinner"></div><p>Claude is cooking&hellip;</p></div>`;
+
+  try {
+    const res = await fetch('/api/recipe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ingredients, goal })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || `Server error ${res.status}`);
+    output.innerHTML = renderRecipe(data);
+  } catch (err) {
+    output.innerHTML = `<div class="r-state err">${err.message}<br><small>Make sure server.py is running with your API key.</small></div>`;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Generate';
+  }
+}
+
+function renderRecipe(r) {
+  const macroColor = { calories: '#fafafa', protein: '#818cf8', carbs: '#60a5fa', fat: '#fb923c' };
+  return `
+    <div class="r-output">
+      <div class="r-header" style="padding-bottom:20px;border-bottom:1px solid var(--border)">
+        <div class="r-name">${r.name}</div>
+        <div class="r-badges">
+          <span class="r-badge">&#x23F1; ${r.time}</span>
+          <span class="r-badge">&#x1F37D; ${r.servings} servings</span>
+          <span class="r-badge">${r.difficulty}</span>
+        </div>
+      </div>
+      <div class="r-body">
+        <div class="r-col">
+          <div class="r-col-title">Ingredients</div>
+          <ul class="r-list">${r.ingredients.map(i => `<li>${i}</li>`).join('')}</ul>
+        </div>
+        <div class="r-col">
+          <div class="r-col-title">Method</div>
+          <ol class="r-list">${r.steps.map(s => `<li><span>${s}</span></li>`).join('')}</ol>
+        </div>
+      </div>
+      <div class="r-nutrition">
+        <div class="r-macro"><div class="r-macro-val">${r.nutrition.calories}</div><div class="r-macro-lbl">kcal</div></div>
+        <div class="r-macro"><div class="r-macro-val" style="color:#818cf8">${r.nutrition.protein}</div><div class="r-macro-lbl">protein</div></div>
+        <div class="r-macro"><div class="r-macro-val" style="color:#60a5fa">${r.nutrition.carbs}</div><div class="r-macro-lbl">carbs</div></div>
+        <div class="r-macro"><div class="r-macro-val" style="color:#fb923c">${r.nutrition.fat}</div><div class="r-macro-lbl">fat</div></div>
+      </div>
+      ${r.tip ? `<div class="r-tip">&#x1F4A1; ${r.tip}</div>` : ''}
+    </div>`;
+}
+
+// ─── Year progress bar ───────────────────────────────────────────────────────
+function initYearBar() {
+  const now   = new Date();
+  const year  = now.getFullYear();
+  const start = new Date(year, 0, 1);
+  const end   = new Date(year, 11, 31, 23, 59, 59, 999);
+
+  const totalMs   = end - start;
+  const elapsedMs = now  - start;
+  const pct       = Math.min(100, Math.round(elapsedMs / totalMs * 100));
+
+  const msPerDay    = 86400000;
+  const daysElapsed = Math.floor(elapsedMs / msPerDay) + 1;
+  const daysTotal   = Math.round(totalMs / msPerDay);
+  const daysLeft    = daysTotal - daysElapsed;
+
+  // Dec 31 target
+  const dec31   = new Date(year, 11, 31);
+  const diffMs  = dec31 - now;
+  const diffDays = Math.ceil(diffMs / msPerDay);
+
+  document.getElementById('yearLabel').textContent     = year;
+  document.getElementById('yearElapsed').textContent   = daysElapsed;
+  document.getElementById('yearPct').textContent       = pct + '%';
+  document.getElementById('yearLeft').textContent      = daysLeft;
+  document.getElementById('yearCountdown').innerHTML   =
+    `<strong>${diffDays}</strong> days until Dec 31, ${year}`;
+
+  // Animate fill after paint
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      document.getElementById('yearFill').style.width = pct + '%';
+    });
+  });
+}
+
+// ─── Boot ─────────────────────────────────────────────────────────────────────
+initTicker();
+initYearBar();
+init();
+</script>
+</body>
+</html>
