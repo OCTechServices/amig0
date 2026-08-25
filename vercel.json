@@ -6,7 +6,7 @@
     { "source": "/favicon.ico", "destination": "/favicon.svg", "permanent": true }
   ],
   "rewrites": [
-    { "source": "/", "destination": "/home.html" }
+    { "source": "/", "destination": "/home" }
   ],
   "functions": {
     "api/ig-post.py": { "maxDuration": 60 }
