@@ -5,9 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Traveler Hacks — amig0</title>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="canonical" href="https://amig0.com/hacks/">
+  <meta name="description" content="AI-powered insider intel for every city — real spots, insider hacks, and travel tools from people who actually know the city.">
+  <meta name="robots" content="index, follow">
   <meta property="og:title" content="Traveler Hacks — amig0">
   <meta property="og:description" content="AI-powered insider intel for every city — discover spots, get hacks, travel smarter.">
-  <meta property="og:image" content="https://amig0.vercel.app/health/og.png">
+  <meta property="og:image" content="https://amig0.com/og.png">
+  <meta property="og:url" content="https://amig0.com/hacks/">
+  <meta property="og:type" content="website">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
   <style>
@@ -44,7 +49,7 @@
     .btn-nav:hover { background: var(--surface); color: var(--text); }
     .btn-nav.primary { background: var(--p1); border-color: var(--p1); color: #fff; }
     .btn-nav.primary:hover { background: #6366f1; }
-    @media (max-width: 540px) {
+    @media (max-width: 640px) {
       .nav { padding: 12px 16px; }
       .btn-nav-venue { display: none; }
     }
@@ -492,6 +497,19 @@
       outline-offset: 3px;
       border-radius: 4px;
     }
+
+    /* ── Footer ── */
+    .footer-outer { border-top: 1px solid var(--border); }
+    .footer {
+      max-width: 960px; margin: 0 auto;
+      padding: 32px 24px; display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 16px;
+    }
+    .footer-brand { font-size: 0.9rem; font-weight: 700; color: var(--text); }
+    .footer-links { display: flex; gap: 20px; flex-wrap: wrap; }
+    .footer-links a { font-size: 0.78rem; color: var(--muted); text-decoration: none; }
+    .footer-links a:hover { color: var(--text); }
+    .footer-copy { font-size: 0.72rem; color: var(--muted); width: 100%; }
   </style>
 </head>
 <body>
@@ -1195,5 +1213,20 @@ function switchToolTab(cat) {
 
 renderTools();
 </script>
+
+<footer class="footer-outer">
+  <div class="footer">
+    <div class="footer-brand">amig<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 26" aria-hidden="true" style="display:inline-block;width:0.55em;height:0.8em;vertical-align:-0.05em;color:var(--p1)"><path fill="currentColor" fill-rule="evenodd" d="M10,1.5 C14.97,1.5 19,6.65 19,13 C19,19.35 14.97,24.5 10,24.5 C5.03,24.5 1,19.35 1,13 C1,6.65 5.03,1.5 10,1.5 Z M10,7 C7.51,7 5.5,9.69 5.5,13 C5.5,16.31 7.51,19 10,19 C12.49,19 14.5,16.31 14.5,13 C14.5,9.69 12.49,7 10,7 Z"/><line x1="6.5" y1="21" x2="13.5" y2="5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/></svg></div>
+    <div class="footer-links">
+      <a href="/deals.html">Deals</a>
+      <a href="/hacks/">Traveler Hacks</a>
+      <a href="/business.html">For venues</a>
+      <a href="/landing.html">Operators</a>
+      <a href="mailto:contact@opcoretech.com">Contact</a>
+      <a href="https://instagram.com/amig0trips" target="_blank" rel="noopener">@amig0trips</a>
+    </div>
+    <div class="footer-copy">© 2026 amig0 · contact@opcoretech.com</div>
+  </div>
+</footer>
 </body>
 </html>

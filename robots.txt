@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+
+# Internal / operator tools — not for public indexing
+Disallow: /index.html
+Disallow: /portal.html
+Disallow: /guide.html
+Disallow: /checkin.html
+Disallow: /content/
+Disallow: /health/
+
+Sitemap: https://amig0.com/sitemap.xml
