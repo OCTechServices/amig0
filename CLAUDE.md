@@ -15,7 +15,7 @@ The platform consists of five apps in one codebase:
 **Target Users:** Tour operators, travel agents, clients, tour guides
 **Tier:** 1 — Enterprise Grade
 **Status:** Active
-**Last Updated:** 2026-08-24 (Session 16)
+**Last Updated:** 2026-08-24 (Session 17)
 **Brand:** `amig0` — brand name, always lowercase. `@amig0trips` — exclusive social handle (Instagram + Facebook). These are distinct: amig0 is the product, @amig0trips is the channel.
 
 ## 2. Architecture Overview
@@ -47,6 +47,20 @@ The platform consists of five apps in one codebase:
 - Content Engine: content/index.html (internal, amig0.vercel.app/content/), api/ig-post.py (Vercel serverless IG publish)
 
 **Session history:** see docs/changelog.md
+
+**Session 17 additions (2026-08-24):**
+- Ecosystem QA — 43-section review across home.html, hacks/index.html, deals.html as one product. P0→P2 findings executed and deployed.
+- SEO foundation: robots.txt + sitemap.xml created. Canonical tags (`https://amig0.com/` paths), `og:image`, `og:url`, `og:type`, `meta name="description"` added to all consumer pages (home, hacks, deals).
+- og.png: 1200×630 brand social image generated via Canvas (`/tmp/amig0-og.html`). Wordmark "amig" + offscreen-canvas brand mark (ring+slash via `fill('evenodd')`), tagline, `@amig0trips` handle with composited brand mark. `.gitignore` `!og.png` exception added.
+- Nav unification: deals.html `.header` replaced with `.nav` pattern (sticky, `rgba(9,9,11,0.95)`, `backdrop-filter:blur(12px)`, `border-bottom`) matching home/hacks. Traveler Hacks link added to deals nav.
+- Footer: shared footer component added to hacks/index.html and deals.html (matching home.html).
+- Token fix: `--muted` in deals.html corrected from `#71717a` → `#a1a1aa` to match home/hacks.
+- Mobile breakpoint standardized to `640px` across hacks.
+- home.html: `target="_blank"` removed from all 5 hacks links (same-window navigation).
+- hacks/index.html: OG image fixed (`/health/og.png` → `https://amig0.com/og.png`).
+- Trust / voice: deals.html hero → "Local perks. Places worth going anyway." Affiliate badge → "amig0 verified" with title attribute.
+- Cross-navigation: deals nudge added to hacks results — "Check if any of these spots have an amig0 deal ↗"
+- JSON-LD: Organization + WebSite structured data added to home.html.
 
 **Session 16 additions (2026-08-24):**
 - home.html: Mobile nav fix — `btn-nav-venue` class added to "For venues" link, hidden at <640px. "Traveler Hacks" stays visible on mobile.
