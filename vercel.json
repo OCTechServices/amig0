@@ -1,12 +1,11 @@
 {
   "version": 2,
-  "cleanUrls": true,
-  "trailingSlash": false,
-  "redirects": [
-    { "source": "/favicon.ico", "destination": "/favicon.svg", "permanent": true }
-  ],
-  "rewrites": [
-    { "source": "/", "destination": "/home" }
+  "routes": [
+    { "src": "/favicon.ico", "headers": { "Location": "/favicon.svg" }, "status": 301 },
+    { "src": "^/$", "dest": "/home.html" },
+    { "src": "^/deals/?$", "dest": "/deals.html" },
+    { "src": "^/business/?$", "dest": "/business.html" },
+    { "src": "/(.*)", "dest": "/$1" }
   ],
   "functions": {
     "api/ig-post.py": { "maxDuration": 60 }
