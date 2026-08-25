@@ -45,6 +45,7 @@ Thumbs.db
 *.JPEG
 *.png
 *.PNG
+!og.png
 *.heic
 *.HEIC
 .vercel
