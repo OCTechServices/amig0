@@ -1,5 +1,5 @@
-// firestore.rules — amig0-travel-company | OCTech Services
-// Last Updated: 2026-08-23
+// firestore.rules — amig0 | OCTech Services
+// Last Updated: 2026-08-25
 //
 // Operator access: Firebase Auth custom claim { operator: true }
 //   Bootstrap: Firebase Console → Authentication → Users → Edit → Custom Claims: {"operator":true}

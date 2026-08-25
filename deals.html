@@ -546,8 +546,38 @@
     var allDeals          = [];
     var activeCategory    = '';
     var redeemState   = 'show'; // 'show' | 'pin'
-    var pinAttempts   = 0;
     var PIN_MAX_ATTEMPTS = 5;
+    var PIN_LOCK_MS      = 15 * 60 * 1000; // 15-minute window
+
+    function pinLockKey(affiliateId) {
+      var uid = firebase.auth().currentUser ? firebase.auth().currentUser.uid : 'anon';
+      return 'pinLock_' + uid + '_' + affiliateId;
+    }
+    function getPinLock(affiliateId) {
+      try { var r = localStorage.getItem(pinLockKey(affiliateId)); return r ? JSON.parse(r) : null; }
+      catch(e) { return null; }
+    }
+    function setPinLock(affiliateId, data) {
+      try { localStorage.setItem(pinLockKey(affiliateId), JSON.stringify(data)); } catch(e) {}
+    }
+    function clearPinLock(affiliateId) {
+      try { localStorage.removeItem(pinLockKey(affiliateId)); } catch(e) {}
+    }
+    function recordFailedAttempt(affiliateId) {
+      var lock = getPinLock(affiliateId) || { count: 0, windowStart: Date.now(), lockedUntil: null };
+      if (Date.now() - lock.windowStart > PIN_LOCK_MS) {
+        lock = { count: 0, windowStart: Date.now(), lockedUntil: null };
+      }
+      lock.count++;
+      if (lock.count >= PIN_MAX_ATTEMPTS) lock.lockedUntil = Date.now() + PIN_LOCK_MS;
+      setPinLock(affiliateId, lock);
+      return lock;
+    }
+    function pinLockoutMinsLeft(affiliateId) {
+      var lock = getPinLock(affiliateId);
+      if (!lock || !lock.lockedUntil) return 0;
+      return Math.max(0, Math.ceil((lock.lockedUntil - Date.now()) / 60000));
+    }
     var localRedeemed = {}; // affiliateId → true, session-level cache
     var userLat       = null;
     var userLng       = null;
@@ -1015,7 +1045,6 @@
       if (!isAccessAllowed()) { showPaywall(); return; }
       if (localRedeemed[info.affiliateId]) return; // already redeemed this session
       pendingRedeem = info;
-      pinAttempts = 0;
       document.getElementById('redeem-venue').textContent = info.name;
       document.getElementById('redeem-offer').textContent = info.offer || 'Exclusive deal';
       document.getElementById('redeem-overlay').classList.remove('hidden');
@@ -1056,6 +1085,8 @@
     // ── Show PIN entry state (bartender types their venue code on user's phone) ─
     function showPinEntry() {
       if (!pendingRedeem) return;
+      var minsLeft = pinLockoutMinsLeft(pendingRedeem.affiliateId);
+      if (minsLeft > 0) { showPinLockout(minsLeft); return; }
       redeemState = 'pin';
       document.querySelector('.redeem-screen-body').innerHTML =
         '<div class="pin-user-instr">Hand your phone<br>to the bartender</div>' +
@@ -1144,6 +1175,7 @@
       batch.commit()
       .then(function () {
         localRedeemed[affiliateId] = true;
+        clearPinLock(affiliateId);
         closeRedeem();
         document.getElementById('success-venue').textContent = name;
         document.getElementById('success-overlay').classList.remove('hidden');
@@ -1153,12 +1185,12 @@
       .catch(function (err) {
         console.error('[deals] validate pin:', err.code, err.message);
         if (err.code === 'permission-denied') {
-          pinAttempts++;
-          if (pinAttempts >= PIN_MAX_ATTEMPTS) {
-            showPinLockout();
+          var lock = recordFailedAttempt(pendingRedeem.affiliateId);
+          if (lock.lockedUntil) {
+            showPinLockout(pinLockoutMinsLeft(pendingRedeem.affiliateId));
             return;
           }
-          var left = PIN_MAX_ATTEMPTS - pinAttempts;
+          var left = PIN_MAX_ATTEMPTS - lock.count;
           errEl.textContent = 'Incorrect code — ' + left + ' attempt' + (left === 1 ? '' : 's') + ' remaining';
         } else {
           errEl.textContent = 'Something went wrong. Please try again.';
@@ -1172,13 +1204,14 @@
 
     document.getElementById('confirm-redeem-btn').addEventListener('click', showPinEntry);
 
-    function showPinLockout() {
+    function showPinLockout(minsLeft) {
       redeemState = 'show';
+      var timeMsg = minsLeft > 1 ? 'Try again in ' + minsLeft + ' minutes.' : 'Try again in 1 minute.';
       document.querySelector('.redeem-screen-body').innerHTML =
         '<div style="text-align:center;padding:0 8px">' +
           '<div style="font-size:1.6rem;margin-bottom:16px;color:var(--red)"><i data-lucide="shield-off"></i></div>' +
           '<div style="font-size:0.9rem;font-weight:700;color:var(--red);margin-bottom:10px">Too many incorrect attempts</div>' +
-          '<div style="font-size:0.82rem;color:var(--muted);line-height:1.6">Ask your server to confirm the venue code, or contact amig0 support.</div>' +
+          '<div style="font-size:0.82rem;color:var(--muted);line-height:1.6">' + timeMsg + ' Ask your server to confirm the venue code.</div>' +
         '</div>';
       document.querySelector('.redeem-screen-foot').innerHTML =
         '<button class="btn-ghost" onclick="closeRedeem()">Close</button>';
@@ -1187,7 +1220,6 @@
 
     function closeRedeem() {
       redeemState = 'show';
-      pinAttempts = 0;
       // Restore body if in pin entry state
       if (!document.getElementById('redeem-venue')) {
         document.querySelector('.redeem-screen-body').innerHTML = redeemBodyHtml();
