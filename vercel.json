@@ -1,5 +1,10 @@
 {
   "version": 2,
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "rewrites": [
+    { "source": "/", "destination": "/home.html" }
+  ],
   "functions": {
     "api/ig-post.py": { "maxDuration": 60 }
   }
