@@ -29,7 +29,7 @@ if [ -n "$STAGED_ENV" ]; then
 fi
 
 # ── 2. Scan staged files for hardcoded secret patterns ──────
-STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(js|ts|tsx|jsx|py|sh|env|json|yaml|yml)$' | grep -v '\.example$' | grep -v '\.sample$' | grep -v '^\.claude/')
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(js|ts|tsx|jsx|py|sh|env|json|yaml|yml)$' | grep -v '\.example$' | grep -v '\.sample$' | grep -v '^\.claude/' | grep -v '^firebase-config\.js$')
 
 if [ -n "$STAGED_FILES" ]; then
   SECRET_HITS=$(echo "$STAGED_FILES" | xargs grep -lE \

@@ -1,5 +1,4 @@
-# Firebase config — NEVER commit live keys
-firebase-config.js
+# Firebase config variants (firebase-config.js is committed — client config is public)
 firebase-config.*.js
 .env
 .env.*
