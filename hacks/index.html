@@ -376,6 +376,11 @@
     }
     .driver-cta:hover .driver-cta-btn { opacity: 0.85; }
 
+    /* ── Deals nudge ── */
+    .deals-nudge { margin-top: 20px; padding: 14px 18px; border: 1px solid var(--border); border-radius: 10px; background: rgba(129,140,248,0.04); }
+    .deals-nudge-link { font-size: 0.78rem; color: var(--muted); text-decoration: none; display: flex; align-items: center; gap: 7px; transition: color 0.15s; }
+    .deals-nudge-link:hover { color: var(--p1); }
+
     /* ── Tools section ── */
     .tools-section { margin-top: 56px; padding-top: 32px; border-top: 1px solid var(--border); }
     .tools-header { margin-bottom: 18px; }
@@ -878,7 +883,13 @@ function renderResults(data) {
       <button class="export-btn" id="copyBtn" onclick="copyAsText()">Copy as text</button>
     </div>
     ${cards}
-    ${driverCard}`;
+    ${driverCard}
+    <div class="deals-nudge">
+      <a href="/deals.html" class="deals-nudge-link">
+        <i data-lucide="tag" style="width:13px;height:13px;stroke-width:2;flex-shrink:0"></i>
+        Check if any of these spots have an amig0 deal ↗
+      </a>
+    </div>`;
 }
 
 // ─── Copy as text ─────────────────────────────────────────────────────────────
