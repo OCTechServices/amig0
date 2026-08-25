@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Become an amig0 Affiliate — Partner with us</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="description" content="List your cafe, bar, brewery or restaurant on amig0 and reach verified local travelers. Apply to become an affiliate.">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    :root {
+      --bg:      #09090b;
+      --surface: #18181b;
+      --border:  #27272a;
+      --text:    #fafafa;
+      --muted:   #71717a;
+      --p1:      #818cf8;
+      --green:   #4ade80;
+      --red:     #f87171;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    /* ── Header ── */
+    .header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 24px; border-bottom: 1px solid var(--border);
+    }
+    .brand { font-size: 1.05rem; font-weight: 700; color: var(--text); text-decoration: none; letter-spacing: -0.02em; }
+    .brand span { color: var(--p1); }
+    .btn-sm {
+      font-family: inherit; font-size: 0.8rem; font-weight: 600;
+      padding: 7px 16px; border-radius: 8px; cursor: pointer;
+      border: 1px solid var(--border); background: var(--surface); color: var(--text);
+      text-decoration: none; display: inline-block;
+      transition: background 0.15s;
+    }
+    .btn-sm:hover { background: #27272a; }
+
+    /* ── Page layout ── */
+    .page { max-width: 640px; margin: 0 auto; padding: 48px 24px 80px; }
+
+    /* ── Hero ── */
+    .page-hero { margin-bottom: 40px; }
+    .page-hero h1 {
+      font-size: clamp(2.2rem, 5vw, 3.2rem); font-weight: 800; line-height: 1.06;
+      letter-spacing: -0.05em; margin-bottom: 14px;
+    }
+    .page-hero h1 span { color: var(--p1); }
+    .page-hero p { font-size: 0.95rem; color: var(--muted); line-height: 1.65; }
+
+    /* ── Value props ── */
+    .props { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 28px 0 40px; }
+    .prop-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 16px;
+    }
+    .prop-icon { font-size: 1.4rem; margin-bottom: 8px; color: var(--p1); }
+    .prop-icon svg { width: 22px; height: 22px; }
+    .prop-title { font-size: 0.85rem; font-weight: 600; margin-bottom: 4px; }
+    .prop-desc { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
+
+    /* ── Form ── */
+    .form-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; padding: 28px;
+    }
+    .form-card h2 { font-size: 1.05rem; font-weight: 700; margin-bottom: 6px; }
+    .form-card > p { font-size: 0.82rem; color: var(--muted); margin-bottom: 24px; line-height: 1.5; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .field { display: flex; flex-direction: column; gap: 5px; }
+    .field.full { grid-column: 1 / -1; }
+    .field label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); }
+    .field label .req { color: var(--p1); margin-left: 2px; }
+    .field input, .field select, .field textarea {
+      background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
+      color: var(--text); font-family: inherit; font-size: 0.88rem;
+      padding: 10px 13px; outline: none; transition: border-color 0.15s;
+      appearance: none;
+    }
+    .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--p1); }
+    .field textarea { resize: vertical; min-height: 80px; line-height: 1.55; }
+    ::placeholder { color: var(--muted); }
+    .field-hint { font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
+    .form-err { font-size: 0.78rem; color: var(--red); margin: 10px 0 4px; }
+    .btn-submit {
+      width: 100%; font-family: inherit; font-size: 0.9rem; font-weight: 600;
+      padding: 12px; border-radius: 9px; cursor: pointer;
+      background: var(--p1); border: none; color: #fff; margin-top: 22px;
+      transition: background 0.15s;
+    }
+    .btn-submit:hover { background: #6366f1; }
+    .btn-submit:disabled { opacity: 0.45; cursor: default; }
+    .form-note { font-size: 0.73rem; color: var(--muted); text-align: center; margin-top: 12px; line-height: 1.5; }
+
+    /* ── Success ── */
+    .success-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; padding: 40px 28px; text-align: center;
+      display: none;
+    }
+    .success-card.visible { display: block; }
+    .success-icon { font-size: 2.8rem; margin-bottom: 16px; }
+    .success-card h2 { font-size: 1.2rem; font-weight: 700; margin-bottom: 10px; }
+    .success-card p { font-size: 0.88rem; color: var(--muted); line-height: 1.65; }
+    .back-link { display: inline-block; margin-top: 24px; color: var(--p1); font-size: 0.85rem; text-decoration: none; }
+    .back-link:hover { text-decoration: underline; }
+
+    @media (max-width: 560px) {
+      .form-grid { grid-template-columns: 1fr; }
+      .props { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="header">
+    <a href="/home.html" class="brand">amig<svg class="brand-zero-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 26" aria-hidden="true" style="display:inline-block;width:0.62em;height:0.88em;vertical-align:-0.06em;color:var(--p1)"><path fill="currentColor" fill-rule="evenodd" d="M10,1.5 C14.97,1.5 19,6.65 19,13 C19,19.35 14.97,24.5 10,24.5 C5.03,24.5 1,19.35 1,13 C1,6.65 5.03,1.5 10,1.5 Z M10,7 C7.51,7 5.5,9.69 5.5,13 C5.5,16.31 7.51,19 10,19 C12.49,19 14.5,16.31 14.5,13 C14.5,9.69 12.49,7 10,7 Z"/><line x1="6.5" y1="21" x2="13.5" y2="5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/></svg></a>
+    <a href="/deals.html" class="btn-sm">View deals</a>
+  </header>
+
+  <div class="page">
+
+    <div class="page-hero">
+      <h1>Reach travelers<br>who <span>actually spend.</span></h1>
+      <p>amig0 members are verified travelers actively exploring your city — not tourists scrolling past on an app. Join our affiliate network and put your deal in front of the right people.</p>
+    </div>
+
+    <div class="props">
+      <div class="prop-card">
+        <div class="prop-icon"><i data-lucide="map-pin"></i></div>
+        <div class="prop-title">Featured on the map</div>
+        <div class="prop-desc">Your venue appears on the amig0 deals map, visible to all members in your city.</div>
+      </div>
+      <div class="prop-card">
+        <div class="prop-icon"><i data-lucide="tag"></i></div>
+        <div class="prop-title">You set the deal</div>
+        <div class="prop-desc">Offer what makes sense for your business — % off, free item, priority access.</div>
+      </div>
+      <div class="prop-card">
+        <div class="prop-icon"><i data-lucide="smartphone"></i></div>
+        <div class="prop-title">No hardware needed</div>
+        <div class="prop-desc">Members show their deal screen. Your staff confirms. No scanner, no app.</div>
+      </div>
+      <div class="prop-card">
+        <div class="prop-icon"><i data-lucide="badge-check"></i></div>
+        <div class="prop-title">amig0 Affiliate badge</div>
+        <div class="prop-desc">Appear in Traveler Hacks AI results tagged as an amig0 affiliate.</div>
+      </div>
+    </div>
+
+    <!-- Registration form -->
+    <div class="form-card" id="reg-form-card">
+      <h2>Apply to become an affiliate</h2>
+      <p>Fill in the form below and we'll review your application within 2 business days. No commitment until you're approved.</p>
+
+      <form id="reg-form" novalidate>
+        <div class="form-grid">
+          <div class="field full">
+            <label>Business name <span class="req">*</span></label>
+            <input type="text" name="businessName" placeholder="e.g. La Cantina Mezcalera" autocomplete="organization" required>
+          </div>
+          <div class="field">
+            <label>Category <span class="req">*</span></label>
+            <select name="category" required>
+              <option value="">Select…</option>
+              <option value="bar">Bar</option>
+              <option value="brewery">Brewery</option>
+              <option value="coffee">Cafe / Coffee</option>
+              <option value="food">Restaurant / Food</option>
+              <option value="nightlife">Nightlife</option>
+              <option value="culture">Culture / Arts</option>
+              <option value="shop">Shop</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>City <span class="req">*</span></label>
+            <input type="text" name="city" placeholder="e.g. Mexico City" autocomplete="address-level2" required>
+          </div>
+          <div class="field full">
+            <label>Address</label>
+            <input type="text" name="address" placeholder="Street address" autocomplete="street-address">
+          </div>
+          <div class="field full">
+            <label>Your deal offer <span class="req">*</span></label>
+            <input type="text" name="dealOffer" placeholder="e.g. $5 off your order · Free welcome drink · 10% off" required>
+            <span class="field-hint">What you'll offer to amig0 members who show their deal screen at your venue.</span>
+          </div>
+          <div class="field">
+            <label>Contact name <span class="req">*</span></label>
+            <input type="text" name="contactName" placeholder="Owner or manager" autocomplete="name" required>
+          </div>
+          <div class="field">
+            <label>Email <span class="req">*</span></label>
+            <input type="email" name="email" placeholder="you@business.com" autocomplete="email" required>
+          </div>
+          <div class="field">
+            <label>Phone</label>
+            <input type="tel" name="phone" placeholder="+1 (760) 000-0000" autocomplete="tel">
+          </div>
+          <div class="field">
+            <label>Website</label>
+            <input type="url" name="website" placeholder="https://yourbusiness.com">
+          </div>
+          <div class="field full">
+            <label>Anything else we should know?</label>
+            <textarea name="notes" placeholder="Hours, special conditions, seasonal offers…"></textarea>
+          </div>
+        </div>
+
+        <p id="reg-err" class="form-err" style="display:none"></p>
+        <button type="submit" class="btn-submit" id="reg-submit-btn">Submit application</button>
+        <p class="form-note">We review every application manually. You'll hear from us at the email you provided.</p>
+      </form>
+    </div>
+
+    <!-- Success state -->
+    <div class="success-card" id="success-card">
+      <div class="success-icon"><i data-lucide="check-circle-2"></i></div>
+      <h2>Application received!</h2>
+      <p>Thanks for applying. We'll review your details and get back to you within 2 business days at the email you provided.<br><br>Once approved, your venue will appear on the amig0 deals map and in Traveler Hacks results.</p>
+      <a href="/deals.html" class="back-link">← Browse active deals</a>
+    </div>
+
+  </div>
+
+  <!-- Firebase v10.12.0 -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js"></script>
+
+  <script>
+    var db = firebase.firestore();
+
+    lucide.createIcons();
+
+    document.getElementById('reg-form').addEventListener('submit', function (e) {
+      e.preventDefault();
+      var form = e.target;
+      var errEl = document.getElementById('reg-err');
+      var btn   = document.getElementById('reg-submit-btn');
+      errEl.style.display = 'none';
+
+      var businessName = form.elements['businessName'].value.trim();
+      var email        = form.elements['email'].value.trim();
+      var contactName  = form.elements['contactName'].value.trim();
+      var category     = form.elements['category'].value;
+      var city         = form.elements['city'].value.trim();
+      var dealOffer    = form.elements['dealOffer'].value.trim();
+
+      if (!businessName) { showErr('Business name is required.'); return; }
+      if (!category)     { showErr('Please select a category.'); return; }
+      if (!city)         { showErr('City is required.'); return; }
+      if (!dealOffer)    { showErr('Please describe the deal you\'ll offer members.'); return; }
+      if (!contactName)  { showErr('Contact name is required.'); return; }
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showErr('Please enter a valid email address.'); return; }
+
+      btn.disabled = true; btn.textContent = 'Submitting…';
+
+      db.collection('affiliate_registrations').add({
+        businessName: businessName,
+        category:     category,
+        city:         city,
+        address:      form.elements['address'].value.trim(),
+        dealOffer:    dealOffer,
+        contactName:  contactName,
+        email:        email,
+        phone:        form.elements['phone'].value.trim(),
+        website:      form.elements['website'].value.trim(),
+        notes:        form.elements['notes'].value.trim(),
+        status:       'pending',
+        submittedAt:  firebase.firestore.FieldValue.serverTimestamp()
+      })
+      .then(function () {
+        document.getElementById('reg-form-card').style.display = 'none';
+        document.getElementById('success-card').classList.add('visible');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      })
+      .catch(function (err) {
+        console.error('[business] submit:', err.message);
+        showErr('Submission failed. Please try again or email contact@opcoretech.com.');
+        btn.disabled = false; btn.textContent = 'Submit application';
+      });
+
+      function showErr(msg) {
+        errEl.textContent = msg;
+        errEl.style.display = 'block';
+      }
+    });
+  </script>
+</body>
+</html>

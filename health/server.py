@@ -30,10 +30,12 @@ class Handler(SimpleHTTPRequestHandler):
         self._cors()
         self.end_headers()
 
-    # ── POST /api/recipe ──────────────────────────────────────────────────────
+    # ── POST handlers ─────────────────────────────────────────────────────────
     def do_POST(self):
         if self.path == '/api/recipe':
             self._recipe()
+        elif self.path == '/api/hacks':
+            self._hacks()
         else:
             self.send_error(404)
 
@@ -105,6 +107,106 @@ class Handler(SimpleHTTPRequestHandler):
             self._json(502, {'error': msg})
         except (KeyError, json.JSONDecodeError) as e:
             self._json(502, {'error': f'Could not parse recipe: {e}'})
+        except Exception as e:
+            self._json(500, {'error': str(e)})
+
+    def _hacks(self):
+        if not API_KEY:
+            return self._json(503, {'error': 'ANTHROPIC_API_KEY not set on server'})
+
+        length = int(self.headers.get('Content-Length', 0))
+        try:
+            body = json.loads(self.rfile.read(length))
+        except json.JSONDecodeError:
+            return self._json(400, {'error': 'Invalid JSON body'})
+
+        city        = body.get('city', '').strip()
+        locations   = body.get('locations', '').strip()
+        preferences = body.get('preferences', [])
+
+        if not city:
+            return self._json(400, {'error': 'city is required'})
+
+        if preferences:
+            prefs  = ', '.join(preferences)
+            prompt = (
+                f"You are a savvy local travel insider helping international travelers discover the best of {city}.\n\n"
+                f"City: {city}\n"
+                f"Traveler interests: {prefs}\n\n"
+                f"Step 1: Identify exactly 5 of the best venues, bars, restaurants, galleries, trails, or experiences "
+                f"in {city} that match these interests. Choose places a well-connected local would actually recommend — "
+                f"not tourist traps.\n\n"
+                "Step 2: For each place, generate 3-5 specific, actionable insider hacks using these types:\n"
+                "- app: digital tools, apps, cashback platforms, or loyalty programs to use\n"
+                "- timing: best time to visit, happy hours, live sets, quiet hours, seasonal advantages\n"
+                "- local_alternative: a better or less obvious nearby option a local would know\n"
+                "- pro_tip: insider knowledge — what to order, where to sit, what to ask for, what to avoid\n\n"
+                "Rules:\n"
+                "- Tone: confident and insider. Smart travel, not budget travel.\n"
+                "- Be specific to the city and each venue. No generic advice.\n"
+                "- Mix hack types across hacks — don't use all pro_tip.\n\n"
+                "Respond with valid JSON only — no markdown, no code fences, no extra text.\n"
+                "Schema:\n"
+                '{"destination":"...","locations":[{"name":"...","category":"Shopping|Dining|Entertainment|Bar|Music|Art|Nature|Market|Other","hacks":[{"type":"app|timing|local_alternative|pro_tip","tip":"..."}]}]}'
+            )
+        elif locations:
+            prompt = (
+                f"You are a savvy local travel insider helping international travelers spend smarter — "
+                f"without ever feeling like a budget tourist.\n\n"
+                f"City: {city}\n"
+                f"Venues/stores the traveler plans to visit: {locations}\n\n"
+                "For each venue, generate 3-5 specific, actionable insider hacks using these types:\n"
+                "- app: digital tools, apps, cashback platforms, or loyalty programs to use\n"
+                "- timing: best time to visit, happy hours, sales cycles, off-peak advantages\n"
+                "- local_alternative: a better or cheaper nearby option a local would know\n"
+                "- pro_tip: insider knowledge — how to negotiate, what to ask for, what locals do\n\n"
+                "Rules:\n"
+                "- Tone: confident and insider. Smart travel, not budget travel.\n"
+                "- Be specific to the city and venue. No generic advice.\n"
+                "- If a venue doesn't exist in that city, suggest the closest local equivalent.\n\n"
+                "Respond with valid JSON only — no markdown, no code fences, no extra text.\n"
+                "Schema:\n"
+                '{"destination":"...","locations":[{"name":"...","category":"Shopping|Dining|Entertainment|Bar|Music|Art|Nature|Market|Other","hacks":[{"type":"app|timing|local_alternative|pro_tip","tip":"..."}]}]}'
+            )
+        else:
+            return self._json(400, {'error': 'Either locations or preferences is required'})
+
+        payload = json.dumps({
+            'model': 'claude-haiku-4-5-20251001',
+            'max_tokens': 2048,
+            'messages': [{'role': 'user', 'content': prompt}]
+        }).encode()
+
+        req = urllib.request.Request(
+            'https://api.anthropic.com/v1/messages',
+            data=payload,
+            headers={
+                'x-api-key': API_KEY,
+                'anthropic-version': '2023-06-01',
+                'content-type': 'application/json'
+            }
+        )
+
+        try:
+            with urllib.request.urlopen(req, timeout=45) as resp:
+                data = json.loads(resp.read())
+                text = data['content'][0]['text'].strip()
+                start, end = text.find('{'), text.rfind('}')
+                if start == -1 or end == -1:
+                    raise json.JSONDecodeError('No JSON object found', text, 0)
+                result = json.loads(text[start:end + 1])
+                self._json(200, result)
+        except urllib.error.HTTPError as e:
+            try:
+                detail = json.loads(e.read().decode()).get('error', {}).get('message', '')
+            except Exception:
+                detail = ''
+            msg = {401: 'Invalid API key', 429: 'Rate limit hit', 500: 'Anthropic server error'}.get(e.code, f'API error {e.code}')
+            if detail:
+                msg += f': {detail}'
+            self._json(502, {'error': msg})
+        except (KeyError, json.JSONDecodeError) as e:
+            self._json(502, {'error': f'Could not parse hacks: {e}'})
         except Exception as e:
             self._json(500, {'error': str(e)})
 

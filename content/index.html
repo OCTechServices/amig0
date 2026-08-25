@@ -1,0 +1,1445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Content Engine — amig0 Internal</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <meta name="robots" content="noindex, nofollow">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    :root {
+      --bg:      #09090b;
+      --surface: #18181b;
+      --border:  #27272a;
+      --text:    #fafafa;
+      --muted:   #71717a;
+      --p1:      #818cf8;
+      --green:   #4ade80;
+      --blue:    #60a5fa;
+      --amber:   #fbbf24;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    /* ── Header ── */
+    .page-header {
+      border-bottom: 1px solid var(--border);
+      padding: 16px 24px;
+      display: flex; align-items: center; gap: 14px;
+    }
+    .page-title { font-size: 1rem; font-weight: 600; }
+    .page-title span { color: var(--p1); }
+    .internal-badge {
+      font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em;
+      background: rgba(251,191,36,0.12); color: var(--amber);
+      border: 1px solid rgba(251,191,36,0.25); border-radius: 20px;
+      padding: 3px 9px;
+    }
+
+    /* ── Layout ── */
+    .container { max-width: 860px; margin: 0 auto; padding: 32px 24px; }
+    .workspace { display: grid; grid-template-columns: 340px 1fr; gap: 24px; align-items: start; }
+
+    /* ── Left panel — Generator ── */
+    .gen-panel {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; padding: 22px; position: sticky; top: 24px;
+    }
+    .panel-label {
+      font-size: 0.62rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.12em; color: var(--muted); margin-bottom: 14px;
+    }
+    .input-label {
+      display: block; font-size: 0.62rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.12em;
+      color: var(--muted); margin-bottom: 7px;
+    }
+    select, textarea, input[type=text] {
+      width: 100%; background: var(--bg); border: 1px solid var(--border);
+      border-radius: 9px; color: var(--text); font-family: inherit;
+      font-size: 0.85rem; padding: 10px 13px; outline: none;
+      transition: border-color 0.15s; appearance: none; -webkit-appearance: none;
+    }
+    select:focus, textarea:focus, input[type=text]:focus { border-color: var(--p1); }
+    textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
+    ::placeholder { color: var(--muted); }
+
+    .field { margin-bottom: 14px; }
+
+    /* Mode toggle */
+    .mode-toggle {
+      display: flex; background: var(--bg); border: 1px solid var(--border);
+      border-radius: 9px; padding: 3px; gap: 3px; margin-bottom: 14px;
+    }
+    .mode-btn {
+      flex: 1; background: transparent; border: none; border-radius: 6px;
+      color: var(--muted); font-family: inherit; font-size: 0.78rem; font-weight: 600;
+      padding: 7px 10px; cursor: pointer; transition: all 0.15s;
+    }
+    .mode-btn.active { background: var(--surface); color: var(--text); }
+
+    /* Interest chips */
+    .chips-wrap { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+    .interest-chip {
+      font-size: 0.75rem; font-weight: 500; padding: 5px 12px;
+      border-radius: 20px; border: 1px solid var(--border);
+      background: transparent; color: var(--muted);
+      cursor: pointer; font-family: inherit; transition: all 0.15s;
+    }
+    .interest-chip.selected { border-color: var(--p1); color: var(--p1); background: rgba(129,140,248,0.1); }
+    .interest-chip:hover:not(.selected) { color: var(--text); border-color: rgba(255,255,255,0.2); }
+
+    /* Quick picks */
+    .picks-wrap { margin-bottom: 14px; }
+    .picks-label { font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); margin-bottom: 7px; }
+    .quick-picks { display: flex; flex-wrap: wrap; gap: 6px; }
+    .pick-chip {
+      font-size: 0.68rem; padding: 4px 10px; border-radius: 16px;
+      border: 1px solid var(--border); background: transparent; color: var(--muted);
+      cursor: pointer; font-family: inherit; transition: color 0.15s, border-color 0.15s;
+    }
+    .pick-chip:hover:not(:disabled) { color: var(--text); border-color: var(--p1); }
+    .pick-chip:disabled { opacity: 0.35; cursor: not-allowed; }
+
+    .post-type-seg {
+      display: flex; gap: 6px; margin-bottom: 12px;
+    }
+    .seg-btn {
+      flex: 1; background: transparent; border: 1px solid var(--border);
+      border-radius: 8px; color: var(--muted); font-family: inherit;
+      font-size: 0.72rem; font-weight: 600; padding: 8px 4px;
+      cursor: pointer; transition: all 0.15s; letter-spacing: 0.02em;
+    }
+    .seg-btn:hover { border-color: var(--p1); color: var(--fg); }
+    .seg-btn.active {
+      background: rgba(99,102,241,0.12); border-color: var(--p1); color: var(--p1);
+    }
+    .queue-log {
+      display: none; flex-direction: column; gap: 3px;
+      margin-top: 14px; padding: 10px 12px;
+      background: rgba(194,113,79,0.04);
+      border: 1px solid rgba(194,113,79,0.14);
+      border-radius: 8px;
+    }
+    .queue-log-label {
+      font-size: 0.58rem; letter-spacing: 0.12em; text-transform: uppercase;
+      color: rgba(113,113,122,0.45); margin-bottom: 5px;
+    }
+    .log-entry {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 0.68rem; font-family: monospace;
+    }
+    .log-code { font-weight: 600; color: var(--muted); min-width: 68px; }
+    .log-type { color: rgba(113,113,122,0.55); flex: 1; }
+    .log-date { color: rgba(113,113,122,0.45); font-size: 0.62rem; }
+    .log-dot  { font-size: 0.6rem; }
+    .log-entry.published .log-code { color: #c2714f; }
+    .log-entry.published .log-dot  { color: #4ade80; }
+    .generate-btn {
+      width: 100%; background: var(--p1); border: none; border-radius: 9px;
+      color: #09090b; font-family: inherit; font-size: 0.88rem; font-weight: 700;
+      padding: 13px; cursor: pointer; transition: opacity 0.15s; margin-top: 4px;
+    }
+    .generate-btn:hover:not(:disabled) { opacity: 0.85; }
+    .generate-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* ── Right panel — Output ── */
+    .output-panel { min-height: 200px; }
+
+    /* State */
+    .state { text-align: center; padding: 48px 16px; color: var(--muted); font-size: 0.88rem; line-height: 1.8; }
+    .state.err { color: #f87171; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner {
+      display: inline-block; width: 20px; height: 20px;
+      border: 2px solid var(--border); border-top-color: var(--p1);
+      border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 12px;
+    }
+
+    /* Hack cards (compact) */
+    .results-label {
+      font-size: 0.62rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.12em; color: var(--muted); margin-bottom: 12px;
+    }
+    .hack-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; overflow: hidden; margin-bottom: 10px;
+    }
+    .hack-card-header {
+      padding: 12px 18px; border-bottom: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center; gap: 10px;
+    }
+    .hack-location { font-weight: 600; font-size: 0.9rem; }
+    .hack-category {
+      font-size: 0.58rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em;
+      color: var(--muted); background: rgba(255,255,255,0.05);
+      padding: 3px 8px; border-radius: 16px; white-space: nowrap; flex-shrink: 0;
+    }
+    .hack-item {
+      display: flex; align-items: flex-start; gap: 12px;
+      padding: 10px 18px; border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+    .hack-item:last-child { border-bottom: none; }
+    .hack-badge {
+      font-size: 0.55rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;
+      padding: 2px 8px; border-radius: 16px; white-space: nowrap; flex-shrink: 0; margin-top: 3px;
+    }
+    .hack-tip { font-size: 0.84rem; line-height: 1.55; color: rgba(250,250,250,0.85); }
+
+    /* ── IG Export panel ── */
+    .ig-section {
+      margin-top: 20px;
+      background: var(--surface);
+      border: 1px solid rgba(129,140,248,0.3);
+      border-radius: 16px; padding: 22px;
+    }
+    .ig-section-header {
+      display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;
+    }
+    .ig-section-title { font-size: 0.88rem; font-weight: 700; }
+    .ig-section-title span { color: var(--p1); }
+    .slide-count { font-size: 0.72rem; color: var(--muted); }
+
+    /* Slides */
+    .slides-label { font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); margin-bottom: 10px; }
+    .slides-strip {
+      display: flex; gap: 10px; overflow-x: auto; padding-bottom: 12px; margin-bottom: 18px;
+      scrollbar-width: thin; scrollbar-color: var(--border) transparent;
+    }
+    .slide-card {
+      flex-shrink: 0; width: 190px; background: var(--bg);
+      border: 1px solid var(--border); border-radius: 10px;
+      padding: 14px; position: relative; transition: border-color 0.15s;
+    }
+    .slide-card:hover { border-color: rgba(129,140,248,0.5); }
+    .slide-num { font-size: 0.58rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 9px; }
+    .slide-body { font-size: 0.74rem; line-height: 1.65; color: rgba(250,250,250,0.8); white-space: pre-wrap; word-break: break-word; }
+    .copy-slide-btn {
+      position: absolute; top: 9px; right: 9px;
+      background: var(--border); border: none; border-radius: 4px;
+      color: var(--muted); font-size: 0.62rem; padding: 3px 7px;
+      cursor: pointer; font-family: inherit; opacity: 0; transition: opacity 0.15s;
+    }
+    .slide-card:hover .copy-slide-btn { opacity: 1; }
+    .copy-slide-btn.copied { color: var(--green); background: rgba(74,222,128,0.12); }
+
+    /* Copy all */
+    .copy-all-btn {
+      width: 100%; background: rgba(129,140,248,0.1); border: 1px solid rgba(129,140,248,0.35);
+      border-radius: 9px; color: var(--p1); font-family: inherit; font-size: 0.82rem; font-weight: 700;
+      padding: 11px; cursor: pointer; transition: all 0.15s; margin-bottom: 18px;
+    }
+    .copy-all-btn:hover { background: rgba(129,140,248,0.18); }
+    .copy-all-btn.copied { color: var(--green); border-color: rgba(74,222,128,0.4); background: rgba(74,222,128,0.08); }
+
+    /* Caption */
+    .caption-label { font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); margin-bottom: 8px; }
+    .caption-box {
+      background: var(--bg); border: 1px solid var(--border); border-radius: 9px;
+      padding: 13px 15px; font-size: 0.8rem; line-height: 1.7;
+      color: rgba(250,250,250,0.8); white-space: pre-wrap; word-break: break-word; margin-bottom: 8px;
+    }
+    .copy-caption-btn {
+      width: 100%; background: transparent; border: 1px solid var(--border); border-radius: 9px;
+      color: var(--muted); font-family: inherit; font-size: 0.78rem; font-weight: 600;
+      padding: 9px; cursor: pointer; transition: all 0.15s;
+    }
+    .copy-caption-btn:hover { color: var(--text); border-color: var(--p1); }
+    .copy-caption-btn.copied { color: var(--green); border-color: rgba(74,222,128,0.4); }
+
+    /* Download slides */
+    .download-slides-btn {
+      width: 100%; background: var(--surface); border: 1px solid var(--border);
+      border-radius: 9px; color: var(--text); font-family: inherit; font-size: 0.82rem; font-weight: 700;
+      padding: 11px; cursor: pointer; transition: all 0.15s; margin-bottom: 12px;
+    }
+    .download-slides-btn:hover:not(:disabled) { border-color: var(--p1); color: var(--p1); }
+    .download-slides-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+    .download-slides-btn.done { color: var(--green); border-color: rgba(74,222,128,0.4); background: rgba(74,222,128,0.06); }
+
+    /* Publish */
+    .publish-btn {
+      width: 100%; background: linear-gradient(135deg, #818cf8, #6366f1);
+      border: none; border-radius: 9px; color: #fff; font-family: inherit;
+      font-size: 0.88rem; font-weight: 700; padding: 13px; cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    .publish-btn:hover:not(:disabled) { opacity: 0.85; }
+    .publish-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+    .publish-result {
+      margin-top: 10px; padding: 11px 14px; border-radius: 9px;
+      font-size: 0.8rem; line-height: 1.6; display: none; word-break: break-all;
+    }
+    .publish-result.ok  { background: rgba(74,222,128,0.08); border: 1px solid rgba(74,222,128,0.3); color: var(--green); }
+    .publish-result.err { background: rgba(248,113,113,0.06); border: 1px solid rgba(248,113,113,0.25); color: #f87171; }
+    .publish-result a   { color: inherit; }
+
+    /* ── Mobile fallback ── */
+    @media (max-width: 700px) {
+      .workspace { grid-template-columns: 1fr; }
+      .gen-panel { position: static; }
+      .container { padding: 20px 14px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="page-header">
+  <div class="page-title">Traveler <span>Hacks</span></div>
+  <span class="internal-badge">Internal</span>
+</div>
+
+<div class="container">
+  <div class="workspace">
+
+    <!-- ── Left: Generator ── -->
+    <div class="gen-panel">
+      <div class="panel-label">Generate</div>
+
+      <div class="field">
+        <label class="input-label" for="citySelect">City</label>
+        <select id="citySelect" onchange="onCityChange()">
+          <optgroup label="Mexico">
+            <option value="Mexico City">Mexico City</option>
+            <option value="Guadalajara">Guadalajara</option>
+            <option value="Oaxaca">Oaxaca</option>
+            <option value="Cancún">Cancún</option>
+            <option value="Tijuana">Tijuana</option>
+            <option value="Acapulco">Acapulco</option>
+          </optgroup>
+          <optgroup label="USA">
+            <option value="New York">New York</option>
+            <option value="Los Angeles">Los Angeles</option>
+            <option value="Chicago">Chicago</option>
+            <option value="Dallas">Dallas</option>
+            <option value="San Francisco">San Francisco</option>
+            <option value="Seattle">Seattle</option>
+            <option value="Atlanta">Atlanta</option>
+            <option value="Washington DC">Washington DC</option>
+            <option value="San Diego">San Diego</option>
+            <option value="Las Vegas">Las Vegas</option>
+          </optgroup>
+          <optgroup label="Europe">
+            <option value="Paris">Paris</option>
+            <option value="Amsterdam">Amsterdam</option>
+            <option value="Rome">Rome</option>
+            <option value="Prague">Prague</option>
+            <option value="Florence">Florence</option>
+            <option value="Venice">Venice</option>
+            <option value="Ibiza">Ibiza</option>
+          </optgroup>
+          <option value="other">Other...</option>
+        </select>
+        <input type="text" id="cityOther" placeholder="Enter city..." style="display:none;margin-top:8px">
+      </div>
+
+      <label class="input-label">Mode</label>
+      <div class="mode-toggle">
+        <button class="mode-btn active" id="modeDiscover" onclick="setMode('discover')">Discover</button>
+        <button class="mode-btn" id="modeCustom" onclick="setMode('custom')">Custom</button>
+      </div>
+
+      <!-- Discover -->
+      <div id="discoverPanel">
+        <label class="input-label">Interests</label>
+        <div class="chips-wrap" id="interestChips"></div>
+      </div>
+
+      <!-- Custom -->
+      <div id="customPanel" style="display:none">
+        <div class="field">
+          <label class="input-label" for="venuesInput">Venues</label>
+          <textarea id="venuesInput" placeholder="Liverpool, Mercado Roma..." onkeydown="if(event.key==='Enter'&&event.metaKey) generate()"></textarea>
+        </div>
+        <div id="picksWrap" style="display:none" class="picks-wrap">
+          <div class="picks-label">Quick add</div>
+          <div class="quick-picks" id="quickPicks"></div>
+        </div>
+      </div>
+
+      <div class="post-type-seg" id="postTypeSeg">
+        <button class="seg-btn active" onclick="setPostType('new-city',this)">New City</button>
+        <button class="seg-btn" onclick="setPostType('continuation',this)">Continuation</button>
+        <button class="seg-btn" onclick="setPostType('finale',this)">Series Finale</button>
+      </div>
+      <button class="generate-btn" id="generateBtn" onclick="generate()">Generate</button>
+      <div class="queue-log" id="queueLog">
+        <div class="queue-log-label">Activity</div>
+      </div>
+    </div>
+
+    <!-- ── Right: Output ── -->
+    <div class="output-panel" id="outputPanel">
+      <div class="state">Generate hacks to build your IG carousel.</div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+
+// ─── Data ─────────────────────────────────────────────────────────────────────
+const INTERESTS = [
+  { icon: 'wine',         label: 'Drinks' },
+  { icon: 'music',        label: 'Live Music' },
+  { icon: 'palette',      label: 'Art' },
+  { icon: 'clapperboard', label: 'Theatre' },
+  { icon: 'utensils',     label: 'Food' },
+  { icon: 'store',        label: 'Markets' },
+  { icon: 'moon',         label: 'Nightlife' },
+  { icon: 'shopping-bag', label: 'Shopping' },
+  { icon: 'coffee',       label: 'Coffee' },
+  { icon: 'trophy',       label: 'Sports' },
+  { icon: 'mountain',     label: 'Hikes & Nature' },
+];
+
+const PICKS = {
+  'Mexico City': ['Liverpool','Palacio de Hierro','Mercado Roma','El Pendulo','OXXO','Farmacias del Ahorro','Rappi'],
+  'Guadalajara':  ['Plaza Galerias','Mercado San Juan de Dios','Andares','Liverpool GDL'],
+  'Monterrey':    ['Galerias Valle Oriente','Plaza Fiesta San Agustin','Liverpool MTY'],
+  'Los Angeles':  ['Erewhon','The Grove','Whole Foods','Santa Monica Place','In-N-Out'],
+  'New York':     ["Trader Joe's","Bloomingdale's",'Eataly','Chelsea Market','Zabars'],
+  'Miami':        ['Brickell City Centre','Wynwood','Whole Foods Brickell','Design District'],
+  'Dallas':       ['NorthPark Center','Neiman Marcus','Pecan Lodge','Klyde Warren Park'],
+};
+
+const TYPES = {
+  app:               { label: 'APP',     emoji: '📱', color: '#60a5fa', bg: 'rgba(96,165,250,0.12)'  },
+  timing:            { label: 'TIMING',  emoji: '⏰', color: '#fbbf24', bg: 'rgba(251,191,36,0.12)'  },
+  local_alternative: { label: 'LOCAL',   emoji: '📍', color: '#4ade80', bg: 'rgba(74,222,128,0.12)'  },
+  pro_tip:           { label: 'PRO TIP', emoji: '💡', color: '#818cf8', bg: 'rgba(129,140,248,0.12)' },
+};
+
+// ─── Geo data for finale map slide ────────────────────────────────────────────
+const CITY_COORDS = {
+  // Mexico
+  'Mexico City':   { lat: 19.4326,  lng: -99.1332  },
+  'Guadalajara':   { lat: 20.6597,  lng: -103.3496 },
+  'Oaxaca':        { lat: 17.0732,  lng: -96.7266  },
+  'Cancún':        { lat: 21.1619,  lng: -86.8515  },
+  'Tijuana':       { lat: 32.5149,  lng: -117.0382 },
+  'Acapulco':      { lat: 16.8531,  lng: -99.8237  },
+  // USA
+  'New York':      { lat: 40.7128,  lng: -74.0060  },
+  'Los Angeles':   { lat: 34.0522,  lng: -118.2437 },
+  'Chicago':       { lat: 41.8781,  lng: -87.6298  },
+  'Dallas':        { lat: 32.7767,  lng: -96.7970  },
+  'San Francisco': { lat: 37.7749,  lng: -122.4194 },
+  'Seattle':       { lat: 47.6062,  lng: -122.3321 },
+  'Atlanta':       { lat: 33.7490,  lng: -84.3880  },
+  'Washington DC': { lat: 38.9072,  lng: -77.0369  },
+  'San Diego':     { lat: 32.7157,  lng: -117.1611 },
+  'Las Vegas':     { lat: 36.1699,  lng: -115.1398 },
+  // Europe
+  'Paris':         { lat: 48.8566,  lng: 2.3522    },
+  'Amsterdam':     { lat: 52.3676,  lng: 4.9041    },
+  'Rome':          { lat: 41.9028,  lng: 12.4964   },
+  'Prague':        { lat: 50.0755,  lng: 14.4378   },
+  'Florence':      { lat: 43.7696,  lng: 11.2558   },
+  'Venice':        { lat: 45.4408,  lng: 12.3155   },
+  'Ibiza':         { lat: 38.9067,  lng: 1.4206    },
+};
+
+const CITY_COUNTRY = {
+  'Mexico City':   'Mexico',       'Guadalajara': 'Mexico',   'Oaxaca':    'Mexico',
+  'Cancún':        'Mexico',       'Tijuana':     'Mexico',   'Acapulco':  'Mexico',
+  'New York':      'USA',          'Los Angeles': 'USA',      'Chicago':   'USA',
+  'Dallas':        'USA',          'San Francisco': 'USA',    'Seattle':   'USA',
+  'Atlanta':       'USA',          'Washington DC': 'USA',    'San Diego': 'USA',
+  'Las Vegas':     'USA',
+  'Paris':         'France',
+  'Amsterdam':     'Netherlands',
+  'Rome':          'Italy',        'Florence':    'Italy',    'Venice':    'Italy',
+  'Prague':        'Czech Republic',
+  'Ibiza':         'Spain',
+};
+
+const COUNTRY_COLORS = {
+  'Mexico':      ['#006847', '#FFFFFF', '#CE1126'],
+  'USA':         ['#B22234', '#FFFFFF', '#3C3B6E'],
+  'Japan':       ['#FFFFFF', '#BC002D'],
+  'France':      ['#002395', '#FFFFFF', '#ED2939'],
+  'Spain':       ['#C60B1E', '#F1BF00', '#C60B1E'],
+  'UK':          ['#012169', '#FFFFFF', '#C8102E'],
+  'Italy':       ['#009246', '#FFFFFF', '#CE2B37'],
+  'Argentina':   ['#74ACDF', '#FFFFFF', '#74ACDF'],
+  'Colombia':    ['#FCD116', '#003893', '#CE1126'],
+  'Brazil':      ['#009C3B', '#FFDF00', '#002776'],
+  'Netherlands': ['#AE1C28', '#FFFFFF', '#21468B'],
+  'Germany':     ['#000000', '#DD0000', '#FFCE00'],
+  'Portugal':       ['#006600', '#FF0000'],
+  'Australia':      ['#00008B', '#FFFFFF', '#FF0000'],
+  'Czech Republic': ['#D7141A', '#FFFFFF', '#11457E'],
+};
+
+let lastData          = null;
+let currentMode       = 'discover';
+let selectedInterests = new Set();
+let igSlides          = [];
+let igCaption         = '';
+let lastInterests     = '';
+let postType          = 'new-city';
+
+function setPostType(type, el) {
+  postType = type;
+  document.querySelectorAll('.seg-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+}
+
+// ─── Queue log (localStorage) ─────────────────────────────────────────────────
+const LOG_KEY = 'amig0_queue_log';
+const TYPE_LABELS = { 'new-city': 'New City', 'continuation': 'Continuation', 'finale': 'Finale' };
+
+function logEntry(city, type, status) {
+  const log = JSON.parse(localStorage.getItem(LOG_KEY) || '[]');
+  const d   = new Date();
+  const dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  const code = city.replace(/\s+/g, '').substring(0, 3).toUpperCase();
+  log.unshift({ city, code, type, dateStr, status, ts: Date.now() });
+  if (log.length > 30) log.pop();
+  localStorage.setItem(LOG_KEY, JSON.stringify(log));
+  renderQueueLog();
+}
+
+function renderQueueLog() {
+  const el  = document.getElementById('queueLog');
+  if (!el) return;
+  const log = JSON.parse(localStorage.getItem(LOG_KEY) || '[]');
+  if (!log.length) { el.style.display = 'none'; return; }
+  el.style.display = 'flex';
+  const rows = log.slice(0, 10).map(e => `
+    <div class="log-entry ${e.status}">
+      <span class="log-code">${e.code}</span>
+      <span class="log-type">${TYPE_LABELS[e.type] || e.type}</span>
+      <span class="log-date">${e.dateStr}</span>
+      <span class="log-dot">${e.status === 'published' ? '●' : '○'}</span>
+    </div>`).join('');
+  el.innerHTML = `<div class="queue-log-label">Activity</div>${rows}`;
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+(function init() {
+  const grid = document.getElementById('interestChips');
+  grid.innerHTML = INTERESTS.map(({ icon, label }) =>
+    `<button class="interest-chip" onclick="toggleInterest(this,'${label}')"><i data-lucide="${icon}" style="width:13px;height:13px;stroke-width:1.8;vertical-align:-2px;margin-right:5px;"></i>${label}</button>`
+  ).join('');
+  lucide.createIcons();
+  onCityChange();
+  renderQueueLog();
+})();
+
+// ─── Mode ─────────────────────────────────────────────────────────────────────
+function setMode(mode) {
+  currentMode = mode;
+  document.getElementById('discoverPanel').style.display = mode === 'discover' ? 'block' : 'none';
+  document.getElementById('customPanel').style.display   = mode === 'custom'   ? 'block' : 'none';
+  document.getElementById('modeDiscover').classList.toggle('active', mode === 'discover');
+  document.getElementById('modeCustom').classList.toggle('active',   mode === 'custom');
+}
+
+function toggleInterest(btn, label) {
+  if (selectedInterests.has(label)) { selectedInterests.delete(label); btn.classList.remove('selected'); }
+  else                              { selectedInterests.add(label);    btn.classList.add('selected');    }
+}
+
+function onCityChange() {
+  const sel   = document.getElementById('citySelect').value;
+  const other = document.getElementById('cityOther');
+  other.style.display = sel === 'other' ? 'block' : 'none';
+  const picks = PICKS[sel] || [];
+  const wrap  = document.getElementById('picksWrap');
+  if (picks.length) {
+    document.getElementById('quickPicks').innerHTML = picks
+      .map(p => `<button class="pick-chip" onclick="addPick(this,'${p.replace(/'/g,"\\'")}')">${p}</button>`).join('');
+    wrap.style.display = 'block';
+  } else {
+    wrap.style.display = 'none';
+  }
+}
+
+function addPick(btn, name) {
+  const ta = document.getElementById('venuesInput');
+  ta.value = ta.value.trim() ? ta.value.trim() + '\n' + name : name;
+  btn.disabled = true;
+}
+
+// ─── Generate ─────────────────────────────────────────────────────────────────
+async function generate() {
+  const selVal = document.getElementById('citySelect').value;
+  const city   = selVal === 'other' ? document.getElementById('cityOther').value.trim() : selVal;
+  const btn    = document.getElementById('generateBtn');
+  const panel  = document.getElementById('outputPanel');
+
+  if (!city) return;
+
+  let body;
+  if (currentMode === 'discover') {
+    if (!selectedInterests.size) return;
+    body = { city, preferences: [...selectedInterests], session: Math.ceil(Math.random() * 20) };
+  } else {
+    const venues = document.getElementById('venuesInput').value.trim();
+    if (!venues) return;
+    body = { city, locations: venues };
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Generating...';
+  panel.innerHTML = `<div class="state"><div class="spinner"></div><p>Building hacks for ${city}...</p></div>`;
+
+  try {
+    const res  = await fetch('/api/hacks', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || `Error ${res.status}`);
+    lastData = data;
+    logEntry(data.destination, postType, 'draft');
+    panel.innerHTML = renderOutput(data);
+  } catch (err) {
+    panel.innerHTML = `<div class="state err">${err.message}</div>`;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Generate';
+  }
+}
+
+// ─── Render hack cards + IG panel ─────────────────────────────────────────────
+function renderOutput(data) {
+  const cards = data.locations.map(loc => {
+    const hacks = loc.hacks.map(h => {
+      const t = TYPES[h.type] || TYPES.pro_tip;
+      return `<div class="hack-item">
+        <span class="hack-badge" style="color:${t.color};background:${t.bg}">${t.label}</span>
+        <span class="hack-tip">${escHtml(h.tip)}</span>
+      </div>`;
+    }).join('');
+    return `<div class="hack-card">
+      <div class="hack-card-header">
+        <span class="hack-location">${escHtml(loc.name)}</span>
+        <span class="hack-category">${escHtml(loc.category)}</span>
+      </div>${hacks}
+    </div>`;
+  }).join('');
+
+  return `
+    <div class="results-label" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <span>Hacks — ${escHtml(data.destination)}</span>
+      <button style="background:transparent;border:1px solid var(--border);border-radius:7px;color:var(--muted);font-family:inherit;font-size:0.72rem;font-weight:600;padding:5px 12px;cursor:pointer;" onclick="copyHacks(this)">Copy as text</button>
+    </div>
+    ${cards}
+    ${buildIGPanel(data)}`;
+}
+
+// ─── IG Panel ─────────────────────────────────────────────────────────────────
+function buildIGPanel(data) {
+  const { destination, locations } = data;
+  igSlides = [];
+  lastInterests = [...selectedInterests].join(' · ');
+
+  // Cover slide
+  const coverTheme = lastInterests ? lastInterests.toUpperCase() : 'LOCAL INSIDER PICKS';
+  igSlides.push(
+    `TRAVELER HACKS\n📍 ${destination.toUpperCase()}\n${coverTheme}\n\n${locations.length} spots.\nReal insider intel.\nNo tourist traps.\n\nSave this post. ↓`
+  );
+
+  // One slide per venue — best hack
+  locations.forEach(loc => {
+    const best = loc.hacks[0];
+    if (!best) return;
+    const t = TYPES[best.type] || TYPES.pro_tip;
+    igSlides.push(
+      `${loc.name.toUpperCase()}\n${loc.category}\n\n${t.emoji} ${t.label}\n${best.tip}`
+    );
+  });
+
+  // Venue map slide — all post types
+  igSlides.push('__VENMAP__');
+
+  // Interest selector slide (finale only)
+  if (postType === 'finale') {
+    igSlides.push('__SELECTOR__');
+  }
+
+  // CTA slide
+  igSlides.push(
+    `Your city next?\n\nSubmit your spots at\namig0.vercel.app/hacks\n\nWe'll feature you in\nour next city guide.\n\n@amig0trips`
+  );
+
+  // Caption
+  const venueLines = locations.map(l => `→ ${l.name}`).join('\n');
+  const cityTag    = destination.toLowerCase().replace(/\s+/g, '');
+  if (postType === 'finale') {
+    const interestLine = lastInterests ? `Final drop: ${lastInterests} — the spots locals actually love.\n\n` : '';
+    igCaption = `That's a wrap on our ${destination} series. 🔑\n\n${interestLine}In this post:\n${venueLines}\n\nSave this series for your next ${destination} trip → amig0.vercel.app/hacks\n\n🔗 All recommended tools → link in bio\n\n💬 Which city should we cover next? Drop it below.\n\n#${cityTag} #${cityTag}travel #iztapalapa #travelhacks #insidertips #localknowledge #travelsmarter #amig0trips`;
+  } else if (postType === 'continuation') {
+    const interestLine = lastInterests ? `This time: ${lastInterests} — the spots locals actually know.\n\n` : '';
+    igCaption = `Back in ${destination}. 🔑\n\n${interestLine}In this post:\n${venueLines}\n\nPart of our ongoing ${destination} city series → amig0.vercel.app/hacks\n\n🔗 All recommended tools → link in bio\n\n💬 Drop your city below — we might feature it next.\n\n#${cityTag} #${cityTag}travel #travelhacks #insidertips #localknowledge #travelsmarter #amig0trips`;
+  } else {
+    const interestLine = lastInterests ? `${lastInterests} — ` : '';
+    igCaption = `Insider hacks for ${destination} — ${interestLine}the spots locals actually know. 🔑\n\nIn this post:\n${venueLines}\n\nGenerate personalized hacks for any city → amig0.vercel.app/hacks\n\n🔗 All recommended tools → link in bio\n\n💬 Drop your city below — we might feature it next.\n\n#${cityTag} #${cityTag}travel #travelhacks #insidertips #localknowledge #travelsmarter #amig0trips`;
+  }
+
+  const slidesHTML = igSlides.map((s, i) => {
+    const display = s === '__VENMAP__'   ? '[Venue map slide — OSM pins, renders on export]'
+                  : s === '__SELECTOR__' ? '[Interest selector slide — renders on export]'
+                  : s;
+    return `
+    <div class="slide-card">
+      <div class="slide-num">Slide ${i + 1} / ${igSlides.length}</div>
+      <div class="slide-body">${escHtml(display)}</div>
+      <button class="copy-slide-btn" onclick="copySlide(this,${i})">Copy</button>
+    </div>`;
+  }).join('');
+
+  return `
+    <div class="ig-section">
+      <div class="ig-section-header">
+        <div class="ig-section-title">IG Carousel — <span>${escHtml(destination)}</span></div>
+        <span class="slide-count">${igSlides.length} slides</span>
+      </div>
+      <div class="slides-label">Slides — hover to copy individually</div>
+      <div class="slides-strip">${slidesHTML}</div>
+      <button class="copy-all-btn" id="copyAllBtn" onclick="copyAll()">Copy all slides</button>
+      <div class="caption-label">Caption + Hashtags</div>
+      <div class="caption-box">${escHtml(igCaption)}</div>
+      <button class="copy-caption-btn" id="copyCaptionBtn" onclick="copyCaption()">Copy Caption</button>
+      <div style="border-top:1px solid var(--border);margin:20px 0;"></div>
+      <button class="publish-btn" id="publishBtn" onclick="publishCarousel()">Publish to Instagram</button>
+      <button class="publish-btn" id="downloadBtn" onclick="downloadSlides()" style="background:transparent;border:1px solid var(--border);color:var(--muted);margin-top:10px;">Download slides as PNG</button>
+      <div class="publish-result" id="publishResult"></div>
+    </div>`;
+}
+
+// ─── Copy helpers ─────────────────────────────────────────────────────────────
+function copySlide(btn, idx) {
+  navigator.clipboard.writeText(igSlides[idx]).then(() => {
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1800);
+  });
+}
+
+function copyAll() {
+  const text = igSlides.map((s, i) => `── SLIDE ${i + 1} ──\n${s}`).join('\n\n');
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('copyAllBtn');
+    btn.textContent = 'All slides copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy all slides'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+function copyCaption() {
+  navigator.clipboard.writeText(igCaption).then(() => {
+    const btn = document.getElementById('copyCaptionBtn');
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy Caption'; btn.classList.remove('copied'); }, 1800);
+  });
+}
+
+// ─── Publish to Instagram ──────────────────────────────────────────────────────
+async function publishCarousel() {
+  if (!igSlides.length || !lastData) return;
+  const btn      = document.getElementById('publishBtn');
+  const resultEl = document.getElementById('publishResult');
+
+  btn.disabled = true;
+  resultEl.style.display = 'none';
+
+  try {
+    btn.textContent = 'Rendering slides...';
+    await document.fonts.ready;
+
+    const slides = await Promise.all(igSlides.map((_, i) => makeSlide(i)));
+
+    btn.textContent = `Uploading ${slides.length} slides & publishing...`;
+
+    const res  = await fetch('/api/ig-post', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ slides, caption: igCaption }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || `Error ${res.status}`);
+
+    const warnHtml = data.warning ? `<br><span style="color:#f59e0b;font-size:0.8rem">${data.warning}</span>` : '';
+    resultEl.innerHTML  = `Posted! <a href="${data.permalink}" target="_blank" rel="noopener noreferrer">${data.permalink}</a>${warnHtml}`;
+    resultEl.className  = 'publish-result ok';
+    resultEl.style.display = 'block';
+    btn.textContent = 'Posted to Instagram';
+    logEntry(lastData.destination, postType, 'published');
+  } catch (err) {
+    resultEl.textContent   = `Error: ${err.message}`;
+    resultEl.className     = 'publish-result err';
+    resultEl.style.display = 'block';
+    btn.disabled    = false;
+    btn.textContent = 'Publish to Instagram';
+  }
+}
+
+// ─── Download slides as PNG ────────────────────────────────────────────────────
+async function downloadSlides() {
+  if (!igSlides.length || !lastData) return;
+  const btn = document.getElementById('downloadBtn');
+  btn.disabled = true; btn.textContent = 'Rendering…';
+  await document.fonts.ready;
+  const city = lastData.destination.toLowerCase().replace(/\s+/g, '-');
+  for (let i = 0; i < igSlides.length; i++) {
+    btn.textContent = `Downloading ${i + 1} / ${igSlides.length}…`;
+    const dataUrl = await makeSlide(i);
+    const a = document.createElement('a');
+    a.download = `amig0-${city}-slide-${String(i + 1).padStart(2, '0')}.png`;
+    a.href = dataUrl.replace('image/jpeg', 'image/png');
+    a.click();
+    await new Promise(r => setTimeout(r, 400));
+  }
+  btn.disabled = false; btn.textContent = 'Download slides as PNG';
+}
+
+// ─── Canvas Slide Rendering ────────────────────────────────────────────────────
+const SLIDE_W = 1080, SLIDE_H = 1080, PAD = 90;
+
+// ─── Venue geocoding via Nominatim (OSM) ─────────────────────────────────────
+async function geocodeVenue(name, city) {
+  const q = encodeURIComponent(`${name}, ${city}`);
+  try {
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/search?q=${q}&format=json&limit=1`,
+      { headers: { 'User-Agent': 'amig0trips/1.0 (contact@opcoretech.com)' } }
+    );
+    const data = await res.json();
+    if (data.length > 0) return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+  } catch (_) {}
+  return null;
+}
+
+// ─── Map helpers (finale slide) ───────────────────────────────────────────────
+function latLngToTile(lat, lng, zoom) {
+  const n = Math.pow(2, zoom);
+  const x = Math.floor((lng + 180) / 360 * n);
+  const sinLat = Math.sin(lat * Math.PI / 180);
+  const y = Math.floor((1 - Math.log((1 + sinLat) / (1 - sinLat)) / (2 * Math.PI)) / 2 * n);
+  return { x, y };
+}
+
+function latLngToCanvas(lat, lng, zoom, originTx, originTy, scale) {
+  const n = Math.pow(2, zoom);
+  const gx = (lng + 180) / 360 * n * 256;
+  const sinLat = Math.sin(lat * Math.PI / 180);
+  const gy = (1 - Math.log((1 + sinLat) / (1 - sinLat)) / (2 * Math.PI)) / 2 * n * 256;
+  return { x: (gx - originTx * 256) * scale, y: (gy - originTy * 256) * scale };
+}
+
+function loadTile(x, y, z) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    const timer = setTimeout(() => reject(new Error('timeout')), 8000);
+    img.onload  = () => { clearTimeout(timer); resolve(img); };
+    img.onerror = () => { clearTimeout(timer); reject(new Error('error')); };
+    img.src = `https://tile.openstreetmap.org/${z}/${x}/${y}.png`;
+  });
+}
+
+function drawAmig0Pin(ctx, x, y, size) {
+  const s = size, ox = x - 250*s, oy = y - 215*s;
+  const grad = ctx.createLinearGradient(x, oy + 80*s, x, oy + 445*s);
+  grad.addColorStop(0, '#a5b4fc'); grad.addColorStop(1, '#6366f1');
+  ctx.fillStyle = grad;
+  ctx.beginPath();
+  ctx.moveTo(ox + 115*s, oy + 215*s);
+  ctx.arc(ox + 250*s, oy + 215*s, 135*s, Math.PI, 0, false);
+  ctx.quadraticCurveTo(ox + 385*s, oy + 338*s, ox + 250*s, oy + 445*s);
+  ctx.quadraticCurveTo(ox + 115*s, oy + 338*s, ox + 115*s, oy + 215*s);
+  ctx.closePath(); ctx.fill();
+  ctx.fillStyle = '#09090b';
+  ctx.beginPath(); ctx.arc(ox + 250*s, oy + 215*s, 62*s, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = 'rgba(165,180,252,0.8)';
+  ctx.beginPath(); ctx.arc(ox + 250*s, oy + 215*s, 11*s, 0, Math.PI*2); ctx.fill();
+  const tipY = oy + 445*s;
+  const glow = ctx.createRadialGradient(x, tipY, 0, x, tipY, 38*s);
+  glow.addColorStop(0, 'rgba(99,102,241,0.55)'); glow.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = glow;
+  ctx.beginPath(); ctx.ellipse(x, tipY, 38*s, 11*s, 0, 0, Math.PI*2); ctx.fill();
+}
+
+async function drawFinaleMapSlide(ctx) {
+  const W = SLIDE_W, H = SLIDE_H;
+  const city    = lastData.destination;
+  const coords  = CITY_COORDS[city] || { lat: 19.4326, lng: -99.1332 };
+  const country = CITY_COUNTRY[city] || '';
+  const colors  = COUNTRY_COLORS[country] || ['#818cf8'];
+  const zoom = 10, GRID = 4, TS = 256;
+  const scale = W / (TS * GRID);
+  const { x: tx, y: ty } = latLngToTile(coords.lat, coords.lng, zoom);
+  const originTx = tx - Math.floor(GRID / 2);
+  const originTy = ty - Math.floor(GRID / 2);
+
+  // Draw OSM tiles (dark style via Stadia fallback if needed)
+  try {
+    const promises = [];
+    for (let dy = 0; dy < GRID; dy++)
+      for (let dx = 0; dx < GRID; dx++)
+        promises.push(loadTile(originTx + dx, originTy + dy, zoom));
+    const tiles = await Promise.all(promises);
+    let i = 0;
+    for (let dy = 0; dy < GRID; dy++)
+      for (let dx = 0; dx < GRID; dx++)
+        ctx.drawImage(tiles[i++], dx*TS*scale, dy*TS*scale, TS*scale, TS*scale);
+  } catch (_) { /* dark bg already filled — falls through gracefully */ }
+
+  // Brand dark overlay
+  ctx.fillStyle = 'rgba(9,9,11,0.72)'; ctx.fillRect(0, 0, W, H);
+
+  // City pin position
+  const pin  = latLngToCanvas(coords.lat, coords.lng, zoom, originTx, originTy, scale);
+  const pinX = Math.min(Math.max(pin.x, W*0.25), W*0.75);
+  const pinY = Math.min(Math.max(pin.y, H*0.18), H*0.50);
+
+  // Indigo glow behind pin
+  const cityGlow = ctx.createRadialGradient(pinX, pinY, 0, pinX, pinY, 260);
+  cityGlow.addColorStop(0, 'rgba(99,102,241,0.20)'); cityGlow.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = cityGlow; ctx.fillRect(0, 0, W, H);
+
+  // Country flag bar — top edge, 7px per stripe, subtle opacity
+  const stripeH = 7, stripeW = W / colors.length;
+  colors.forEach((col, i) => {
+    ctx.fillStyle = col + 'B0';   // ~69% opacity — hint only
+    ctx.fillRect(i * stripeW, 0, stripeW, stripeH);
+  });
+
+  // amig0 pin
+  drawAmig0Pin(ctx, pinX, pinY, 0.44);
+
+  // City name — large, centered, bottom third
+  ctx.textAlign = 'center';
+  ctx.font = '800 92px "Inter",system-ui,sans-serif'; ctx.fillStyle = '#fafafa';
+  ctx.fillText(city.toUpperCase(), W/2, H*0.73);
+
+  // Sub-label
+  ctx.font = '500 30px "Inter",system-ui,sans-serif'; ctx.fillStyle = '#818cf8';
+  ctx.fillText('FEATURED CITY SERIES', W/2, H*0.73 + 52);
+
+  // amig0 wordmark
+  ctx.font = '700 34px "Inter",system-ui,sans-serif';
+  ctx.fillStyle = 'rgba(129,140,248,0.55)';
+  ctx.fillText('amig0', W/2, H - 52);
+}
+
+async function drawVenueMapSlide(ctx) {
+  const W = SLIDE_W, H = SLIDE_H;
+  const city = lastData.destination;
+  const isDiscover = currentMode === 'discover';
+  const ACCENT = '#818cf8';
+  const PAD = 56;
+
+  // Geocode: Nominatim (accurate) → Claude lat/lng → city center fallback
+  // City center is always the last resort — venue authenticity is enforced by the prompt,
+  // not by coordinate precision. A pin at city center means "go to this area."
+  const cityCenter = CITY_COORDS[city] || { lat: 19.4326, lng: -99.1332 };
+  const pinned = [];
+  for (const loc of lastData.locations) {
+    const nominatim = await geocodeVenue(loc.name, city);
+    const claudeCoords = (loc.lat != null && loc.lng != null && Math.abs(loc.lat) > 0.001 && Math.abs(loc.lng) > 0.001)
+      ? { lat: loc.lat, lng: loc.lng } : null;
+    const coords = nominatim || claudeCoords || cityCenter;
+    pinned.push({ ...loc, coords });
+  }
+
+  // Always center on city — gives users spatial context within the city
+  const centerLat = cityCenter.lat;
+  const centerLng = cityCenter.lng;
+
+  const zoom = 13, GRID = 4, TS = 256;
+  const scale = W / (TS * GRID);
+  const { x: tx, y: ty } = latLngToTile(centerLat, centerLng, zoom);
+  const originTx = tx - Math.floor(GRID / 2);
+  const originTy = ty - Math.floor(GRID / 2);
+
+  // Draw OSM tiles
+  try {
+    const promises = [];
+    for (let dy = 0; dy < GRID; dy++)
+      for (let dx = 0; dx < GRID; dx++)
+        promises.push(loadTile(originTx + dx, originTy + dy, zoom));
+    const tiles = await Promise.all(promises);
+    let i = 0;
+    for (let dy = 0; dy < GRID; dy++)
+      for (let dx = 0; dx < GRID; dx++)
+        ctx.drawImage(tiles[i++], dx * TS * scale, dy * TS * scale, TS * scale, TS * scale);
+  } catch (_) {}
+
+  // Dark overlay
+  ctx.fillStyle = 'rgba(9,9,11,0.70)'; ctx.fillRect(0, 0, W, H);
+
+  // Indigo glow at center
+  const glow = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, W * 0.45);
+  glow.addColorStop(0, 'rgba(99,102,241,0.12)'); glow.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = glow; ctx.fillRect(0, 0, W, H);
+
+  // Bottom legend strip — gradient so it never clashes with map content
+  const STRIP_H = 175;
+  const stripGrad = ctx.createLinearGradient(0, H - STRIP_H - 40, 0, H);
+  stripGrad.addColorStop(0, 'rgba(9,9,11,0)');
+  stripGrad.addColorStop(0.35, 'rgba(9,9,11,0.88)');
+  stripGrad.addColorStop(1, 'rgba(9,9,11,0.96)');
+  ctx.fillStyle = stripGrad;
+  ctx.fillRect(0, H - STRIP_H - 40, W, STRIP_H + 40);
+
+  // Top-left gradient — ensures header text reads on any map tile
+  const topGrad = ctx.createLinearGradient(0, 0, 0, 130);
+  topGrad.addColorStop(0, 'rgba(9,9,11,0.82)');
+  topGrad.addColorStop(1, 'rgba(9,9,11,0)');
+  ctx.fillStyle = topGrad;
+  ctx.fillRect(0, 0, W * 0.65, 130);
+
+  // Venue pins — y-clamped to stay above the legend strip
+  // Name labels omitted — numbered circles + bottom legend is cleaner when pins cluster
+  const RADIUS = 20;
+  const PIN_MAX_Y = H - STRIP_H - RADIUS - 24;
+  pinned.forEach((loc, i) => {
+    const pin = latLngToCanvas(loc.coords.lat, loc.coords.lng, zoom, originTx, originTy, scale);
+    const px = Math.min(Math.max(pin.x, PAD + RADIUS), W - PAD - RADIUS);
+    const py = Math.min(Math.max(pin.y, PAD + RADIUS + 90), PIN_MAX_Y);
+
+    ctx.beginPath(); ctx.arc(px, py, RADIUS, 0, Math.PI * 2);
+    ctx.fillStyle = ACCENT; ctx.fill();
+    ctx.font = `700 ${RADIUS}px "Inter",system-ui,sans-serif`;
+    ctx.fillStyle = '#fff'; ctx.textAlign = 'center';
+    ctx.fillText(String(i + 1), px, py + RADIUS * 0.38);
+  });
+
+  ctx.textAlign = 'left';
+
+  // Header — top-left (readable on any map now)
+  ctx.font = '700 40px "Inter",system-ui,sans-serif';
+  ctx.fillStyle = '#fafafa';
+  ctx.fillText(city.toUpperCase(), PAD, PAD + 40);
+  ctx.font = '500 26px "Inter",system-ui,sans-serif';
+  ctx.fillStyle = ACCENT;
+  ctx.fillText('WHERE TO FIND THEM', PAD, PAD + 76);
+
+  // Numbered legend inside the strip — always in the safe zone
+  const legendY = H - STRIP_H + 18;
+  const LINE_H = 30;
+  pinned.forEach((loc, i) => {
+    const label = loc.name.length > 32 ? loc.name.slice(0, 30) + '…' : loc.name;
+    ctx.font = '400 21px "Inter",system-ui,sans-serif';
+    ctx.fillStyle = 'rgba(250,250,250,0.70)';
+    ctx.fillText(`${i + 1}  ${label}`, PAD, legendY + i * LINE_H);
+  });
+
+  // amig0 wordmark
+  ctx.textAlign = 'right';
+  ctx.font = '700 28px "Inter",system-ui,sans-serif';
+  ctx.fillStyle = 'rgba(129,140,248,0.55)';
+  ctx.fillText('amig0', W - PAD, H - PAD);
+  ctx.textAlign = 'left';
+}
+
+async function makeSlide(idx) {
+  const canvas  = document.createElement('canvas');
+  canvas.width  = SLIDE_W;
+  canvas.height = SLIDE_H;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#100c08';
+  ctx.fillRect(0, 0, SLIDE_W, SLIDE_H);
+  if (idx === 0 && postType === 'finale') await drawFinaleMapSlide(ctx);
+  else if (idx === 0)                        drawCoverSlide(ctx);
+  else if (igSlides[idx] === '__VENMAP__')   await drawVenueMapSlide(ctx);
+  else if (igSlides[idx] === '__SELECTOR__') drawInterestSelectorSlide(ctx);
+  else if (idx === igSlides.length - 1)      drawCTASlide(ctx);
+  else                                        drawVenueSlide(ctx, idx);
+  return canvas.toDataURL('image/jpeg', 0.85);
+}
+
+function drawArchMotif(ctx, cx, cy, size) {
+  const s = size;
+  ctx.save();
+  ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  // Main arch doorway
+  ctx.strokeStyle = 'rgba(194,113,79,0.18)'; ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(cx - s*0.26, cy + s*0.48);
+  ctx.lineTo(cx - s*0.26, cy - s*0.02);
+  ctx.arc(cx, cy - s*0.02, s*0.26, Math.PI, 0);
+  ctx.lineTo(cx + s*0.26, cy + s*0.48);
+  ctx.stroke();
+  // Pilasters (two vertical lines flanking the arch)
+  ctx.strokeStyle = 'rgba(194,113,79,0.07)'; ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(cx - s*0.48, cy - s*0.26); ctx.lineTo(cx - s*0.48, cy + s*0.48);
+  ctx.moveTo(cx + s*0.48, cy - s*0.26); ctx.lineTo(cx + s*0.48, cy + s*0.48);
+  ctx.stroke();
+  // Single top frieze line
+  ctx.beginPath();
+  ctx.moveTo(cx - s*0.50, cy - s*0.30);
+  ctx.lineTo(cx + s*0.50, cy - s*0.30);
+  ctx.stroke();
+  // Cross above arch
+  ctx.strokeStyle = 'rgba(194,113,79,0.12)'; ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(cx, cy - s*0.42); ctx.lineTo(cx, cy - s*0.58);
+  ctx.moveTo(cx - s*0.10, cy - s*0.50); ctx.lineTo(cx + s*0.10, cy - s*0.50);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawBrandZero(ctx, x, y, size, opacity, align) {
+  ctx.save();
+  ctx.font = `700 ${size}px "Cormorant Garamond",serif`;
+  ctx.fillStyle = `rgba(250,245,240,${opacity})`;
+  ctx.textAlign = align || 'center';
+  ctx.fillText('0', x, y);
+  ctx.restore();
+}
+
+function drawCoverSlide(ctx) {
+  const W = SLIDE_W, H = SLIDE_H;
+  // Warm glow — lower right
+  const glow = ctx.createRadialGradient(W*0.8, H*0.75, 0, W*0.8, H*0.75, W*0.6);
+  glow.addColorStop(0, 'rgba(194,113,79,0.09)'); glow.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = glow; ctx.fillRect(0, 0, W, H);
+  // "0" brand watermark — large ghost, right side, behind everything
+  drawBrandZero(ctx, W*0.74, H*0.62, 560, 0.042);
+  // Arch sits over the "0"
+  drawArchMotif(ctx, W*0.74, H*0.47, 390);
+  // Left editorial rule — full height, 1px
+  ctx.fillStyle = 'rgba(194,113,79,0.16)';
+  ctx.fillRect(PAD - 28, PAD + 48, 1, H - (PAD + 48) - PAD);
+  // amig0 wordmark — top left
+  ctx.textAlign = 'left';
+  ctx.font = '600 28px system-ui,sans-serif';
+  ctx.fillStyle = '#818cf8';
+  ctx.fillText('amig0', PAD, PAD + 28);
+  // Top rule
+  ctx.fillStyle = 'rgba(194,113,79,0.30)';
+  ctx.fillRect(PAD, PAD + 48, W - PAD*2, 1.5);
+  // Category label
+  ctx.font = '500 22px system-ui,sans-serif';
+  ctx.fillStyle = '#c2714f';
+  ctx.fillText('TRAVELER HACKS', PAD, PAD + 86);
+  // City name — Cormorant Garamond, large, left-aligned
+  const dest = lastData.destination.toUpperCase();
+  const cityWords = dest.split(' ');
+  ctx.font = '700 162px "Cormorant Garamond",serif';
+  ctx.fillStyle = '#faf7f4';
+  if (cityWords.length >= 2) {
+    ctx.fillText(cityWords[0], PAD, H*0.44);
+    ctx.fillText(cityWords.slice(1).join(' '), PAD, H*0.44 + 170);
+  } else {
+    ctx.fillText(dest, PAD, H*0.50);
+  }
+  // Bottom rule
+  const ruleY = cityWords.length >= 2 ? H*0.44 + 212 : H*0.50 + 60;
+  ctx.fillStyle = 'rgba(194,113,79,0.30)';
+  ctx.fillRect(PAD, ruleY, W - PAD*2, 1.5);
+  // Tagline / interests
+  const tagline = lastInterests
+    ? lastInterests.toUpperCase()
+    : `${lastData.locations.length} SPOTS  ·  LOCAL INTEL  ·  NO TOURIST TRAPS`;
+  ctx.font = '400 24px system-ui,sans-serif';
+  ctx.fillStyle = 'rgba(250,245,240,0.40)';
+  ctx.fillText(tagline, PAD, ruleY + 44);
+  // URL — bottom
+  ctx.font = '400 22px system-ui,sans-serif';
+  ctx.fillStyle = 'rgba(194,113,79,0.55)';
+  ctx.fillText('amig0.vercel.app/hacks  ·  @amig0trips', PAD, H - PAD);
+}
+
+function drawVenueSlide(ctx, idx) {
+  const W   = SLIDE_W, H = SLIDE_H;
+  const loc  = lastData.locations[idx - 1];
+  if (!loc) return;
+  const best = loc.hacks[0];
+  const T    = TYPES[best ? best.type : 'pro_tip'] || TYPES.pro_tip;
+  // Warm glow — alternates corner per slide
+  const glowX = idx % 2 === 0 ? W*0.12 : W*0.88;
+  const glow  = ctx.createRadialGradient(glowX, H*0.20, 0, glowX, H*0.20, W*0.55);
+  glow.addColorStop(0, 'rgba(194,113,79,0.09)'); glow.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = glow; ctx.fillRect(0, 0, W, H);
+  // "0" brand watermark — right side, partially bleeds off edge
+  drawBrandZero(ctx, W + 30, H*0.70, 300, 0.032, 'right');
+  // Arch ghost — bottom corner, overlaid on "0"
+  drawArchMotif(ctx, W*0.84, H*0.70, 220);
+  // Left editorial rule
+  ctx.fillStyle = 'rgba(194,113,79,0.15)';
+  ctx.fillRect(PAD - 28, PAD + 46, 1, H - (PAD + 46) - PAD - 38);
+  // Slide number — top left
+  ctx.textAlign = 'left';
+  ctx.font = '600 24px system-ui,sans-serif';
+  ctx.fillStyle = '#c2714f';
+  ctx.fillText(String(idx).padStart(2, '0'), PAD, PAD + 26);
+  // Top rule
+  ctx.fillStyle = 'rgba(194,113,79,0.22)';
+  ctx.fillRect(PAD, PAD + 46, W - PAD*2, 1.5);
+  // Venue name — adaptive size, max 3 lines
+  let nameSize = 148, nameLines;
+  for (let s = 148; s >= 64; s -= 12) {
+    ctx.font = `700 ${s}px "Cormorant Garamond",serif`;
+    nameLines = canvasWrap(ctx, loc.name, W - PAD*2);
+    if (nameLines.length <= 3) { nameSize = s; break; }
+  }
+  if (!nameLines || nameLines.length > 3) nameLines = nameLines.slice(0, 3);
+  const lineH = Math.round(nameSize * 1.06);
+  ctx.font = `700 ${nameSize}px "Cormorant Garamond",serif`;
+  ctx.fillStyle = '#faf7f4';
+  nameLines.forEach((l, i) => ctx.fillText(l, PAD, H*0.22 + i * lineH));
+  const afterName = H*0.22 + nameLines.length * lineH;
+  // Category label — terracotta, below name
+  ctx.font = '500 24px system-ui,sans-serif';
+  ctx.fillStyle = '#c2714f';
+  ctx.fillText(loc.category.toUpperCase(), PAD, afterName + 36);
+  // Mid rule — terracotta
+  ctx.fillStyle = 'rgba(194,113,79,0.22)';
+  ctx.fillRect(PAD, afterName + 58, W - PAD*2, 1.5);
+  // Hack type label + tip
+  if (best) {
+    ctx.font = '600 22px system-ui,sans-serif';
+    ctx.fillStyle = T.color;
+    ctx.fillText(T.label, PAD, afterName + 104);
+    ctx.font = '400 36px system-ui,sans-serif';
+    ctx.fillStyle = 'rgba(250,245,240,0.78)';
+    canvasWrap(ctx, best.tip, W - PAD*2).slice(0, 4).forEach((l, i) => {
+      ctx.fillText(l, PAD, afterName + 152 + i * 50);
+    });
+  }
+  // Bottom rule
+  ctx.fillStyle = 'rgba(194,113,79,0.18)';
+  ctx.fillRect(PAD, H - PAD - 38, W - PAD*2, 1.5);
+  // Coordinates micro-detail — bottom left
+  const cc = CITY_COORDS[lastData.destination];
+  if (cc) {
+    const lat = Math.abs(cc.lat).toFixed(4) + (cc.lat >= 0 ? '°N' : '°S');
+    const lng = Math.abs(cc.lng).toFixed(4) + (cc.lng >= 0 ? '°E' : '°W');
+    ctx.font = '400 17px system-ui,sans-serif';
+    ctx.fillStyle = 'rgba(250,245,240,0.16)';
+    ctx.textAlign = 'left';
+    ctx.fillText(`${lat}  ·  ${lng}`, PAD, H - PAD - 12);
+  }
+  // Footer URL — right
+  ctx.textAlign = 'right';
+  ctx.font = '400 22px system-ui,sans-serif';
+  ctx.fillStyle = 'rgba(250,245,240,0.20)';
+  ctx.fillText('amig0.vercel.app/hacks', W - PAD, H - PAD);
+  ctx.textAlign = 'left';
+}
+
+function drawInterestSelectorSlide(ctx) {
+  const W = SLIDE_W, H = SLIDE_H;
+
+  // Warm center glow
+  const g = ctx.createRadialGradient(W/2, H*0.52, 0, W/2, H*0.52, W*0.48);
+  g.addColorStop(0, 'rgba(99,102,241,0.07)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+
+  // "0" brand watermark
+  drawBrandZero(ctx, W*0.80, H*0.58, 460, 0.034, 'center');
+
+  // Left editorial rule
+  ctx.fillStyle = '#c2714f';
+  ctx.fillRect(PAD - 28, PAD + 46, 1, H - (PAD + 46) - PAD);
+
+  // amig0 wordmark
+  ctx.textAlign = 'left';
+  ctx.font = '600 28px system-ui,sans-serif';
+  ctx.fillStyle = '#818cf8';
+  ctx.fillText('amig0', PAD, PAD + 28);
+
+  // Top rule
+  ctx.fillStyle = 'rgba(194,113,79,0.30)';
+  ctx.fillRect(PAD, PAD + 48, W - PAD*2, 1.5);
+
+  // Category label
+  ctx.font = '500 22px system-ui,sans-serif';
+  ctx.fillStyle = '#c2714f';
+  ctx.fillText('PERSONALIZE YOUR INTEL', PAD, PAD + 86);
+
+  // Headline
+  ctx.font = '700 90px "Cormorant Garamond",serif';
+  ctx.fillStyle = 'rgba(250,245,240,0.95)';
+  ctx.fillText('Pick your', PAD, PAD + 204);
+  ctx.fillText('interests.', PAD, PAD + 304);
+
+  // Sub rule
+  ctx.fillStyle = 'rgba(194,113,79,0.28)';
+  ctx.fillRect(PAD, PAD + 326, W - PAD*2, 1.5);
+
+  // Sub-copy
+  ctx.font = '400 28px system-ui,sans-serif';
+  ctx.fillStyle = 'rgba(250,245,240,0.45)';
+  ctx.fillText('Select one or more — mix & match for', PAD, PAD + 366);
+  ctx.fillText('the most targeted local intel.', PAD, PAD + 404);
+
+  // ── Chips ──────────────────────────────────────────────────────────────────
+  const chips = INTERESTS.map(i => i.label);
+  const cols = 3;
+  const chipH = 58, chipGapX = 16, chipGapY = 14;
+  const chipW = (W - PAD*2 - chipGapX * (cols - 1)) / cols;
+  const startY = PAD + 444;
+  const rows = Math.ceil(chips.length / cols);
+
+  chips.forEach((label, i) => {
+    const col = i % cols;
+    const row = Math.floor(i / cols);
+    const isLastRow = row === rows - 1;
+    const itemsInLastRow = chips.length % cols || cols;
+    // Center chips in last row if incomplete
+    const offsetX = isLastRow ? (cols - itemsInLastRow) * (chipW + chipGapX) / 2 : 0;
+    const x = PAD + offsetX + col * (chipW + chipGapX);
+    const y = startY + row * (chipH + chipGapY);
+    const selected = selectedInterests.has(label);
+
+    // Pill fill
+    ctx.beginPath();
+    ctx.roundRect(x, y, chipW, chipH, chipH / 2);
+    ctx.fillStyle = selected ? 'rgba(129,140,248,0.18)' : 'rgba(250,245,240,0.04)';
+    ctx.fill();
+    // Pill border
+    ctx.strokeStyle = selected ? '#818cf8' : 'rgba(250,245,240,0.16)';
+    ctx.lineWidth = selected ? 1.5 : 1;
+    ctx.beginPath();
+    ctx.roundRect(x, y, chipW, chipH, chipH / 2);
+    ctx.stroke();
+    // Label
+    ctx.textAlign = 'center';
+    ctx.font = `${selected ? '600' : '400'} 23px system-ui,sans-serif`;
+    ctx.fillStyle = selected ? '#a5b4fc' : 'rgba(250,245,240,0.35)';
+    ctx.fillText(label, x + chipW / 2, y + chipH / 2 + 8);
+  });
+
+  ctx.textAlign = 'left';
+
+  // URL — bottom left
+  ctx.font = '400 23px system-ui,sans-serif';
+  ctx.fillStyle = 'rgba(194,113,79,0.60)';
+  ctx.fillText('amig0.vercel.app/hacks', PAD, H - PAD);
+  // CTA — bottom right
+  ctx.textAlign = 'right';
+  ctx.font = '500 23px system-ui,sans-serif';
+  ctx.fillStyle = 'rgba(129,140,248,0.70)';
+  ctx.fillText('Try it for your city →', W - PAD, H - PAD);
+  ctx.textAlign = 'left';
+}
+
+function drawCTASlide(ctx) {
+  const W = SLIDE_W, H = SLIDE_H;
+  // Warm glow center
+  const g = ctx.createRadialGradient(W/2, H*0.42, 0, W/2, H*0.42, W*0.44);
+  g.addColorStop(0, 'rgba(194,113,79,0.07)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  // "0" brand watermark — large, centered, behind headline
+  drawBrandZero(ctx, W/2, H*0.56, 500, 0.038);
+  // Left editorial rule
+  ctx.fillStyle = 'rgba(194,113,79,0.15)';
+  ctx.fillRect(PAD - 28, PAD + 48, 1, H - (PAD + 48) - PAD - 38);
+  // amig0 wordmark — top left
+  ctx.textAlign = 'left';
+  ctx.font = '600 28px system-ui,sans-serif';
+  ctx.fillStyle = '#818cf8';
+  ctx.fillText('amig0', PAD, PAD + 28);
+  // Top rule
+  ctx.fillStyle = 'rgba(194,113,79,0.28)';
+  ctx.fillRect(PAD, PAD + 48, W - PAD*2, 1.5);
+  // "Your city next?" — Cormorant, centered, over the "0"
+  ctx.textAlign = 'center';
+  ctx.font = '700 112px "Cormorant Garamond",serif';
+  ctx.fillStyle = '#faf7f4';
+  ctx.fillText('Your city', W/2, H*0.36);
+  ctx.fillText('next?', W/2, H*0.36 + 118);
+  // Terracotta underline under "Your city"
+  ctx.fillStyle = 'rgba(194,113,79,0.50)';
+  ctx.fillRect(W/2 - 210, H*0.36 + 12, 420, 2);
+  // Mid rule
+  ctx.fillStyle = 'rgba(194,113,79,0.28)';
+  ctx.fillRect(W/2 - 60, H*0.56, 120, 1.5);
+  // Submit copy
+  ctx.font = '400 32px system-ui,sans-serif';
+  ctx.fillStyle = 'rgba(250,245,240,0.48)';
+  ctx.fillText('Submit your spots at', W/2, H*0.60);
+  // URL
+  ctx.font = '600 40px system-ui,sans-serif';
+  ctx.fillStyle = '#818cf8';
+  ctx.fillText('amig0.vercel.app/hacks', W/2, H*0.60 + 54);
+  // Link in bio line
+  ctx.font = '400 26px system-ui,sans-serif';
+  ctx.fillStyle = 'rgba(250,245,240,0.30)';
+  ctx.fillText('Recommended tools → link in bio', W/2, H*0.60 + 108);
+  // Bottom rule
+  ctx.fillStyle = 'rgba(194,113,79,0.28)';
+  ctx.fillRect(PAD, H - PAD - 38, W - PAD*2, 1.5);
+  // Handle
+  ctx.font = '400 28px system-ui,sans-serif';
+  ctx.fillStyle = 'rgba(194,113,79,0.65)';
+  ctx.fillText('@amig0trips', W/2, H - PAD);
+}
+
+// ─── Canvas helpers ────────────────────────────────────────────────────────────
+function canvasWrap(ctx, text, maxWidth) {
+  const words = text.split(' '), lines = [];
+  let cur = '';
+  for (const w of words) {
+    const test = cur ? cur + ' ' + w : w;
+    if (ctx.measureText(test).width > maxWidth && cur) { lines.push(cur); cur = w; }
+    else cur = test;
+  }
+  if (cur) lines.push(cur);
+  return lines;
+}
+
+function canvasPill(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x+r, y); ctx.lineTo(x+w-r, y);
+  ctx.quadraticCurveTo(x+w, y, x+w, y+r);
+  ctx.lineTo(x+w, y+h-r); ctx.quadraticCurveTo(x+w, y+h, x+w-r, y+h);
+  ctx.lineTo(x+r, y+h); ctx.quadraticCurveTo(x, y+h, x, y+h-r);
+  ctx.lineTo(x, y+r); ctx.quadraticCurveTo(x, y, x+r, y);
+  ctx.closePath(); ctx.fill();
+}
+
+function hexToRgba(hex, alpha) {
+  const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
+function copyHacks(btn) {
+  if (!lastData) return;
+  const EMOJI = { app: '📱', timing: '⏰', local_alternative: '📍', pro_tip: '💡' };
+  const city  = lastData.destination;
+  const lines = [`TRAVELER HACKS — ${city}`, ''];
+  lastData.locations.forEach(loc => {
+    lines.push(`${loc.name}  ·  ${loc.category}`);
+    lines.push(mapsUrl(loc.name, city));
+    lines.push('');
+    loc.hacks.forEach(h => lines.push(`${EMOJI[h.type] || '💡'}  ${h.tip}`));
+    lines.push('');
+    lines.push('');
+  });
+  lines.push('amig0.vercel.app/hacks');
+  navigator.clipboard.writeText(lines.join('\n')).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = 'Copied!';
+    btn.style.color = 'var(--green)';
+    setTimeout(() => { btn.textContent = orig; btn.style.color = ''; }, 1800);
+  });
+}
+
+function mapsUrl(venue, city) {
+  return 'maps.apple.com/?q=' + encodeURIComponent(venue + ' ' + city);
+}
+
+function escHtml(s) {
+  return String(s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+</script>
+</body>
+</html>

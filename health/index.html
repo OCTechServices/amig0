@@ -4,6 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Habit Tracker</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <meta property="og:title" content="Habit Tracker">
+  <meta property="og:description" content="Track your daily habits. Hold each other accountable.">
+  <meta property="og:image" content="https://amig0.vercel.app/health/og.png">
+  <meta property="og:url" content="https://amig0.vercel.app/health/">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://amig0.vercel.app/health/og.png">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
@@ -142,12 +150,12 @@
 
     /* ── Donut cards ── */
     .donut-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
+      display: flex;
+      justify-content: center;
       gap: 16px;
       margin-bottom: 16px;
     }
-    @media (max-width: 560px) { .donut-row { grid-template-columns: 1fr; } }
+    .donut-card { max-width: 360px; width: 100%; }
 
     .donut-card {
       background: var(--surface);
@@ -511,12 +519,6 @@ const PEOPLE = [
     cls: 'c-p1',
     url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRf5yuxLMRlwUzaTh4y1yp9O9dbkVxxeyNGrZmHFHayq2CVPYX6JL7oT3FyW1Bgkg/pub?gid=345060606&single=true&output=csv'
   },
-  {
-    name: 'Lupe',
-    color: '#fb923c',
-    cls: 'c-p2',
-    url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRf5yuxLMRlwUzaTh4y1yp9O9dbkVxxeyNGrZmHFHayq2CVPYX6JL7oT3FyW1Bgkg/pub?gid=788977910&single=true&output=csv'
-  }
 ];
 
 // ─── Health facts ─────────────────────────────────────────────────────────────

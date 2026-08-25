@@ -1,6 +1,6 @@
 {
   "tier": 1,
-  "phase": "Build",
+  "phase": "Launch",
   "permissions": {
     "allow": [],
     "deny": []

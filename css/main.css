@@ -7,33 +7,33 @@
    Custom Properties
    ----------------------------------------------------------------------------- */
 :root {
-  /* Brand colours */
-  --color-primary:        #1B3D28;
-  --color-primary-dark:   #122A1C;
-  --color-primary-light:  #2A5C3C;
-  --color-accent:         #E8A045;
-  --color-accent-dark:    #C9832A;
+  /* Brand colours — indigo */
+  --color-primary:        #818cf8;
+  --color-primary-dark:   #6366f1;
+  --color-primary-light:  #a5b4fc;
+  --color-accent:         #818cf8;
+  --color-accent-dark:    #6366f1;
 
-  /* Surfaces */
-  --color-bg:             #F4F0EB;
-  --color-surface:        #FFFFFF;
-  --color-border:         #E2E6EA;
+  /* Surfaces — dark */
+  --color-bg:             #09090b;
+  --color-surface:        #18181b;
+  --color-border:         #27272a;
 
   /* Sidebar */
-  --color-sidebar-bg:     #1B3D28;
-  --color-sidebar-text:   #B8D4C0;
-  --color-sidebar-active: rgba(255, 255, 255, 0.12);
-  --color-sidebar-hover:  rgba(255, 255, 255, 0.07);
+  --color-sidebar-bg:     #141414;
+  --color-sidebar-text:   #a1a1aa;
+  --color-sidebar-active: rgba(255, 255, 255, 0.08);
+  --color-sidebar-hover:  rgba(255, 255, 255, 0.05);
 
   /* Text */
-  --color-text:           #1A2332;
-  --color-text-secondary: #5A6A7A;
-  --color-text-muted:     #8A9BAC;
+  --color-text:           #fafafa;
+  --color-text-secondary: #a1a1aa;
+  --color-text-muted:     #71717a;
 
   /* Semantic */
-  --color-error:          #D9534F;
-  --color-success:        #2E8B57;
-  --color-warning:        #E8A045;
+  --color-error:          #f87171;
+  --color-success:        #4ade80;
+  --color-warning:        #fbbf24;
 
   /* Typography */
   --font-body:            'DM Sans', system-ui, sans-serif;
@@ -199,7 +199,7 @@ input {
 .field input:focus {
   outline: none;
   border-color: var(--color-primary-light);
-  box-shadow: 0 0 0 3px rgba(27, 61, 40, 0.12);
+  box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.15);
 }
 
 .field input::placeholder { color: var(--color-text-muted); }
@@ -212,7 +212,7 @@ input {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, var(--color-primary-dark) 0%, var(--color-primary-light) 100%);
+  background: var(--color-bg);
   padding: var(--space-6);
 }
 
@@ -783,7 +783,7 @@ select {
 select:focus {
   outline: none;
   border-color: var(--color-primary-light);
-  box-shadow: 0 0 0 3px rgba(27, 61, 40, 0.12);
+  box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.15);
 }
 
 textarea {
@@ -801,7 +801,7 @@ textarea {
 textarea:focus {
   outline: none;
   border-color: var(--color-primary-light);
-  box-shadow: 0 0 0 3px rgba(27, 61, 40, 0.12);
+  box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.15);
 }
 
 .modal-footer {
@@ -901,7 +901,7 @@ input[type="file"] {
 .line-input:focus {
   outline: none;
   border-color: var(--color-primary-light);
-  box-shadow: 0 0 0 2px rgba(27, 73, 101, 0.10);
+  box-shadow: 0 0 0 2px rgba(129, 140, 248, 0.15);
 }
 
 .line-desc  { min-width: 200px; }
@@ -1241,7 +1241,7 @@ input[type="file"] {
 }
 .report-bar-fill {
   height: 100%;
-  background: var(--color-primary-light, #2A5C3C);
+  background: var(--color-primary-light, #a5b4fc);
   border-radius: 999px;
   transition: width 400ms ease;
 }

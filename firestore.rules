@@ -1,5 +1,5 @@
 // firestore.rules — amig0-travel-company | OCTech Services
-// Last Updated: 2026-05-02
+// Last Updated: 2026-08-23
 //
 // Operator access: Firebase Auth custom claim { operator: true }
 //   Bootstrap: Firebase Console → Authentication → Users → Edit → Custom Claims: {"operator":true}
@@ -53,6 +53,24 @@ service cloud.firestore {
 
     function guideRecordId() {
       return get(/databases/$(database)/documents/user_profiles/$(request.auth.uid)).data.guideId;
+    }
+
+    // Returns true when the signed-in user has an active or valid-trial membership.
+    // Used as server-side enforcement for deal_redemptions — client-side isAccessAllowed()
+    // is a UX gate only; this rule is the real lock.
+    function isMemberAllowed() {
+      let m = get(/databases/$(database)/documents/amig0_members/$(request.auth.uid)).data;
+      return m.subscriptionStatus == 'active'
+        || (m.subscriptionStatus == 'trial' && m.trialEndsAt > request.time);
+    }
+
+    // Returns true when the user has NOT redeemed from this affiliate in the last 30 days.
+    // Reads sentinel at amig0_members/{uid}/redemptions/{affiliateId}.
+    // Client batch-writes this sentinel on every successful redemption (C3).
+    function isNotRecentlyRedeemed() {
+      let path = /databases/$(database)/documents/amig0_members/$(request.auth.uid)/redemptions/$(request.resource.data.affiliateId);
+      return !exists(path)
+        || get(path).data.redeemedAt < request.time - duration.value(30, 'd');
     }
 
     // -----------------------------------------------------------------------
@@ -210,6 +228,70 @@ service cloud.firestore {
       allow read, write: if isOperator();
       allow create:      if isClientUser() && request.resource.data.userId == request.auth.uid;
       allow read:        if isClientUser() && resource.data.userId == request.auth.uid;
+    }
+
+    // -----------------------------------------------------------------------
+    // amig0_members — consumer users (deals app, trial + subscription tracking)
+    // -----------------------------------------------------------------------
+    match /amig0_members/{uid} {
+      allow read, write: if isAuthenticated() && request.auth.uid == uid;
+      allow read:        if isOperator();
+    }
+
+    // redemptions sentinel — one doc per affiliate, records last redeemedAt.
+    // Written by the client in a batch alongside deal_redemptions (C3).
+    // The deal_redemptions create rule reads this path via isNotRecentlyRedeemed().
+    match /amig0_members/{uid}/redemptions/{affiliateId} {
+      allow read, write: if isAuthenticated() && request.auth.uid == uid;
+      allow read:        if isOperator();
+    }
+
+    // -----------------------------------------------------------------------
+    // affiliates — public directory of active affiliate businesses
+    // Publicly readable so deals.html and hacks can display without auth.
+    // -----------------------------------------------------------------------
+    match /affiliates/{docId} {
+      allow read:  if true;
+      allow write: if isOperator();
+    }
+
+    // -----------------------------------------------------------------------
+    // affiliates/secrets — verifyPin stored here, operator-only.
+    // The verifyPin value NEVER travels to the client.
+    // Validation happens inside the deal_redemptions create rule via get().
+    // -----------------------------------------------------------------------
+    match /affiliates/{affiliateId}/secrets/{secretDoc} {
+      allow read, write: if isOperator();
+    }
+
+    // -----------------------------------------------------------------------
+    // affiliate_registrations — self-service venue signup
+    // Anyone can submit; operator reviews and approves in CRM.
+    // -----------------------------------------------------------------------
+    match /affiliate_registrations/{docId} {
+      allow create: if request.resource.data.keys().hasAll(['businessName', 'email'])
+        && request.resource.data.businessName is string
+        && request.resource.data.email is string;
+      allow read, write: if isOperator();
+    }
+
+    // -----------------------------------------------------------------------
+    // deal_redemptions — consumer redemption log
+    // Three server-side checks on create:
+    //   1. userId matches signed-in uid (no impersonation)
+    //   2. PIN matches affiliates/{id}/secrets/verify — verifyPin never leaves server
+    //   3. isMemberAllowed() — active subscription OR unexpired trial (C2)
+    // -----------------------------------------------------------------------
+    match /deal_redemptions/{docId} {
+      allow read, write: if isOperator();
+      allow create:      if isAuthenticated()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.pin ==
+             get(/databases/$(database)/documents/affiliates/$(request.resource.data.affiliateId)/secrets/verify).data.verifyPin
+        && isMemberAllowed()
+        && isNotRecentlyRedeemed();
+      allow read:        if isAuthenticated()
+        && resource.data.userId == request.auth.uid;
     }
   }
 }

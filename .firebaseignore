@@ -1,0 +1,25 @@
+# Firebase Hosting — operator tools only (CRM, Portal, Guide)
+# Consumer pages live on Vercel (amig0.vercel.app)
+home.html
+deals.html
+business.html
+
+# Vercel serverless functions
+api/
+
+# Vercel-only tools
+health/
+hacks/
+content/
+
+# Dev + config
+.claude/
+docs/
+*.md
+*.json
+!firebase.json
+*.log
+*.xlsx
+*.ics
+node_modules/
+.env*
