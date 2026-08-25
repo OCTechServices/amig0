@@ -1,0 +1,1199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Traveler Hacks — amig0</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <meta property="og:title" content="Traveler Hacks — amig0">
+  <meta property="og:description" content="AI-powered insider intel for every city — discover spots, get hacks, travel smarter.">
+  <meta property="og:image" content="https://amig0.vercel.app/health/og.png">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    :root {
+      --bg:      #09090b;
+      --surface: #18181b;
+      --border:  #27272a;
+      --text:    #fafafa;
+      --muted:   #a1a1aa;
+      --p1:      #818cf8;
+      --green:   #4ade80;
+      --blue:    #60a5fa;
+      --amber:   #fbbf24;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-variant-numeric: slashed-zero; }
+
+    /* ── Nav ── */
+    .nav {
+      position: sticky; top: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 32px; background: rgba(9,9,11,0.95);
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(12px);
+    }
+    .nav-brand { font-size: 1.1rem; font-weight: 800; letter-spacing: -0.03em; text-decoration: none; color: var(--text); }
+    .nav-links { display: flex; align-items: center; gap: 8px; }
+    .btn-nav {
+      font-family: inherit; font-size: 0.8rem; font-weight: 600;
+      padding: 10px 16px; border-radius: 8px; cursor: pointer; text-decoration: none;
+      border: 1px solid var(--border); background: transparent; color: var(--muted);
+      transition: all 0.15s; display: inline-block;
+    }
+    .btn-nav:hover { background: var(--surface); color: var(--text); }
+    .btn-nav.primary { background: var(--p1); border-color: var(--p1); color: #fff; }
+    .btn-nav.primary:hover { background: #6366f1; }
+    @media (max-width: 540px) {
+      .nav { padding: 12px 16px; }
+      .btn-nav-venue { display: none; }
+    }
+
+    /* ── Page header (below nav) ── */
+    .page-header { border-bottom: 1px solid var(--border); padding: 18px 24px; }
+    .page-title { font-size: 1rem; font-weight: 600; }
+    .page-title span { color: var(--p1); }
+    .page-sub { font-size: 0.72rem; color: var(--muted); margin-top: 3px; }
+
+    /* ── Container ── */
+    .container { max-width: 780px; margin: 0 auto; padding: 36px 24px; }
+
+    /* ── Input card ── */
+    .input-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      margin-bottom: 32px;
+    }
+    .input-label {
+      display: block;
+      font-size: 0.65rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.12em;
+      color: var(--muted); margin-bottom: 8px;
+    }
+    select, textarea, input[type=text] {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-family: inherit; font-size: 0.88rem;
+      padding: 11px 14px; outline: none;
+      transition: border-color 0.15s;
+      appearance: none; -webkit-appearance: none;
+    }
+    select:focus, textarea:focus, input[type=text]:focus { border-color: var(--p1); }
+    textarea { resize: vertical; min-height: 88px; line-height: 1.6; }
+    ::placeholder { color: var(--muted); }
+
+    /* ── City + mode row ── */
+    .top-row { display: grid; grid-template-columns: 220px 1fr; gap: 16px; margin-bottom: 22px; align-items: start; }
+
+    /* ── Mode toggle ── */
+    .mode-toggle {
+      display: flex;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 3px; gap: 3px;
+    }
+    .mode-btn {
+      flex: 1;
+      background: transparent; border: none;
+      border-radius: 7px;
+      color: var(--muted);
+      font-family: inherit; font-size: 0.82rem; font-weight: 600;
+      padding: 9px 12px; cursor: pointer;
+      transition: all 0.15s;
+    }
+    .mode-btn.active { background: var(--surface); color: var(--text); }
+
+    /* ── Interest chips ── */
+    .chips-wrap { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 4px; }
+    .interest-chip {
+      font-size: 0.8rem; font-weight: 500;
+      padding: 7px 15px; border-radius: 24px;
+      border: 1px solid var(--border);
+      background: transparent; color: var(--muted);
+      cursor: pointer; font-family: inherit;
+      transition: all 0.15s;
+    }
+    .interest-chip.selected {
+      border-color: var(--p1); color: var(--p1);
+      background: rgba(129,140,248,0.1);
+    }
+    .interest-chip:hover:not(.selected) { color: var(--text); border-color: rgba(255,255,255,0.25); }
+
+    /* Invite pulse — plays on chips until first selection */
+    @keyframes chipInvite {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(129,140,248,0); border-color: var(--border); }
+      50%       { box-shadow: 0 0 0 3px rgba(129,140,248,0.18); border-color: rgba(129,140,248,0.5); }
+    }
+    .chips-wrap.invite .interest-chip:not(.selected) {
+      animation: chipInvite 2.6s ease-in-out infinite;
+    }
+
+    /* Shake on failed generate attempt */
+    @keyframes chipsShake {
+      0%, 100% { transform: translateX(0); }
+      20%       { transform: translateX(-5px); }
+      40%       { transform: translateX(5px); }
+      60%       { transform: translateX(-4px); }
+      80%       { transform: translateX(3px); }
+    }
+    .chips-wrap.shake { animation: chipsShake 0.38s ease; }
+
+    /* Hint text below chips */
+    .chips-hint {
+      font-size: 0.72rem; color: var(--amber);
+      margin-top: 8px; min-height: 1.2em;
+      opacity: 0; transition: opacity 0.2s ease;
+    }
+    .chips-hint.show { opacity: 1; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .chips-wrap.invite .interest-chip { animation: none; }
+      .chips-wrap.shake { animation: none; }
+    }
+
+    /* ── Quick picks (custom mode) ── */
+    .picks-label {
+      font-size: 0.65rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.12em;
+      color: var(--muted); margin-bottom: 8px;
+    }
+    .quick-picks { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 0; }
+    .pick-chip {
+      font-size: 0.72rem; padding: 5px 12px;
+      border-radius: 20px; border: 1px solid var(--border);
+      background: transparent; color: var(--muted);
+      cursor: pointer; font-family: inherit;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .pick-chip:hover:not(:disabled) { color: var(--text); border-color: var(--p1); }
+    .pick-chip:disabled { opacity: 0.35; cursor: not-allowed; }
+
+    /* ── Generate button ── */
+    .generate-btn {
+      width: 100%; background: var(--p1); border: none;
+      border-radius: 10px; color: #09090b;
+      font-family: inherit; font-size: 0.9rem; font-weight: 700;
+      padding: 14px; cursor: pointer;
+      transition: opacity 0.15s; margin-top: 20px;
+    }
+    .generate-btn:hover:not(:disabled) { opacity: 0.85; }
+    .generate-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* ── States ── */
+    .state { text-align: center; padding: 60px 24px; color: var(--muted); font-size: 0.9rem; line-height: 1.8; }
+    .state.err { color: #f87171; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner {
+      display: inline-block; width: 22px; height: 22px;
+      border: 2px solid var(--border); border-top-color: var(--p1);
+      border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 14px;
+    }
+
+    /* ── Results header ── */
+    .results-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 16px; gap: 10px;
+    }
+    .section-label { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); }
+    .btn-row { display: flex; gap: 8px; flex-shrink: 0; }
+    .export-btn {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+      color: var(--muted); font-family: inherit; font-size: 0.78rem; font-weight: 600;
+      padding: 8px 14px; cursor: pointer; transition: color 0.15s, border-color 0.15s;
+      white-space: nowrap;
+    }
+    .export-btn:hover { color: var(--text); border-color: var(--p1); }
+    .export-btn.ig { border-color: rgba(129,140,248,0.35); color: var(--p1); }
+    .export-btn.ig:hover { background: rgba(129,140,248,0.08); border-color: var(--p1); }
+
+    /* ── Hack cards ── */
+    .hack-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; overflow: hidden; margin-bottom: 14px;
+    }
+    .hack-card-stripe { height: 3px; background: var(--p1); }
+    .hack-card-header {
+      padding: 16px 22px; border-bottom: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center; gap: 12px;
+    }
+    .hack-location { font-weight: 700; font-size: 0.95rem; flex: 1; }
+    .hack-card-num {
+      font-size: 0.6rem; font-weight: 700; color: rgba(255,255,255,0.15);
+      font-variant-numeric: tabular-nums; flex-shrink: 0;
+    }
+    .hack-category {
+      font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em;
+      color: var(--muted); background: rgba(255,255,255,0.05);
+      padding: 4px 10px; border-radius: 20px; white-space: nowrap; flex-shrink: 0;
+    }
+    .hack-item {
+      display: flex; align-items: flex-start; gap: 14px;
+      padding: 13px 22px; border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+    .hack-item:last-child { border-bottom: none; }
+    .hack-badge {
+      font-size: 0.58rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;
+      padding: 3px 9px; border-radius: 20px; white-space: nowrap; flex-shrink: 0; margin-top: 3px;
+    }
+    .hack-tip { font-size: 0.875rem; line-height: 1.55; color: rgba(250,250,250,0.85); }
+.hack-card-links {
+      display: flex; gap: 14px; padding: 8px 22px 12px;
+      border-top: 1px solid rgba(255,255,255,0.04);
+    }
+    .hack-card-link {
+      font-size: 0.7rem; color: var(--muted); text-decoration: none;
+      transition: color 0.15s; display: flex; align-items: center; gap: 4px;
+    }
+    .hack-card-link:hover { color: var(--text); }
+
+    /* ── IG Panel ── */
+    .ig-panel {
+      background: var(--surface);
+      border: 1px solid rgba(129,140,248,0.25);
+      border-radius: 16px; padding: 24px; margin-top: 24px;
+    }
+    .ig-panel-header {
+      display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;
+    }
+    .ig-panel-title { font-size: 0.88rem; font-weight: 700; }
+    .ig-panel-title span { color: var(--p1); }
+    .close-btn {
+      background: transparent; border: 1px solid var(--border); border-radius: 6px;
+      color: var(--muted); font-family: inherit; font-size: 0.75rem; padding: 4px 10px; cursor: pointer;
+    }
+    .close-btn:hover { color: var(--text); }
+
+    /* Slides strip */
+    .slides-label { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); margin-bottom: 10px; }
+    .slides-strip {
+      display: flex; gap: 12px; overflow-x: auto; padding-bottom: 14px; margin-bottom: 20px;
+      scrollbar-width: thin; scrollbar-color: var(--border) transparent;
+    }
+    .slide-preview {
+      flex-shrink: 0; width: 195px;
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 12px; padding: 16px 14px; position: relative;
+      transition: border-color 0.15s;
+    }
+    .slide-preview:hover { border-color: rgba(129,140,248,0.4); }
+    .slide-num { font-size: 0.6rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px; }
+    .slide-text { font-size: 0.77rem; line-height: 1.6; color: rgba(250,250,250,0.8); white-space: pre-wrap; word-break: break-word; }
+    .slide-copy {
+      position: absolute; top: 10px; right: 10px;
+      background: var(--border); border: none; border-radius: 5px;
+      color: var(--muted); font-size: 0.65rem; padding: 3px 7px;
+      cursor: pointer; font-family: inherit; opacity: 0; transition: opacity 0.15s;
+    }
+    .slide-preview:hover .slide-copy { opacity: 1; }
+    .slide-copy.copied { color: var(--green); background: rgba(74,222,128,0.1); }
+
+    /* Caption block */
+    .caption-label { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); margin-bottom: 8px; }
+    .caption-box {
+      background: var(--bg); border: 1px solid var(--border); border-radius: 10px;
+      padding: 14px 16px; font-size: 0.82rem; line-height: 1.65;
+      color: rgba(250,250,250,0.8); white-space: pre-wrap; word-break: break-word; margin-bottom: 8px;
+    }
+    .copy-caption-btn {
+      width: 100%; background: transparent; border: 1px solid var(--border); border-radius: 8px;
+      color: var(--muted); font-family: inherit; font-size: 0.78rem; font-weight: 600;
+      padding: 9px 16px; cursor: pointer; transition: all 0.15s;
+    }
+    .copy-caption-btn:hover { color: var(--text); border-color: var(--p1); }
+    .copy-caption-btn.copied { color: var(--green); border-color: rgba(74,222,128,0.4); }
+
+    /* ── Globe ── */
+    .globe-section {
+      margin-top: 56px; padding-top: 32px;
+      border-top: 1px solid var(--border);
+      display: flex; flex-direction: column; align-items: center;
+    }
+    .globe-header { width: 100%; margin-bottom: 20px; }
+    .globe-title { font-size: 1rem; font-weight: 700; margin-bottom: 4px; }
+    .globe-title span { color: var(--p1); }
+    .globe-sub { font-size: 0.78rem; color: var(--muted); }
+    #globeContainer {
+      width: 100%; max-width: 500px; height: 500px;
+      cursor: grab;
+    }
+    #globeContainer:active { cursor: grabbing; }
+
+    /* ── Submit section ── */
+    .submit-section {
+      margin-top: 48px;
+      background: #141414;
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 16px;
+      padding: 28px;
+    }
+    .submit-header { margin-bottom: 22px; }
+    .submit-title { font-size: 1rem; font-weight: 700; margin-bottom: 6px; }
+    .submit-title span { color: var(--p1); }
+    .submit-sub { font-size: 0.78rem; color: var(--muted); line-height: 1.6; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 14px; }
+    .form-group { margin-bottom: 14px; }
+    .form-group:last-of-type { margin-bottom: 0; }
+    .submit-success { text-align: center; padding: 32px 16px; color: var(--green); font-size: 0.9rem; line-height: 1.8; }
+
+    /* ── Driver CTA ── */
+    .driver-cta {
+      margin-top: 14px;
+      border: 1px solid rgba(74,222,128,0.2);
+      background: var(--surface);
+      border-radius: 16px;
+      padding: 20px 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      text-decoration: none;
+    }
+    .driver-cta:hover { border-color: rgba(74,222,128,0.45); }
+    .driver-cta-left { flex: 1; min-width: 0; }
+    .driver-cta-badge {
+      font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em;
+      color: var(--green); margin-bottom: 8px; display: block;
+    }
+    .driver-cta-name { font-size: 0.95rem; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+    .driver-cta-detail { font-size: 0.8rem; color: var(--muted); line-height: 1.5; }
+    .driver-cta-btn {
+      flex-shrink: 0;
+      background: var(--green); border: none; border-radius: 10px;
+      color: #09090b; font-family: inherit; font-size: 0.82rem; font-weight: 700;
+      padding: 11px 18px; white-space: nowrap;
+      transition: opacity 0.15s;
+    }
+    .driver-cta:hover .driver-cta-btn { opacity: 0.85; }
+
+    /* ── Tools section ── */
+    .tools-section { margin-top: 56px; padding-top: 32px; border-top: 1px solid var(--border); }
+    .tools-header { margin-bottom: 18px; }
+    .tools-title { font-size: 1rem; font-weight: 700; margin-bottom: 4px; }
+    .tools-title span { color: var(--p1); }
+    .tools-sub { font-size: 0.78rem; color: var(--muted); }
+
+    /* Category rail */
+    .tools-rail {
+      display: flex; gap: 8px; overflow-x: auto;
+      padding: 8px 0 12px; margin: -8px 0 8px;
+      scrollbar-width: none; -ms-overflow-style: none;
+      position: sticky; top: 0; z-index: 10; background: var(--bg);
+    }
+    .tools-rail::-webkit-scrollbar { display: none; }
+    .rail-tab {
+      flex-shrink: 0; display: flex; align-items: center; gap: 5px;
+      padding: 9px 18px; border-radius: 24px;
+      border: 1px solid var(--border);
+      background: transparent; color: var(--muted);
+      font-size: 0.82rem; font-weight: 500; font-family: inherit;
+      cursor: pointer; transition: all 0.18s; white-space: nowrap;
+    }
+    .rail-tab:hover:not(.active) { border-color: rgba(255,255,255,0.18); color: var(--text); }
+
+    /* Transit path line behind carousel */
+    .tools-carousel-wrap { position: relative; }
+    .tools-carousel-wrap::before {
+      content: ''; position: absolute; top: 50%; left: 0; right: 0; height: 1px;
+      background: repeating-linear-gradient(
+        90deg,
+        rgba(255,255,255,0.06) 0, rgba(255,255,255,0.06) 3px,
+        transparent 3px, transparent 12px
+      );
+      pointer-events: none; z-index: 0; transform: translateY(-50%);
+    }
+
+    /* Horizontal swipe carousel — mobile */
+    .tools-carousel {
+      display: flex; gap: 14px; overflow-x: auto;
+      scroll-snap-type: x mandatory; scrollbar-width: none;
+      padding: 8px 2px 20px; position: relative; z-index: 1;
+      -webkit-overflow-scrolling: touch;
+    }
+    .tools-carousel::-webkit-scrollbar { display: none; }
+
+    /* Pass card */
+    .tool-pass {
+      flex-shrink: 0; width: 80vw; max-width: 290px;
+      scroll-snap-align: start;
+      background: #141414; border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 16px; overflow: hidden;
+      display: flex; flex-direction: column;
+      cursor: pointer; transition: border-color 0.2s, transform 0.12s;
+      user-select: none; animation: passFadeIn 0.22s ease both;
+    }
+    .tool-pass:active { transform: scale(0.98); }
+    @keyframes passFadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    .tool-pass-stripe { height: 3px; width: 100%; flex-shrink: 0; }
+    .tool-pass-body { padding: 18px 18px 12px; display: flex; flex-direction: column; gap: 9px; flex: 1; }
+    .tool-pass-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+    .tool-pass-icon { display: flex; align-items: center; }
+    .tool-pick {
+      font-size: 0.55rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.1em; padding: 3px 8px; border-radius: 20px;
+      border: 1px solid currentColor; white-space: nowrap; opacity: 0.82;
+    }
+    .tool-pass-name { font-size: 0.95rem; font-weight: 700; color: #fff; line-height: 1.2; }
+    .tool-pass-desc { font-size: 0.78rem; color: var(--muted); line-height: 1.55; flex: 1; }
+    .tool-pass-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+    .tool-pass-tag {
+      font-size: 0.58rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em;
+      padding: 3px 8px; border-radius: 20px;
+      background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.36);
+    }
+    /* Expand "why we recommend it" */
+    .tool-pass-why {
+      font-size: 0.75rem; color: rgba(255,255,255,0.40); line-height: 1.65;
+      padding: 0 18px; max-height: 0; overflow: hidden;
+      transition: max-height 0.28s ease, padding 0.22s ease;
+    }
+    .tool-pass.expanded .tool-pass-why { max-height: 160px; padding: 10px 18px 4px; }
+    /* Footer */
+    .tool-pass-foot {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 18px 14px; margin-top: 8px;
+      border-top: 1px solid rgba(255,255,255,0.05);
+    }
+    .tool-pass-open { font-size: 0.76rem; font-weight: 600; text-decoration: none; }
+    .tool-expand-hint { font-size: 0.62rem; color: rgba(255,255,255,0.2); flex: 1; text-align: center; transition: color 0.15s; }
+    .tool-pass.expanded .tool-expand-hint { color: rgba(255,255,255,0.12); }
+    .tool-pass-num { font-size: 0.6rem; color: rgba(255,255,255,0.11); font-variant-numeric: tabular-nums; }
+
+    /* Desktop — grid layout */
+    @media (min-width: 580px) {
+      .tools-carousel-wrap::before { display: none; }
+      .tools-carousel { display: grid; grid-template-columns: repeat(2, 1fr); overflow: visible; scroll-snap-type: none; gap: 12px; padding: 4px 0 8px; }
+      .tool-pass { width: auto; max-width: none; }
+    }
+    @media (min-width: 860px) { .tools-carousel { grid-template-columns: repeat(3, 1fr); } }
+
+    /* ── Mobile ── */
+    @media (max-width: 540px) {
+      .container { padding: 24px 14px; }
+      .input-card { padding: 20px 16px; }
+      .top-row { grid-template-columns: 1fr; }
+      .hack-card-header { flex-direction: column; align-items: flex-start; }
+      .results-header { flex-direction: column; align-items: flex-start; }
+      .form-row { grid-template-columns: 1fr; }
+      .submit-section { padding: 20px 16px; }
+      #globeContainer { height: 320px; }
+      .driver-cta { flex-direction: column; align-items: flex-start; }
+      .driver-cta-btn { width: 100%; text-align: center; }
+    }
+
+    /* Accessibility — keyboard focus */
+    :focus-visible {
+      outline: 2px solid var(--p1);
+      outline-offset: 3px;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="/home.html" class="nav-brand">amig<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 26" aria-hidden="true" style="display:inline-block;width:0.62em;height:0.88em;vertical-align:-0.06em;color:var(--p1)"><path fill="currentColor" fill-rule="evenodd" d="M10,1.5 C14.97,1.5 19,6.65 19,13 C19,19.35 14.97,24.5 10,24.5 C5.03,24.5 1,19.35 1,13 C1,6.65 5.03,1.5 10,1.5 Z M10,7 C7.51,7 5.5,9.69 5.5,13 C5.5,16.31 7.51,19 10,19 C12.49,19 14.5,16.31 14.5,13 C14.5,9.69 12.49,7 10,7 Z"/><line x1="6.5" y1="21" x2="13.5" y2="5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/></svg></a>
+  <div class="nav-links">
+    <a href="/business.html" class="btn-nav btn-nav-venue">For venues</a>
+    <a href="/deals.html" class="btn-nav primary">Get deals</a>
+  </div>
+</nav>
+
+<div class="page-header">
+  <div class="page-title">Traveler <span>Hacks</span></div>
+  <div class="page-sub">No coupons. Just insider intel.</div>
+</div>
+
+<div class="container">
+
+  <div class="input-card">
+    <!-- City + mode -->
+    <div class="top-row">
+      <div>
+        <label class="input-label" for="citySelect">City</label>
+        <select id="citySelect" onchange="onCityChange()">
+          <option value="Mexico City">Mexico City</option>
+          <option value="Guadalajara">Guadalajara</option>
+          <option value="Monterrey">Monterrey</option>
+          <option value="Los Angeles">Los Angeles</option>
+          <option value="New York">New York</option>
+          <option value="Miami">Miami</option>
+          <option value="Dallas">Dallas</option>
+          <option value="other">Other...</option>
+        </select>
+        <input type="text" id="cityOther" placeholder="Enter city..." style="display:none;margin-top:8px" oninput="currentCity=this.value.trim()||currentCity;renderTools()">
+      </div>
+      <div>
+        <label class="input-label">Mode</label>
+        <div class="mode-toggle">
+          <button class="mode-btn active" id="modeDiscover" onclick="setMode('discover')">Discover for me</button>
+          <button class="mode-btn" id="modeCustom" onclick="setMode('custom')">Custom venues</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Discover panel -->
+    <div id="discoverPanel">
+      <label class="input-label">What are you into?</label>
+      <div class="chips-wrap invite" id="interestChips"></div>
+      <div class="chips-hint" id="chipsHint">Pick at least one to continue</div>
+    </div>
+
+    <!-- Custom panel -->
+    <div id="customPanel" style="display:none">
+      <label class="input-label" for="venuesInput">Stores &amp; venues you're visiting</label>
+      <textarea
+        id="venuesInput"
+        placeholder="Liverpool, Mercado Roma, Starbucks...&#10;One per line or comma-separated"
+        onkeydown="if(event.key==='Enter'&&event.metaKey) generate()"
+      ></textarea>
+      <div id="picksWrap" style="display:none;margin-top:14px">
+        <div class="picks-label">Quick add</div>
+        <div class="quick-picks" id="quickPicks"></div>
+      </div>
+    </div>
+
+    <button class="generate-btn" id="generateBtn" onclick="generate()">Get Traveler Hacks</button>
+  </div>
+
+  <div id="output"></div>
+
+  <!-- ── Globe ── -->
+  <div class="globe-section">
+    <div class="globe-header">
+      <div class="globe-title">Cities we've <span>explored</span></div>
+      <div class="globe-sub">23 cities and counting</div>
+    </div>
+    <div id="globeContainer"></div>
+  </div>
+
+  <!-- ── Recommended Tools ── -->
+  <div class="tools-section" id="tools">
+    <div class="tools-header">
+      <div class="tools-title">Tools we <span>recommend</span></div>
+      <div class="tools-sub">Tap a category to explore</div>
+    </div>
+    <div id="toolsTabs"></div>
+    <div id="toolsContent"></div>
+  </div>
+
+  <!-- ── Submit your city ── -->
+  <div class="submit-section">
+    <div class="submit-header">
+      <div class="submit-title">Know a city inside out? <span>Submit it.</span></div>
+      <div class="submit-sub">We build Instagram guides from real traveler knowledge. If your submission is selected, we'll run it, design the post, and tag you as a collaborator.</div>
+    </div>
+    <form id="submitForm" onsubmit="handleSubmit(event)">
+      <div class="form-row">
+        <div>
+          <label class="input-label" for="submitCity">City / destination</label>
+          <input type="text" id="submitCity" name="city" placeholder="e.g. Lisbon, Lagos, Seoul..." required>
+        </div>
+        <div>
+          <label class="input-label" for="submitHandle">Your Instagram handle</label>
+          <input type="text" id="submitHandle" name="instagram" placeholder="@yourhandle">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="input-label" for="submitVenues">Spots you know well</label>
+        <textarea id="submitVenues" name="venues" placeholder="Venues, markets, bars, trails — the places locals actually go. One per line." required></textarea>
+      </div>
+      <div class="form-group">
+        <label class="input-label" for="submitTips">Personal insider tips (optional)</label>
+        <textarea id="submitTips" name="tips" style="min-height:72px" placeholder="Things you know that Google won't tell you..."></textarea>
+      </div>
+      <div class="form-group">
+        <label class="input-label" for="submitExtra">Anything else? (optional)</label>
+        <textarea id="submitExtra" name="extra" style="min-height:64px" placeholder="A URL to a photo of that city, or anything else you want us to know..."></textarea>
+      </div>
+      <button type="submit" class="generate-btn" id="submitBtn" style="margin-top:8px">Submit for review</button>
+    </form>
+    <div id="submitSuccess" style="display:none" class="submit-success">
+      Submitted. We'll review it and reach out if selected.
+    </div>
+  </div>
+
+</div>
+
+<script>
+
+// ─── Data ─────────────────────────────────────────────────────────────────────
+const INTERESTS = [
+  { icon: 'wine',         label: 'Drinks' },
+  { icon: 'music',        label: 'Live Music' },
+  { icon: 'palette',      label: 'Art' },
+  { icon: 'clapperboard', label: 'Theatre' },
+  { icon: 'utensils',     label: 'Food' },
+  { icon: 'store',        label: 'Markets' },
+  { icon: 'moon',         label: 'Nightlife' },
+  { icon: 'shopping-bag', label: 'Shopping' },
+  { icon: 'coffee',       label: 'Coffee' },
+  { icon: 'trophy',       label: 'Sports' },
+  { icon: 'mountain',     label: 'Hikes & Nature' },
+];
+
+const PICKS = {
+  'Mexico City': ['Liverpool','Palacio de Hierro','Mercado Roma','El Pendulo','Zara','OXXO','Farmacias del Ahorro','Rappi'],
+  'Guadalajara':  ['Plaza Galerias','Mercado San Juan de Dios','Andares','Liverpool GDL'],
+  'Monterrey':    ['Galerias Valle Oriente','Plaza Fiesta San Agustin','Liverpool MTY'],
+  'Los Angeles':  ['Erewhon','The Grove','Whole Foods','Santa Monica Place','In-N-Out'],
+  'New York':     ["Trader Joe's","Bloomingdale's",'Eataly','Chelsea Market','Zabars'],
+  'Miami':        ['Brickell City Centre','Wynwood','Whole Foods Brickell','Design District'],
+  'Dallas':       ['NorthPark Center','Neiman Marcus','Pecan Lodge','Klyde Warren Park'],
+};
+
+const TYPES = {
+  app:               { label: 'APP',     color: '#60a5fa', bg: 'rgba(96,165,250,0.12)'  },
+  timing:            { label: 'TIMING',  color: '#fbbf24', bg: 'rgba(251,191,36,0.12)'  },
+  local_alternative: { label: 'LOCAL',   color: '#4ade80', bg: 'rgba(74,222,128,0.12)'  },
+  pro_tip:           { label: 'PRO TIP', color: '#818cf8', bg: 'rgba(129,140,248,0.12)' },
+};
+
+let lastData          = null;
+let currentMode       = 'discover';
+let selectedInterests = new Set();
+let currentCity       = 'Mexico City';
+
+// ─── City → region mapping ─────────────────────────────────────────────────────
+function cityRegion(city) {
+  var c = (city || '').toLowerCase();
+  if (/mexico city|guadalajara|monterrey|oaxaca|canc[uú]n|tijuana|acapulco|cdmx|puebla/.test(c)) return 'mexico';
+  if (/medell[ií]n|bogot|lima|buenos aires|santiago|s[aã]o paulo|colombia|peru|argentina/.test(c)) return 'latam';
+  if (/new york|los angeles|miami|dallas|chicago|san francisco|seattle|atlanta|washington|san diego|las vegas|houston|denver|boston/.test(c)) return 'usa';
+  if (/paris|amsterdam|rome|prague|florence|venice|ibiza|madrid|barcelona|london|berlin|lisbon|dublin|milan|vienna/.test(c)) return 'europe';
+  return 'global';
+}
+
+// ─── Tool relevance score for a given region ──────────────────────────────────
+function toolRelevance(tool, region) {
+  var tags = tool.tags.join(' ').toLowerCase();
+  if (region === 'mexico') {
+    if (tags.includes('cdmx') || tags.includes('mexico')) return 3;
+    if (tags.includes('latam')) return 2;
+  } else if (region === 'latam') {
+    if (tags.includes('latam')) return 3;
+    if (tags.includes('mexico')) return 2;
+  } else if (region === 'usa') {
+    if (tags.includes('usa')) return 3;
+  } else if (region === 'europe') {
+    if (tags.includes('europe')) return 3;
+  }
+  if (tags.includes('global')) return 1;
+  return 0;
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+(function init() {
+  const grid = document.getElementById('interestChips');
+  grid.innerHTML = INTERESTS.map(({ icon, label }) =>
+    `<button class="interest-chip" data-label="${label}" onclick="toggleInterest(this,'${label}')"><i data-lucide="${icon}" style="width:13px;height:13px;stroke-width:1.8;vertical-align:-2px;margin-right:5px;"></i>${label}</button>`
+  ).join('');
+  lucide.createIcons();
+  onCityChange();
+})();
+
+// ─── Mode ─────────────────────────────────────────────────────────────────────
+function setMode(mode) {
+  currentMode = mode;
+  document.getElementById('discoverPanel').style.display = mode === 'discover' ? 'block' : 'none';
+  document.getElementById('customPanel').style.display   = mode === 'custom'   ? 'block' : 'none';
+  document.getElementById('modeDiscover').classList.toggle('active', mode === 'discover');
+  document.getElementById('modeCustom').classList.toggle('active',   mode === 'custom');
+}
+
+// ─── Interest chips ───────────────────────────────────────────────────────────
+function toggleInterest(btn, label) {
+  if (selectedInterests.has(label)) {
+    selectedInterests.delete(label);
+    btn.classList.remove('selected');
+    // Re-invite if nothing selected anymore
+    if (!selectedInterests.size) {
+      document.getElementById('interestChips').classList.add('invite');
+    }
+  } else {
+    selectedInterests.add(label);
+    btn.classList.add('selected');
+    // Kill invite animation once first chip is chosen
+    document.getElementById('interestChips').classList.remove('invite');
+  }
+}
+
+// ─── City change ──────────────────────────────────────────────────────────────
+function onCityChange() {
+  const sel   = document.getElementById('citySelect').value;
+  const other = document.getElementById('cityOther');
+  other.style.display = sel === 'other' ? 'block' : 'none';
+
+  currentCity = sel === 'other'
+    ? (other.value.trim() || currentCity)
+    : sel;
+  renderTools();
+
+  const picks = PICKS[sel] || [];
+  const wrap  = document.getElementById('picksWrap');
+  if (picks.length) {
+    document.getElementById('quickPicks').innerHTML = picks
+      .map(p => `<button class="pick-chip" onclick="addPick(this,'${p.replace(/'/g,"\\'")}')">${p}</button>`)
+      .join('');
+    wrap.style.display = 'block';
+  } else {
+    wrap.style.display = 'none';
+  }
+}
+
+function addPick(btn, name) {
+  const ta = document.getElementById('venuesInput');
+  ta.value = ta.value.trim() ? ta.value.trim() + '\n' + name : name;
+  btn.disabled = true;
+}
+
+// ─── Generate ─────────────────────────────────────────────────────────────────
+async function generate() {
+  const selVal = document.getElementById('citySelect').value;
+  const city   = selVal === 'other' ? document.getElementById('cityOther').value.trim() : selVal;
+  const btn    = document.getElementById('generateBtn');
+  const output = document.getElementById('output');
+
+  if (!city) {
+    (selVal === 'other' ? document.getElementById('cityOther') : document.getElementById('citySelect')).focus();
+    return;
+  }
+
+  let body;
+  if (currentMode === 'discover') {
+    if (!selectedInterests.size) {
+      const wrap = document.getElementById('interestChips');
+      const hint = document.getElementById('chipsHint');
+      wrap.classList.remove('shake');
+      void wrap.offsetWidth; // restart animation
+      wrap.classList.add('shake');
+      hint.classList.add('show');
+      setTimeout(function() {
+        hint.classList.remove('show');
+        wrap.classList.remove('shake');
+      }, 2200);
+      return;
+    }
+    body = { city, preferences: [...selectedInterests] };
+  } else {
+    const venues = document.getElementById('venuesInput').value.trim();
+    if (!venues) { document.getElementById('venuesInput').focus(); return; }
+    body = { city, locations: venues };
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Finding insider intel...';
+  output.innerHTML = `<div class="state" role="status" aria-live="polite"><div class="spinner" aria-hidden="true"></div><p>Tapping local knowledge for ${escHtml(city)}...</p></div>`;
+
+  try {
+    const res = await fetch('https://amig0.vercel.app/api/hacks', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || `Server error ${res.status}`);
+    lastData = data;
+    output.innerHTML = renderResults(data);
+  } catch (err) {
+    output.innerHTML = `<div class="state err">Something went wrong. Try again in a moment.</div>`;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Get Traveler Hacks';
+  }
+}
+
+// ─── Render results ───────────────────────────────────────────────────────────
+function renderResults(data) {
+  const total = data.locations.length;
+  const cards = data.locations.map((loc, idx) => {
+    const hacks = loc.hacks.map(h => {
+      const t = TYPES[h.type] || TYPES.pro_tip;
+      return `<div class="hack-item">
+        <span class="hack-badge" style="color:${t.color};background:${t.bg}">${t.label}</span>
+        <span class="hack-tip">${escHtml(h.tip)}</span>
+      </div>`;
+    }).join('');
+    const url = mapsUrl(loc.name, data.destination, loc.lat, loc.lng);
+    const num = String(idx + 1).padStart(2, '0') + ' / ' + String(total).padStart(2, '0');
+    const website  = loc.website  ? loc.website.replace(/^https?:\/\//, '') : '';
+    const instagram = loc.instagram ? loc.instagram.replace(/^@/, '') : '';
+    const linksHtml = `
+      <div class="hack-card-links">
+        <a class="hack-card-link" href="${url}" target="_blank" rel="noopener noreferrer"><i data-lucide="map-pin" style="width:11px;height:11px;stroke-width:2"></i>Get directions ↗</a>
+        ${website  ? `<a class="hack-card-link" href="${/^https?:\/\//.test(loc.website) ? escHtml(loc.website) : 'https://' + escHtml(loc.website)}" target="_blank" rel="noopener noreferrer"><i data-lucide="globe" style="width:11px;height:11px;stroke-width:2"></i>${escHtml(website)}</a>` : ''}
+        ${instagram ? `<a class="hack-card-link" href="https://instagram.com/${escHtml(instagram)}" target="_blank" rel="noopener noreferrer"><i data-lucide="instagram" style="width:11px;height:11px;stroke-width:2"></i>@${escHtml(instagram)}</a>` : ''}
+      </div>`;
+    return `<div class="hack-card">
+      <div class="hack-card-stripe"></div>
+      <div class="hack-card-header">
+        <span class="hack-location">${escHtml(loc.name)}</span>
+        <span class="hack-category">${escHtml(loc.category)}</span>
+        <span class="hack-card-num">${num}</span>
+      </div>
+      ${hacks}
+      ${linksHtml}
+    </div>`;
+  }).join('');
+
+  const isCDMX = data.destination.toLowerCase().includes('mexico city');
+  const waMsg  = encodeURIComponent('Hi Ulises, I found you through amig0 Traveler Hacks. I need private transportation in Mexico City — can you help?');
+  const driverCard = isCDMX
+    ? `<a class="driver-cta" href="https://wa.me/525585629536?text=${waMsg}" target="_blank" rel="noopener noreferrer">
+        <div class="driver-cta-left">
+          <span class="driver-cta-badge">Recommended · Private Transport</span>
+          <div class="driver-cta-name">Ulises — Private Driver · CDMX</div>
+          <div class="driver-cta-detail">Airport pickups, private tours, day trips. Direct to your driver on WhatsApp — no app, no dispatch.</div>
+        </div>
+        <span class="driver-cta-btn">Message Ulises</span>
+      </a>`
+    : '';
+
+  return `
+    <div class="results-header">
+      <span class="section-label">Hacks for ${escHtml(data.destination)}</span>
+      <button class="export-btn" id="copyBtn" onclick="copyAsText()">Copy as text</button>
+    </div>
+    ${cards}
+    ${driverCard}`;
+}
+
+// ─── Copy as text ─────────────────────────────────────────────────────────────
+function copyAsText() {
+  if (!lastData) return;
+  const EMOJI = { app: '📱', timing: '⏰', local_alternative: '📍', pro_tip: '💡' };
+  const city  = lastData.destination;
+  const lines = [`TRAVELER HACKS — ${city}`, ''];
+
+  lastData.locations.forEach(loc => {
+    lines.push(`${loc.name}  ·  ${loc.category}`);
+    lines.push(
+      (loc.lat && loc.lng && Math.abs(loc.lat) > 0.001 && Math.abs(loc.lng) > 0.001)
+        ? 'https://www.google.com/maps/search/' + encodeURIComponent(loc.name) + '/@' + loc.lat + ',' + loc.lng + ',17z'
+        : 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(loc.name + ' ' + city)
+    );
+    if (loc.website)   lines.push(loc.website);
+    if (loc.instagram) lines.push('@' + loc.instagram.replace(/^@/, ''));
+    lines.push('');
+    loc.hacks.forEach(h => lines.push(`${EMOJI[h.type] || '💡'}  ${h.tip}`));
+    lines.push('');
+    lines.push('');
+  });
+
+  lines.push('amig0.vercel.app/hacks');
+
+  navigator.clipboard.writeText(lines.join('\n')).then(() => {
+    const btn = document.getElementById('copyBtn');
+    btn.textContent = 'Copied!';
+    setTimeout(() => { btn.textContent = 'Copy as text'; }, 1800);
+  });
+}
+
+function mapsUrl(venue, city, lat, lng) {
+  if (lat && lng && Math.abs(lat) > 0.001 && Math.abs(lng) > 0.001) {
+    return 'https://maps.google.com/?q=' + lat + ',' + lng;
+  }
+  return 'https://maps.google.com/search?q=' + encodeURIComponent(venue + ' ' + city);
+}
+
+// ─── Submit your city ─────────────────────────────────────────────────────────
+async function handleSubmit(e) {
+  e.preventDefault();
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.textContent = 'Submitting...';
+
+  const form = e.target;
+  const city    = form.city.value.trim();
+  const handle  = form.instagram.value.trim();
+  const venues  = form.venues.value.trim();
+  const tips    = form.tips.value.trim();
+  const extra   = form.extra.value.trim();
+
+  const subject = encodeURIComponent(`Traveler Hacks Submission — ${city}`);
+  const body    = encodeURIComponent(
+    `City: ${city}\nInstagram: ${handle || 'not provided'}\n\nSpots:\n${venues}\n\nInsider tips:\n${tips || 'N/A'}\n\nAnything else:\n${extra || 'N/A'}`
+  );
+
+  try {
+    const res = await fetch('https://formspree.io/f/xpwzdaoe', {
+      method: 'POST',
+      headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+      body: JSON.stringify({ city, instagram: handle, venues, tips, extra })
+    });
+    if (!res.ok) throw new Error();
+    form.style.display = 'none';
+    document.getElementById('submitSuccess').style.display = 'block';
+  } catch {
+    window.location.href = `mailto:contact@opcoretech.com?subject=${subject}&body=${body}`;
+    btn.disabled = false;
+    btn.textContent = 'Submit for review';
+  }
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+function escHtml(s) {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+</script>
+
+<!-- ── Globe.gl ── -->
+<script src="//unpkg.com/globe.gl"></script>
+<script>
+// ─── Visited cities — synced to content/cities.json queue ────────────────────
+// published = series live on @amig0trips · queued = visited, series coming soon
+const VISITED = [
+  // Mexico
+  { name: 'Mexico City',   lat: 19.4326,  lng: -99.1332,  published: true  },
+  { name: 'Guadalajara',   lat: 20.6597,  lng: -103.3496, published: false },
+  { name: 'Oaxaca',        lat: 17.0732,  lng: -96.7266,  published: false },
+  { name: 'Cancún',        lat: 21.1619,  lng: -86.8515,  published: false },
+  { name: 'Tijuana',       lat: 32.5149,  lng: -117.0382, published: false },
+  { name: 'Acapulco',      lat: 16.8531,  lng: -99.8237,  published: false },
+  // USA
+  { name: 'New York',      lat: 40.7128,  lng: -74.0060,  published: false },
+  { name: 'Los Angeles',   lat: 34.0522,  lng: -118.2437, published: false },
+  { name: 'Chicago',       lat: 41.8781,  lng: -87.6298,  published: false },
+  { name: 'Dallas',        lat: 32.7767,  lng: -96.7970,  published: false },
+  { name: 'San Francisco', lat: 37.7749,  lng: -122.4194, published: false },
+  { name: 'Seattle',       lat: 47.6062,  lng: -122.3321, published: false },
+  { name: 'Atlanta',       lat: 33.7490,  lng: -84.3880,  published: false },
+  { name: 'Washington DC', lat: 38.9072,  lng: -77.0369,  published: false },
+  { name: 'San Diego',     lat: 32.7157,  lng: -117.1611, published: false },
+  { name: 'Las Vegas',     lat: 36.1699,  lng: -115.1398, published: false },
+  // Europe
+  { name: 'Paris',         lat: 48.8566,  lng:  2.3522,   published: false },
+  { name: 'Amsterdam',     lat: 52.3676,  lng:  4.9041,   published: false },
+  { name: 'Rome',          lat: 41.9028,  lng: 12.4964,   published: false },
+  { name: 'Prague',        lat: 50.0755,  lng: 14.4378,   published: false },
+  { name: 'Florence',      lat: 43.7696,  lng: 11.2558,   published: false },
+  { name: 'Venice',        lat: 45.4408,  lng: 12.3155,   published: false },
+  { name: 'Ibiza',         lat: 38.9067,  lng:  1.4206,   published: false },
+];
+
+function initGlobe() {
+  const container = document.getElementById('globeContainer');
+  if (!container || typeof Globe === 'undefined') return;
+
+  const globe = Globe()
+    .width(container.offsetWidth)
+    .height(container.offsetHeight)
+    .backgroundColor('rgba(0,0,0,0)')
+    .globeImageUrl('//unpkg.com/three-globe/example/img/earth-dark.jpg')
+    .atmosphereColor('rgba(129,140,248,0.2)')
+    .atmosphereAltitude(0.18)
+    // Dots at each city — published brighter + larger
+    .pointsData(VISITED)
+    .pointColor(d => d.published ? '#818cf8' : 'rgba(129,140,248,0.45)')
+    .pointAltitude(0.01)
+    .pointRadius(d => d.published ? 0.52 : 0.32)
+    .pointLabel(d =>
+      `<div style="background:rgba(9,9,11,0.92);border:1px solid rgba(129,140,248,0.6);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;color:#fafafa;font-family:'Plus Jakarta Sans',sans-serif;white-space:nowrap">${d.name}${d.published ? ' ✓' : ''}</div>`
+    )
+    // Rings only on published cities
+    .ringsData(VISITED.filter(d => d.published))
+    .ringColor(() => t => `rgba(129,140,248,${(1 - t) * 0.8})`)
+    .ringMaxRadius(3.5)
+    .ringPropagationSpeed(2.5)
+    .ringRepeatPeriod(1400)
+    // Country polygon outlines — makes continents immediately legible
+    .polygonsData([])
+    .polygonCapColor(() => 'rgba(255,255,255,0.02)')
+    .polygonSideColor(() => 'transparent')
+    .polygonStrokeColor(() => 'rgba(129,140,248,0.32)')
+    .polygonAltitude(0.001)
+    (container);
+
+  // Load country outlines — silently skipped if offline
+  fetch('https://raw.githubusercontent.com/vasturiano/globe.gl/master/example/country-polygons/ne_110m_countries.json')
+    .then(function(r) { return r.json(); })
+    .then(function(countries) { globe.polygonsData(countries.features); })
+    .catch(function() {});
+
+  // Slow auto-rotate, no zoom
+  globe.controls().autoRotate      = true;
+  globe.controls().autoRotateSpeed = 0.35;
+  globe.controls().enableZoom      = false;
+
+  // Start centered on the Americas
+  globe.pointOfView({ lat: 35, lng: -30, altitude: 2.6 });
+
+  // Resize observer keeps it sharp on window resize
+  if (window.ResizeObserver) {
+    new ResizeObserver(() => {
+      globe.width(container.offsetWidth).height(container.offsetHeight);
+    }).observe(container);
+  }
+}
+
+// Init after Globe.gl has loaded
+if (document.readyState === 'complete') {
+  initGlobe();
+} else {
+  window.addEventListener('load', initGlobe);
+}
+
+// ─── Tools section ────────────────────────────────────────────────────────────
+const TOOLS = {
+  Navigation: {
+    icon: 'compass', accent: '#60a5fa',
+    items: [
+      { icon: 'map',          name: 'Google Maps',      tags: ['Offline', 'Global'],             url: 'https://maps.google.com',          pick: true,
+        desc: 'Download the city before landing. Works without data once you\'re on the ground.',
+        why: 'The offline mode alone is worth it. Before your flight, download the entire city — streets, transit, restaurants. Zero data required on arrival.' },
+      { icon: 'navigation',   name: 'Waze',             tags: ['Driving', 'Live traffic'],       url: 'https://waze.com',
+        desc: 'Best when you\'re driving and traffic actually matters.',
+        why: 'Locals use this for real-time road alerts and speed traps. Google Maps gets you there — Waze gets you there faster.' },
+      { icon: 'train-front',  name: 'Citymapper',       tags: ['Transit', 'Major cities'],       url: 'https://citymapper.com',
+        desc: 'The clearest way through unfamiliar public transit.',
+        why: 'Step-by-step directions including which door of the train to board from. Works in 50+ cities. Essential when you don\'t know the system.' },
+    ]
+  },
+  Translation: {
+    icon: 'languages', accent: '#a78bfa',
+    items: [
+      { icon: 'scan-text',    name: 'Google Translate', tags: ['Camera', 'Global'],              url: 'https://translate.google.com',     pick: true,
+        desc: 'Point at a menu or sign — it translates in real time.',
+        why: 'The camera feature changes everything in restaurants and markets. Works on printed text, handwritten signs, even some packaging.' },
+      { icon: 'file-text',    name: 'DeepL',            tags: ['Text', 'Global'],                url: 'https://deepl.com',
+        desc: 'More natural output when reading or writing longer text.',
+        why: 'Google Translate handles quick lookups. DeepL handles nuance — messages, formal communication, context-heavy content. Keep both.' },
+    ]
+  },
+  Transport: {
+    icon: 'car', accent: '#fb923c',
+    items: [
+      { icon: 'badge-check',  name: 'tapcard',          tags: ['CDMX', 'Private driver'],        url: 'https://tapcard-umber.vercel.app', pick: true,
+        desc: 'Book vetted private drivers on WhatsApp. No app, no surge.',
+        why: 'Our own vetted driver network in Mexico City. Direct WhatsApp booking — no commission layer, no surge pricing, no guessing who\'s picking you up. Cheaper and more reliable than ride-hailing for airport runs and day trips.' },
+      { icon: 'car',          name: 'Uber',             tags: ['Ride-hailing', 'Global'],         url: 'https://www.uber.com/invite/1yvhamnk4v3w',
+        desc: 'Lock in your price before you get in. Most reliable globally.' },
+      { icon: 'car',          name: 'DiDi',             tags: ['Ride-hailing', 'Mexico · LatAm'], url: 'https://web.didiglobal.com',
+        desc: 'Consistently cheaper than Uber in Mexico. Our CDMX default.',
+        why: 'In Mexico City, DiDi undercuts Uber by 20–40% on most routes. Same safety features, better price.' },
+      { icon: 'zap',          name: 'Bolt',             tags: ['Ride-hailing', 'Europe'],         url: 'https://bolt.eu',
+        desc: 'The budget ride-hailing option across most of Europe.' },
+    ]
+  },
+  Food: {
+    icon: 'utensils', accent: '#f472b6',
+    items: [
+      { icon: 'bike',         name: 'Rappi',            tags: ['Delivery', 'Mexico · LatAm'],    url: 'https://rappi.com',                pick: true,
+        desc: 'Best delivery in LatAm — food, groceries, pharmacy, cash.',
+        why: 'In Mexico City, Rappi delivers in 20 minutes and covers everything from tacos to pharmacy runs. Far better coverage than Uber Eats in most LatAm cities.' },
+      { icon: 'package',      name: 'Uber Eats',        tags: ['Delivery', 'Global'],             url: 'https://www.ubereats.com/invite/1yvhamnk4v3w',
+        desc: 'Use this when local delivery apps don\'t cover your area.' },
+    ]
+  },
+  Money: {
+    icon: 'credit-card', accent: '#4ade80',
+    items: [
+      { icon: 'landmark',     name: 'Wise',             tags: ['Card', 'Global'],                url: 'https://wise.com/invite/dic/danielb22691', pick: true,
+        desc: 'The best exchange rate you\'ll find — transfers and ATMs.',
+        why: 'Uses the mid-market rate — the one banks use between themselves. No markup. For frequent travelers this saves hundreds per year.' },
+      { icon: 'globe',        name: 'Revolut',          tags: ['Card', 'Global'],                url: 'https://revolut.com',
+        desc: 'Multi-currency card with no foreign transaction fees.',
+        why: 'Converts to local currency at the interbank rate up to your monthly limit. Great backup card to keep in a separate pocket.' },
+      { icon: 'percent',      name: 'Rakuten',          tags: ['Cashback', 'USA'],               url: 'https://www.rakuten.com/r/HIDATA2?eeid=28187',
+        desc: 'Cashback on hotels, restaurants, and shopping.' },
+    ]
+  },
+  Comms: {
+    icon: 'message-circle', accent: '#38bdf8',
+    items: [
+      { icon: 'message-circle', name: 'WhatsApp',       tags: ['Messaging', 'Global'],           url: 'https://whatsapp.com',             pick: true,
+        desc: 'Universal in LatAm and Europe. Use it for everything.',
+        why: 'In Mexico, Colombia, Spain, Italy — everyone is on WhatsApp. Restaurants take reservations over it. Drivers confirm pickups on it. Even corner stores have a number.' },
+      { icon: 'phone',        name: 'Google Voice',     tags: ['Number', 'USA'],                 url: 'https://voice.google.com',
+        desc: 'Keep your US number alive abroad for verification codes.',
+        why: 'When apps need a US phone number for 2FA, Google Voice is the answer. Set it up before you travel.' },
+    ]
+  },
+};
+
+let activeToolTab = 'Navigation';
+
+function renderTools() {
+  const rail    = document.getElementById('toolsTabs');
+  const content = document.getElementById('toolsContent');
+  if (!rail || !content) return;
+
+  const { accent } = TOOLS[activeToolTab];
+
+  // Sort tools by relevance to current city — stable sort preserves original order for ties
+  const region = cityRegion(currentCity);
+  const items = TOOLS[activeToolTab].items.slice().sort(function(a, b) {
+    return toolRelevance(b, region) - toolRelevance(a, region);
+  });
+
+  // Rail
+  rail.className = 'tools-rail';
+  rail.className = 'tools-rail';
+  rail.innerHTML = Object.entries(TOOLS).map(([cat, d]) => {
+    const isActive = cat === activeToolTab;
+    const style = isActive
+      ? `border-color:${d.accent};color:${d.accent};background:${d.accent}1a;`
+      : '';
+    return `<button class="rail-tab${isActive ? ' active' : ''}" style="${style}" onclick="switchToolTab('${cat}')"><span class="rail-icon"><i data-lucide="${d.icon}" style="width:14px;height:14px;stroke-width:1.8;vertical-align:-2px"></i></span>${cat}</button>`;
+  }).join('');
+
+  // Cards
+  const cards = items.map((t, i) => {
+    const pickBadge = t.pick
+      ? `<span class="tool-pick" style="color:${accent};border-color:${accent}55">amig0 pick</span>` : '';
+    const expandSection = t.why
+      ? `<div class="tool-pass-why">${t.why}</div>` : '';
+    const expandHint = t.why
+      ? `<span class="tool-expand-hint" onclick="toggleToolExpand(event,this.closest('.tool-pass'))">+ why we recommend it</span>` : '<span></span>';
+
+    return `
+      <div class="tool-pass" style="animation-delay:${i * 0.04}s">
+        <div class="tool-pass-stripe" style="background:linear-gradient(90deg,${accent}90,${accent}30)"></div>
+        <div class="tool-pass-body">
+          <div class="tool-pass-top">
+            <span class="tool-pass-icon"><i data-lucide="${t.icon}" style="width:26px;height:26px;stroke-width:1.5;color:rgba(255,255,255,0.52)"></i></span>
+            ${pickBadge}
+          </div>
+          <div class="tool-pass-name">${t.name}</div>
+          <div class="tool-pass-desc">${t.desc}</div>
+          <div class="tool-pass-tags">${t.tags.map(tag => `<span class="tool-pass-tag">${tag}</span>`).join('')}</div>
+        </div>
+        ${expandSection}
+        <div class="tool-pass-foot">
+          <a class="tool-pass-open" href="${t.url}" target="_blank" rel="noopener" style="color:${accent}">Open ↗</a>
+          ${expandHint}
+          <span class="tool-pass-num">${String(i+1).padStart(2,'0')} / ${String(items.length).padStart(2,'0')}</span>
+        </div>
+      </div>`;
+  }).join('');
+
+  content.innerHTML = `<div class="tools-carousel-wrap"><div class="tools-carousel">${cards}</div></div>`;
+  if (window.lucide) lucide.createIcons();
+}
+
+function toggleToolExpand(e, card) {
+  e.stopPropagation();
+  const hint = card.querySelector('.tool-expand-hint');
+  card.classList.toggle('expanded');
+  if (hint) hint.textContent = card.classList.contains('expanded') ? '− collapse' : '+ why we recommend it';
+}
+
+function switchToolTab(cat) {
+  activeToolTab = cat;
+  renderTools();
+}
+
+renderTools();
+</script>
+</body>
+</html>

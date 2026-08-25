@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>amig0 — Local deals + insider intel for smart travelers</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="description" content="amig0 is your city pass — exclusive deals at verified local spots and AI-powered travel intel in every city.">
+  <meta property="og:title" content="amig0 — Your city pass">
+  <meta property="og:description" content="Local deals at verified cafes, bars and restaurants. AI-powered insider intel. One membership.">
+  <meta property="og:type" content="website">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:           #09090b;
+      --surface:      #18181b;
+      --border:       #27272a;
+      --text:         #fafafa;
+      --muted:        #a1a1aa;
+      --p1:           #818cf8;
+      --green:        #4ade80;
+      --accent-hot:   #d946ef;
+      --font-primary: 'Plus Jakarta Sans', system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: var(--font-primary); background: var(--bg); color: var(--text); font-variant-numeric: slashed-zero; }
+
+    /* ── Nav ── */
+    .nav {
+      position: sticky; top: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 32px; background: rgba(9,9,11,0.95);
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(12px);
+    }
+    .nav-brand { font-size: 1.1rem; font-weight: 800; letter-spacing: -0.03em; text-decoration: none; color: var(--text); }
+    .nav-brand span { color: var(--p1); }
+    .nav-links { display: flex; align-items: center; gap: 8px; }
+    .btn-nav {
+      font-family: inherit; font-size: 0.8rem; font-weight: 600;
+      padding: 10px 16px; border-radius: 8px; cursor: pointer; text-decoration: none;
+      border: 1px solid var(--border); background: transparent; color: var(--muted);
+      transition: all 0.15s; display: inline-block;
+    }
+    .btn-nav:hover { background: var(--surface); color: var(--text); }
+    .btn-nav.primary { background: var(--p1); border-color: var(--p1); color: #fff; }
+    .btn-nav.primary:hover { background: #6366f1; }
+
+    /* ── Hero ── */
+    .hero {
+      max-width: 680px; margin: 0 auto;
+      padding: 72px 24px 56px; text-align: center;
+    }
+    .hero-brand {
+      font-size: 1.6rem; font-weight: 800; letter-spacing: -0.03em;
+      color: var(--text); margin-bottom: 32px; display: block;
+    }
+    .hero-brand svg { color: var(--p1); }
+    .city-art {
+      display: block; width: 100%; max-width: 480px; margin: 0 auto;
+    }
+    .scene-wrap { width: 100%; max-width: 480px; margin: 0 auto 14px; transition: opacity 0.5s ease; }
+    .scene-wrap.fading { opacity: 0; }
+    .city-label-wrap { margin-bottom: 0; }
+    .city-label {
+      display: inline-block; font-size: 0.7rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.12em; color: var(--p1);
+      background: rgba(129,140,248,0.08); border: 1px solid rgba(129,140,248,0.2);
+      border-radius: 20px; padding: 5px 14px; transition: opacity 0.4s ease;
+    }
+    .city-label.fading { opacity: 0; }
+    .rotating-word { transition: opacity 0.4s ease; display: inline-block; }
+    .rotating-word.fading { opacity: 0; }
+    .hero h1 {
+      font-size: clamp(3rem, 9vw, 5.2rem); font-weight: 800; line-height: 1.02;
+      letter-spacing: -0.055em; margin-bottom: 8px;
+    }
+    .hero h1 em { font-style: normal; color: var(--p1); }
+    .hero-sub {
+      font-size: 1rem; color: var(--muted); line-height: 1.65;
+      max-width: 400px; margin: 0 auto 28px;
+    }
+    .scene-chips {
+      display: flex; flex-wrap: wrap; justify-content: center; gap: 7px;
+      margin: 10px 0 28px; transition: opacity 0.4s ease;
+    }
+    .scene-chips.fading { opacity: 0; }
+    .scene-chip {
+      font-size: 0.72rem; font-weight: 500;
+      padding: 4px 12px; border-radius: 20px;
+      border: 1px solid var(--border); color: var(--muted);
+    }
+    .hero-ctas { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-bottom: 18px; }
+    .btn-hero {
+      font-family: inherit; font-size: 0.95rem; font-weight: 600;
+      padding: 13px 28px; border-radius: 10px; cursor: pointer; text-decoration: none;
+      display: inline-block; transition: all 0.15s;
+    }
+    .btn-hero.primary { background: var(--p1); border: none; color: #fff; }
+    .btn-hero.primary:hover { background: #6366f1; }
+    .btn-hero.ghost { background: transparent; border: 1px solid var(--border); color: var(--text); }
+    .btn-hero.ghost:hover { background: var(--surface); }
+
+    /* ── Deals section ── */
+    .section { border-top: 1px solid var(--border); padding: 72px 24px; }
+    .section-inner { max-width: 760px; margin: 0 auto; }
+    .section-label {
+      font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.14em;
+      color: var(--p1); margin-bottom: 10px;
+    }
+    .section h2 {
+      font-size: clamp(1.8rem, 4vw, 2.6rem); font-weight: 800; line-height: 1.1;
+      letter-spacing: -0.04em; margin-bottom: 10px;
+    }
+    .section-sub {
+      font-size: 0.95rem; color: var(--muted); line-height: 1.7;
+      margin-bottom: 32px; max-width: 460px;
+    }
+
+    /* Deal — featured single card */
+    .deal-card-featured {
+      background: #141414; border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 16px; overflow: hidden; margin-bottom: 16px;
+    }
+    .deal-card-stripe { height: 3px; background: var(--p1); }
+    .deal-card-body { padding: 20px 20px 16px; display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+    .deal-venue { font-size: 0.97rem; font-weight: 700; margin-bottom: 6px; line-height: 1.3; }
+    .deal-cat {
+      display: inline-block; font-size: 0.65rem; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.08em;
+      padding: 2px 8px; border-radius: 4px; border: 1px solid var(--border);
+      color: var(--muted); margin-bottom: 10px;
+    }
+    .deal-offer { font-size: 0.92rem; color: var(--green); font-weight: 700; margin-bottom: 6px; }
+    .deal-address { font-size: 0.7rem; color: var(--muted); }
+    .aff-badge {
+      display: inline-block; font-size: 0.58rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;
+      background: rgba(129,140,248,0.1); color: var(--p1);
+      border: 1px solid rgba(129,140,248,0.25); border-radius: 4px; padding: 2px 7px;
+      margin-left: 6px; vertical-align: middle;
+    }
+    .deal-coming { font-size: 0.78rem; color: var(--muted); margin-bottom: 28px; }
+    .deal-coming a { color: var(--p1); text-decoration: none; }
+    .deal-coming a:hover { text-decoration: underline; }
+    .btn-outline {
+      font-family: inherit; font-size: 0.88rem; font-weight: 600;
+      padding: 11px 22px; border-radius: 9px; cursor: pointer; text-decoration: none;
+      display: inline-block; transition: all 0.15s;
+      background: transparent; border: 1px solid var(--border); color: var(--text);
+    }
+    .btn-outline:hover { background: var(--surface); }
+
+    /* ── Hacks section ── */
+    .hacks-section {
+      border-top: 1px solid var(--border);
+      background: #141414; padding: 72px 24px;
+    }
+    .hacks-inner { max-width: 760px; margin: 0 auto; }
+    /* Mock — faithful replica of hacks/index.html input card */
+    .hacks-mock {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; padding: 28px; margin-top: 28px;
+      pointer-events: none; user-select: none;
+    }
+    .hacks-mock-top-row {
+      display: grid; grid-template-columns: 200px 1fr; gap: 16px;
+      margin-bottom: 20px; align-items: start;
+    }
+    .hacks-input-label {
+      display: block; font-size: 0.65rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.12em;
+      color: var(--muted); margin-bottom: 8px;
+    }
+    .hacks-mock-select {
+      width: 100%; background: var(--bg); border: 1px solid var(--border);
+      border-radius: 10px; color: var(--text); font-size: 0.88rem;
+      padding: 11px 14px;
+    }
+    .hacks-mode-toggle {
+      display: flex; background: var(--bg); border: 1px solid var(--border);
+      border-radius: 10px; padding: 3px; gap: 3px;
+    }
+    .hacks-mode-btn {
+      flex: 1; border-radius: 7px; color: var(--muted);
+      font-size: 0.82rem; font-weight: 600; padding: 9px 12px; text-align: center;
+    }
+    .hacks-mode-btn.active { background: var(--surface); color: var(--text); }
+    .hacks-chips-wrap { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 4px; }
+    .hacks-ichip {
+      font-size: 0.8rem; font-weight: 500; padding: 7px 15px; border-radius: 24px;
+      border: 1px solid var(--border); color: var(--muted);
+      display: inline-flex; align-items: center; gap: 5px;
+    }
+    .hacks-ichip svg { width: 13px; height: 13px; flex-shrink: 0; }
+    .hacks-ichip.sel { border-color: var(--p1); color: var(--p1); background: rgba(129,140,248,0.1); }
+    .hacks-gen-btn {
+      width: 100%; background: var(--p1); border-radius: 10px; color: #09090b;
+      font-size: 0.9rem; font-weight: 700; padding: 14px; text-align: center;
+      margin-top: 20px;
+    }
+    /* Divider */
+    .hacks-mock-divider {
+      border-top: 1px solid var(--border); margin: 20px 0 16px;
+      text-align: center; position: relative;
+    }
+    .hacks-mock-divider span {
+      position: relative; top: -9px;
+      background: var(--surface); padding: 0 10px;
+      font-size: 0.62rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.1em; color: var(--muted);
+    }
+    /* Results */
+    .hacks-result {
+      border: 1px solid var(--border); border-radius: 8px; padding: 14px;
+      margin-bottom: 8px;
+    }
+    .hacks-result:last-child { margin-bottom: 0; }
+    .hacks-result-name { font-size: 0.88rem; font-weight: 600; margin-bottom: 4px; }
+    .hacks-result-desc { font-size: 0.77rem; color: var(--muted); line-height: 1.5; }
+    /* Globe tease */
+    .hacks-globe-tease { font-size: 0.78rem; color: var(--muted); }
+    .hacks-globe-tease a { color: var(--p1); text-decoration: none; }
+    .hacks-globe-tease a:hover { text-decoration: underline; }
+
+    /* Demo animation */
+    .hacks-ichip { transition: border-color 0.25s, color 0.25s, background 0.25s; }
+    .hacks-mock-select { transition: border-color 0.3s ease, box-shadow 0.3s ease; }
+    .hacks-mock-select.demo-focus {
+      border-color: rgba(129,140,248,0.55);
+      box-shadow: 0 0 0 3px rgba(129,140,248,0.1);
+    }
+    @keyframes chipPop {
+      0%   { transform: scale(1); }
+      40%  { transform: scale(1.08); }
+      100% { transform: scale(1); }
+    }
+    .hacks-ichip.sel { animation: chipPop 0.26s ease-out; }
+    .hacks-gen-btn { transition: opacity 0.15s ease, transform 0.12s ease; }
+    .hacks-gen-btn.demo-press { transform: scale(0.97); opacity: 0.72; }
+    @keyframes btnPulse {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.55; }
+    }
+    .hacks-gen-btn.demo-loading { animation: btnPulse 1.3s ease-in-out infinite; }
+    .hacks-mock-divider { opacity: 0; transition: opacity 0.35s ease; }
+    .hacks-mock-divider.demo-show { opacity: 1; }
+    .hacks-result {
+      opacity: 0; transform: translateY(7px);
+      transition: opacity 0.45s ease, transform 0.45s ease;
+    }
+    .hacks-result.demo-show { opacity: 1; transform: translateY(0); }
+
+    /* ── Consumer CTA strip ── */
+    .cta-strip { border-top: 1px solid var(--border); padding: 56px 24px; text-align: center; }
+    .cta-strip-inner { max-width: 480px; margin: 0 auto; }
+    .cta-strip-copy {
+      font-size: clamp(1.3rem, 3vw, 1.7rem); font-weight: 800;
+      letter-spacing: -0.03em; margin-bottom: 22px;
+    }
+    .cta-strip-copy em { font-style: normal; color: var(--p1); }
+
+    /* ── Venue section ── */
+    .venue-section { border-top: 1px solid var(--border); padding: 56px 24px; }
+    .venue-inner { max-width: 520px; margin: 0 auto; }
+    .venue-inner h2 {
+      font-size: clamp(1.5rem, 3vw, 2rem); font-weight: 800; line-height: 1.1;
+      letter-spacing: -0.04em; margin-bottom: 10px;
+    }
+    .venue-inner h2 em { font-style: normal; color: var(--p1); }
+    .venue-inner p { font-size: 0.9rem; color: var(--muted); line-height: 1.65; margin-bottom: 18px; }
+    .venue-bullets { list-style: none; margin-bottom: 24px; }
+    .venue-bullets li {
+      font-size: 0.82rem; color: var(--muted); padding: 4px 0;
+      display: flex; gap: 10px; align-items: flex-start;
+    }
+    .venue-bullets li::before { content: '→'; color: var(--p1); flex-shrink: 0; }
+
+    /* ── Footer ── */
+    .footer-outer { border-top: 1px solid var(--border); }
+    .footer {
+      max-width: 960px; margin: 0 auto;
+      padding: 32px 24px; display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 16px;
+    }
+    .footer-brand { font-size: 0.9rem; font-weight: 700; color: var(--text); }
+    .footer-brand span { color: var(--p1); }
+    .footer-links { display: flex; gap: 20px; flex-wrap: wrap; }
+    .footer-links a { font-size: 0.78rem; color: var(--muted); text-decoration: none; }
+    .footer-links a:hover { color: var(--text); }
+    .footer-copy { font-size: 0.72rem; color: var(--muted); width: 100%; }
+
+    @media (max-width: 640px) {
+      .nav { padding: 12px 16px; }
+      .btn-nav-venue { display: none; }
+      .footer { padding: 24px 16px; }
+      .hacks-section { padding: 48px 16px; }
+      .hacks-mock { padding: 18px; }
+      .hacks-mock-top-row { grid-template-columns: 1fr; gap: 12px; }
+      .hacks-mode-toggle { flex-direction: row; }
+    }
+
+    /* Accessibility — keyboard focus */
+    :focus-visible {
+      outline: 2px solid var(--p1);
+      outline-offset: 3px;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Nav -->
+  <nav class="nav">
+    <a href="/home.html" class="nav-brand">amig<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 26" aria-hidden="true" style="display:inline-block;width:0.62em;height:0.88em;vertical-align:-0.06em;color:var(--p1)"><path fill="currentColor" fill-rule="evenodd" d="M10,1.5 C14.97,1.5 19,6.65 19,13 C19,19.35 14.97,24.5 10,24.5 C5.03,24.5 1,19.35 1,13 C1,6.65 5.03,1.5 10,1.5 Z M10,7 C7.51,7 5.5,9.69 5.5,13 C5.5,16.31 7.51,19 10,19 C12.49,19 14.5,16.31 14.5,13 C14.5,9.69 12.49,7 10,7 Z"/><line x1="6.5" y1="21" x2="13.5" y2="5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/></svg></a>
+    <div class="nav-links">
+      <a href="https://amig0.vercel.app/hacks/" class="btn-nav" target="_blank" rel="noopener">Traveler Hacks</a>
+      <a href="/business.html" class="btn-nav btn-nav-venue">For venues</a>
+      <a href="/deals.html" class="btn-nav primary">Get deals</a>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+
+    <span class="hero-brand">amig<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 26" aria-hidden="true" style="display:inline-block;width:0.58em;height:0.85em;vertical-align:-0.06em"><path fill="currentColor" fill-rule="evenodd" d="M10,1.5 C14.97,1.5 19,6.65 19,13 C19,19.35 14.97,24.5 10,24.5 C5.03,24.5 1,19.35 1,13 C1,6.65 5.03,1.5 10,1.5 Z M10,7 C7.51,7 5.5,9.69 5.5,13 C5.5,16.31 7.51,19 10,19 C12.49,19 14.5,16.31 14.5,13 C14.5,9.69 12.49,7 10,7 Z"/><line x1="6.5" y1="21" x2="13.5" y2="5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/></svg></span>
+
+    <!-- Hero art — rotates: city · coast · valley -->
+    <div class="scene-wrap" id="scene-wrap"></div>
+    <div class="city-label-wrap"><span class="city-label" id="city-label">Mexico City</span></div>
+    <div class="scene-chips" id="scene-chips"></div>
+
+    <h1>The <span class="rotating-word" id="rotating-word">city</span>,<br>finally <em>yours.</em></h1>
+    <p class="hero-sub">Walk into a verified local bar. Hand your phone to the staff. Walk out with a free drink. That's the deal. Real spots, real cities.</p>
+
+    <div class="hero-ctas">
+      <a href="/deals.html" class="btn-hero primary">Claim your 14-day pass →</a>
+      <a href="https://amig0.vercel.app/hacks/" class="btn-hero ghost" target="_blank" rel="noopener">Explore a city</a>
+    </div>
+
+  </section>
+
+  <!-- Deals -->
+  <section class="section">
+    <div class="section-inner">
+      <div class="section-label">Deals</div>
+      <h2>Deals at places<br>actually worth going to.</h2>
+      <p class="section-sub">Every venue is manually reviewed. Hand your phone to the staff — they enter a code, you get the deal. No app, no scanner, no hardware needed.</p>
+      <div class="deal-card-featured">
+        <div class="deal-card-stripe"></div>
+        <div class="deal-card-body">
+          <div>
+            <div class="deal-venue">Booze Bros Brewing Co <span class="aff-badge">affiliate</span></div>
+            <span class="deal-cat">Brewery</span>
+            <div class="deal-offer">Free Half Pint</div>
+            <div class="deal-address">2545 Progress St Ste D · Vista, CA</div>
+          </div>
+          <a href="/deals.html" class="btn-outline" style="flex-shrink:0">Redeem →</a>
+        </div>
+      </div>
+      <p class="deal-coming">Launching in more cities — <a href="/business.html">list your venue</a></p>
+      <a href="/deals.html" class="btn-outline">Browse all deals →</a>
+    </div>
+  </section>
+
+  <!-- Traveler Hacks -->
+  <section class="hacks-section">
+    <div class="hacks-inner">
+      <div class="section-label">Traveler Hacks</div>
+      <h2>Insider intel<br>for every city you visit.</h2>
+      <p class="section-sub" style="margin-bottom:0">Pick your city and interests. Get a curated shortlist of real spots — not a listicle, not sponsored.</p>
+      <div class="hacks-mock" id="hacks-demo">
+        <!-- Animated demo — JS drives the sequence -->
+        <div class="hacks-mock-top-row">
+          <div>
+            <span class="hacks-input-label">City</span>
+            <div class="hacks-mock-select">Mexico City</div>
+          </div>
+          <div>
+            <span class="hacks-input-label">Mode</span>
+            <div class="hacks-mode-toggle">
+              <div class="hacks-mode-btn active">Discover for me</div>
+              <div class="hacks-mode-btn">Custom venues</div>
+            </div>
+          </div>
+        </div>
+        <span class="hacks-input-label">What are you into?</span>
+        <div class="hacks-chips-wrap">
+          <span class="hacks-ichip"><i data-lucide="wine"></i>Drinks</span>
+          <span class="hacks-ichip"><i data-lucide="music"></i>Live Music</span>
+          <span class="hacks-ichip"><i data-lucide="palette"></i>Art</span>
+          <span class="hacks-ichip"><i data-lucide="clapperboard"></i>Theatre</span>
+          <span class="hacks-ichip"><i data-lucide="utensils"></i>Food</span>
+          <span class="hacks-ichip"><i data-lucide="store"></i>Markets</span>
+          <span class="hacks-ichip"><i data-lucide="moon"></i>Nightlife</span>
+          <span class="hacks-ichip"><i data-lucide="shopping-bag"></i>Shopping</span>
+          <span class="hacks-ichip"><i data-lucide="coffee"></i>Coffee</span>
+          <span class="hacks-ichip"><i data-lucide="trophy"></i>Sports</span>
+          <span class="hacks-ichip"><i data-lucide="mountain"></i>Hikes & Nature</span>
+        </div>
+        <div class="hacks-gen-btn">Get Traveler Hacks</div>
+        <!-- Output state -->
+        <div class="hacks-mock-divider"><span>↓ picked for you</span></div>
+        <div class="hacks-result">
+          <div class="hacks-result-name">Cantina El Güero</div>
+          <div class="hacks-result-desc">Old-school cantina in Condesa. Cash only, botanas included, open until 2am.</div>
+        </div>
+        <div class="hacks-result">
+          <div class="hacks-result-name">Mercado de Medellín</div>
+          <div class="hacks-result-desc">Local market with prepared food stalls. Breakfast tacos and fresh juice — go early.</div>
+        </div>
+      </div>
+      <div style="margin-top:24px; display:flex; align-items:center; gap:20px; flex-wrap:wrap;">
+        <a href="https://amig0.vercel.app/hacks/" class="btn-outline" target="_blank" rel="noopener">Try Traveler Hacks →</a>
+      </div>
+      <p class="hacks-globe-tease" style="margin-top:12px">Know a city inside out? <a href="https://amig0.vercel.app/hacks/" target="_blank" rel="noopener">Submit your spots — we'll build the guide ↗</a></p>
+    </div>
+  </section>
+
+  <!-- Consumer CTA strip -->
+  <section class="cta-strip">
+    <div class="cta-strip-inner">
+      <p class="cta-strip-copy">Your city is waiting.<br><em>Start exploring.</em></p>
+      <a href="/deals.html" class="btn-hero primary">Get my city pass →</a>
+    </div>
+  </section>
+
+  <!-- For venues -->
+  <section class="venue-section">
+    <div class="venue-inner">
+      <div class="section-label">For venues</div>
+      <h2>Own a spot?<br><em>Let's work together.</em></h2>
+      <p>Reach travelers actively exploring your city and ready to spend — not just scrolling past.</p>
+      <ul class="venue-bullets">
+        <li>30-day free founding affiliate trial</li>
+        <li>Listed on the amig0 deals map</li>
+        <li>Tagged in Traveler Hacks AI results</li>
+        <li>No hardware or scanners needed</li>
+      </ul>
+      <a href="/business.html" class="btn-outline">Apply to join →</a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer-outer">
+    <div class="footer">
+      <div class="footer-brand">amig<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 26" aria-hidden="true" style="display:inline-block;width:0.55em;height:0.8em;vertical-align:-0.05em;color:var(--p1)"><path fill="currentColor" fill-rule="evenodd" d="M10,1.5 C14.97,1.5 19,6.65 19,13 C19,19.35 14.97,24.5 10,24.5 C5.03,24.5 1,19.35 1,13 C1,6.65 5.03,1.5 10,1.5 Z M10,7 C7.51,7 5.5,9.69 5.5,13 C5.5,16.31 7.51,19 10,19 C12.49,19 14.5,16.31 14.5,13 C14.5,9.69 12.49,7 10,7 Z"/><line x1="6.5" y1="21" x2="13.5" y2="5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/></svg></div>
+      <div class="footer-links">
+        <a href="/deals.html">Deals</a>
+        <a href="https://amig0.vercel.app/hacks/" target="_blank" rel="noopener">Traveler Hacks</a>
+        <a href="/business.html">For venues</a>
+        <a href="/landing.html">Operators</a>
+        <a href="mailto:contact@opcoretech.com">Contact</a>
+        <a href="https://instagram.com/amig0trips" target="_blank" rel="noopener">@amig0trips</a>
+      </div>
+      <div class="footer-copy">© 2026 amig0 · contact@opcoretech.com</div>
+    </div>
+  </footer>
+
+
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script>
+try { lucide.createIcons(); } catch(e) {}
+(function () {
+  var C = '#818cf8';
+
+  // ── Scene 1: Mexico City skyline ──────────────────────────────────────────
+  var CITY = '<svg class="city-art" viewBox="0 0 520 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">'
+    + '<path d="M0 80 L0 54 L16 54 L16 40 L24 40 L24 30 L30 30 L30 40 L38 40 L38 54'
+    + ' L54 54 L54 44 L62 44 L62 30 L66 26 L70 30 L70 44 L78 44'
+    + ' L78 36 L86 36 L86 22 L94 22 L94 36 L102 36 L102 54'
+    + ' L116 54 L116 42 L124 42 L124 18 L128 12 L132 18 L132 42 L142 42'
+    + ' L142 34 L150 34 L150 54'
+    + ' L164 54 L164 44 L172 44 L172 14 L178 6 L184 14 L184 44 L194 44 L194 54'
+    + ' L210 54 L210 40 L218 40 L218 28 L226 28 L226 40 L234 40 L234 54'
+    + ' L250 54 L250 44 L258 44 L258 30 L262 24 L266 30 L266 44 L274 44 L274 54'
+    + ' L290 54 L290 38 L298 38 L298 20 L306 20 L306 38 L316 38 L316 54'
+    + ' L330 54 L330 44 L338 44 L338 16 L342 10 L346 16 L346 44 L356 44 L356 54'
+    + ' L370 54 L370 40 L378 40 L378 28 L386 28 L386 40 L396 40 L396 54'
+    + ' L412 54 L412 36 L420 36 L420 50 L430 50 L430 54'
+    + ' L446 54 L446 42 L454 42 L454 54'
+    + ' L468 54 L468 44 L476 44 L476 32 L484 32 L484 44 L494 44 L494 54'
+    + ' L520 54 L520 80 Z" fill="' + C + '" opacity="0.12"/>'
+    + '<path d="M0 80 L0 54 L16 54 L16 40 L24 40 L24 30 L30 30 L30 40 L38 40 L38 54'
+    + ' L54 54 L54 44 L62 44 L62 30 L66 26 L70 30 L70 44 L78 44'
+    + ' L78 36 L86 36 L86 22 L94 22 L94 36 L102 36 L102 54'
+    + ' L116 54 L116 42 L124 42 L124 18 L128 12 L132 18 L132 42 L142 42'
+    + ' L142 34 L150 34 L150 54'
+    + ' L164 54 L164 44 L172 44 L172 14 L178 6 L184 14 L184 44 L194 44 L194 54'
+    + ' L210 54 L210 40 L218 40 L218 28 L226 28 L226 40 L234 40 L234 54'
+    + ' L250 54 L250 44 L258 44 L258 30 L262 24 L266 30 L266 44 L274 44 L274 54'
+    + ' L290 54 L290 38 L298 38 L298 20 L306 20 L306 38 L316 38 L316 54'
+    + ' L330 54 L330 44 L338 44 L338 16 L342 10 L346 16 L346 44 L356 44 L356 54'
+    + ' L370 54 L370 40 L378 40 L378 28 L386 28 L386 40 L396 40 L396 54'
+    + ' L412 54 L412 36 L420 36 L420 50 L430 50 L430 54'
+    + ' L446 54 L446 42 L454 42 L454 54'
+    + ' L468 54 L468 44 L476 44 L476 32 L484 32 L484 44 L494 44 L494 54'
+    + ' L520 54 L520 80 Z" stroke="' + C + '" stroke-width="0.8" fill="none" opacity="0.5"/>'
+    + '<rect x="27" y="33" width="4" height="3" rx="0.5" fill="' + C + '" opacity="0.6"/>'
+    + '<rect x="89" y="25" width="4" height="3" rx="0.5" fill="' + C + '" opacity="0.6"/>'
+    + '<rect x="126" y="20" width="4" height="3" rx="0.5" fill="' + C + '" opacity="0.6"/>'
+    + '<rect x="175" y="18" width="5" height="3" rx="0.5" fill="' + C + '" opacity="0.8"/>'
+    + '<rect x="175" y="26" width="5" height="3" rx="0.5" fill="' + C + '" opacity="0.4"/>'
+    + '<rect x="300" y="24" width="4" height="3" rx="0.5" fill="' + C + '" opacity="0.6"/>'
+    + '<rect x="340" y="18" width="4" height="3" rx="0.5" fill="' + C + '" opacity="0.8"/>'
+    + '<rect x="479" y="36" width="4" height="3" rx="0.5" fill="' + C + '" opacity="0.6"/>'
+    + '</svg>';
+
+  // ── Scene 2: San Diego coast ──────────────────────────────────────────────
+  var COAST = '<svg class="city-art" viewBox="0 0 520 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">'
+    // Sunset — half-sun sitting on the ocean horizon at y=46
+    + '<path d="M244,46 A16,16 0 0,1 276,46" fill="' + C + '" opacity="0.2"/>'
+    + '<path d="M244,46 A16,16 0 0,1 276,46" stroke="' + C + '" stroke-width="1" fill="none" opacity="0.5"/>'
+    // Rays
+    + '<line x1="260" y1="23" x2="260" y2="18" stroke="' + C + '" stroke-width="1.2" stroke-linecap="round" opacity="0.3"/>'
+    + '<line x1="242" y1="30" x2="238" y2="26" stroke="' + C + '" stroke-width="1" stroke-linecap="round" opacity="0.25"/>'
+    + '<line x1="278" y1="30" x2="282" y2="26" stroke="' + C + '" stroke-width="1" stroke-linecap="round" opacity="0.25"/>'
+    + '<line x1="250" y1="25" x2="247" y2="21" stroke="' + C + '" stroke-width="1" stroke-linecap="round" opacity="0.2"/>'
+    + '<line x1="270" y1="25" x2="273" y2="21" stroke="' + C + '" stroke-width="1" stroke-linecap="round" opacity="0.2"/>'
+    // Reflection shimmer in water
+    + '<path d="M250,52 C255,50 265,54 270,52" stroke="' + C + '" stroke-width="0.8" fill="none" opacity="0.28"/>'
+    + '<path d="M254,58 C258,56 262,60 266,58" stroke="' + C + '" stroke-width="0.6" fill="none" opacity="0.18"/>'
+    // Left palm — tall trunk leaning right, from base to top
+    + '<path d="M58,80 Q54,50 63,10" stroke="' + C + '" stroke-width="2.4" fill="none" opacity="0.5" stroke-linecap="round"/>'
+    // Left fronds — each arches UP from trunk top then DROOPS DOWN
+    + '<path d="M63,10 Q40,2 36,20" stroke="' + C + '" stroke-width="1.6" fill="none" opacity="0.5" stroke-linecap="round"/>'
+    + '<path d="M63,10 Q50,-6 46,8" stroke="' + C + '" stroke-width="1.6" fill="none" opacity="0.5" stroke-linecap="round"/>'
+    + '<path d="M63,10 Q61,-8 55,4" stroke="' + C + '" stroke-width="1.5" fill="none" opacity="0.45" stroke-linecap="round"/>'
+    + '<path d="M63,10 Q71,-6 79,8" stroke="' + C + '" stroke-width="1.6" fill="none" opacity="0.5" stroke-linecap="round"/>'
+    + '<path d="M63,10 Q82,0 88,16" stroke="' + C + '" stroke-width="1.6" fill="none" opacity="0.5" stroke-linecap="round"/>'
+    + '<path d="M63,10 Q47,18 45,30" stroke="' + C + '" stroke-width="1.2" fill="none" opacity="0.35" stroke-linecap="round"/>'
+    // Right palm — tall trunk leaning left, mirrored
+    + '<path d="M462,80 Q466,50 457,10" stroke="' + C + '" stroke-width="2.4" fill="none" opacity="0.5" stroke-linecap="round"/>'
+    // Right fronds
+    + '<path d="M457,10 Q480,2 484,20" stroke="' + C + '" stroke-width="1.6" fill="none" opacity="0.5" stroke-linecap="round"/>'
+    + '<path d="M457,10 Q470,-6 474,8" stroke="' + C + '" stroke-width="1.6" fill="none" opacity="0.5" stroke-linecap="round"/>'
+    + '<path d="M457,10 Q459,-8 465,4" stroke="' + C + '" stroke-width="1.5" fill="none" opacity="0.45" stroke-linecap="round"/>'
+    + '<path d="M457,10 Q449,-6 441,8" stroke="' + C + '" stroke-width="1.6" fill="none" opacity="0.5" stroke-linecap="round"/>'
+    + '<path d="M457,10 Q438,0 432,16" stroke="' + C + '" stroke-width="1.6" fill="none" opacity="0.5" stroke-linecap="round"/>'
+    + '<path d="M457,10 Q473,18 475,30" stroke="' + C + '" stroke-width="1.2" fill="none" opacity="0.35" stroke-linecap="round"/>'
+    // Ocean fill
+    + '<path d="M0 80 L0 46 C80 37 170 55 260 46 C350 37 440 55 520 46 L520 80 Z" fill="' + C + '" opacity="0.12"/>'
+    // Wave crest
+    + '<path d="M0 46 C80 37 170 55 260 46 C350 37 440 55 520 46" stroke="' + C + '" stroke-width="1" fill="none" opacity="0.45"/>'
+    // Gentle ripple
+    + '<path d="M60 62 C130 58 200 65 270 62 C340 59 410 65 460 62" stroke="' + C + '" stroke-width="0.6" fill="none" opacity="0.22"/>'
+    + '</svg>';
+
+  // ── Scene 3: Oaxaca valley / mountains ───────────────────────────────────
+  var MOUNTAINS = '<svg class="city-art" viewBox="0 0 520 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">'
+    // Stars
+    + '<circle cx="120" cy="8" r="1" fill="' + C + '" opacity="0.3"/>'
+    + '<circle cx="400" cy="6" r="1" fill="' + C + '" opacity="0.3"/>'
+    + '<circle cx="255" cy="4" r="1.2" fill="' + C + '" opacity="0.25"/>'
+    + '<circle cx="175" cy="12" r="0.8" fill="' + C + '" opacity="0.2"/>'
+    + '<circle cx="340" cy="10" r="0.8" fill="' + C + '" opacity="0.2"/>'
+    // Far ridge (light)
+    + '<path d="M0 80 L0 52 L60 22 L120 50 L180 26 L240 54 L300 18 L360 50 L420 24 L480 48 L520 36 L520 80 Z"'
+    + '  fill="' + C + '" opacity="0.07"/>'
+    // Near mountain range fill
+    + '<path d="M0 80 L0 62 L50 36 L100 56 L160 30 L220 54 L280 10 L340 50 L392 30 L444 52 L492 38 L520 44 L520 80 Z"'
+    + '  fill="' + C + '" opacity="0.12"/>'
+    + '<path d="M0 62 L50 36 L100 56 L160 30 L220 54 L280 10 L340 50 L392 30 L444 52 L492 38 L520 44"'
+    + '  stroke="' + C + '" stroke-width="0.8" fill="none" opacity="0.5"/>'
+    // Snow caps
+    + '<path d="M280 10 L271 22 L289 22 Z" fill="' + C + '" opacity="0.3"/>'
+    + '<path d="M160 30 L153 40 L167 40 Z" fill="' + C + '" opacity="0.2"/>'
+    + '<path d="M392 30 L385 40 L399 40 Z" fill="' + C + '" opacity="0.2"/>'
+    // Pine trees left
+    + '<line x1="58" y1="60" x2="58" y2="52" stroke="' + C + '" stroke-width="0.7" opacity="0.4"/>'
+    + '<path d="M58 52 L54 60 L62 60 Z" fill="' + C + '" opacity="0.22"/>'
+    + '<path d="M58 56 L53 64 L63 64 Z" fill="' + C + '" opacity="0.16"/>'
+    + '<line x1="78" y1="63" x2="78" y2="55" stroke="' + C + '" stroke-width="0.7" opacity="0.4"/>'
+    + '<path d="M78 55 L74 63 L82 63 Z" fill="' + C + '" opacity="0.22"/>'
+    + '<path d="M78 59 L73 67 L83 67 Z" fill="' + C + '" opacity="0.16"/>'
+    // Pine trees right
+    + '<line x1="438" y1="60" x2="438" y2="52" stroke="' + C + '" stroke-width="0.7" opacity="0.4"/>'
+    + '<path d="M438 52 L434 60 L442 60 Z" fill="' + C + '" opacity="0.22"/>'
+    + '<path d="M438 56 L433 64 L443 64 Z" fill="' + C + '" opacity="0.16"/>'
+    + '<line x1="458" y1="57" x2="458" y2="49" stroke="' + C + '" stroke-width="0.7" opacity="0.4"/>'
+    + '<path d="M458 49 L454 57 L462 57 Z" fill="' + C + '" opacity="0.22"/>'
+    + '<path d="M458 53 L453 61 L463 61 Z" fill="' + C + '" opacity="0.16"/>'
+    + '</svg>';
+
+  var SCENES = [
+    { city: 'Mexico City', word: 'city',   svg: CITY,      chips: ['Mezcal bars', 'Street tacos', 'Nightlife', 'Markets'] },
+    { city: 'San Diego',   word: 'coast',  svg: COAST,     chips: ['Craft beer', 'Coffee', 'Coastal dining'] },
+    { city: 'Oaxaca',      word: 'valley', svg: MOUNTAINS, chips: ['Mezcal', 'Local markets', 'Culture'] },
+    { city: 'New York',    word: 'city',   svg: CITY,      chips: ['Rooftop bars', 'Pizza', 'Jazz', 'Delis'] },
+    { city: 'Guerrero',    word: 'coast',  svg: COAST,     chips: ['Beach clubs', 'Seafood', 'Surf', 'Nightlife'] },
+    { city: 'Medellín',    word: 'valley', svg: MOUNTAINS, chips: ['Coffee', 'Nightlife', 'Street art', 'Markets'] },
+    { city: 'Seattle',     word: 'city',   svg: CITY,      chips: ['Coffee shops', 'Seafood', 'Live music', 'Craft beer'] }
+  ];
+
+  var idx   = 0;
+  var wrap  = document.getElementById('scene-wrap');
+  var label = document.getElementById('city-label');
+  var word  = document.getElementById('rotating-word');
+  var chipsEl = document.getElementById('scene-chips');
+
+  function renderChips(scene) {
+    chipsEl.innerHTML = scene.chips.map(function (c) {
+      return '<span class="scene-chip">' + c + '</span>';
+    }).join('');
+  }
+
+  // seed first scene
+  wrap.innerHTML = SCENES[0].svg;
+  renderChips(SCENES[0]);
+
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (!reduced) {
+    setInterval(function () {
+      wrap.classList.add('fading');
+      label.classList.add('fading');
+      word.classList.add('fading');
+      chipsEl.classList.add('fading');
+      setTimeout(function () {
+        idx = (idx + 1) % SCENES.length;
+        wrap.innerHTML    = SCENES[idx].svg;
+        label.textContent = SCENES[idx].city;
+        word.textContent  = SCENES[idx].word;
+        renderChips(SCENES[idx]);
+        wrap.classList.remove('fading');
+        label.classList.remove('fading');
+        word.classList.remove('fading');
+        chipsEl.classList.remove('fading');
+      }, 500);
+    }, 3000);
+  }
+}());
+
+// ── Hacks console demo loop ────────────────────────────────────────────────
+(function hacksDemoLoop() {
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var mock    = document.getElementById('hacks-demo');
+  if (!mock) return;
+
+  var chips      = mock.querySelectorAll('.hacks-ichip');
+  var citySelect = mock.querySelector('.hacks-mock-select');
+  var btn        = mock.querySelector('.hacks-gen-btn');
+  var divider    = mock.querySelector('.hacks-mock-divider');
+  var results    = mock.querySelectorAll('.hacks-result');
+
+  // indices into chips[] that get selected: Drinks(0), Food(4), Nightlife(6)
+  var CHIP_IDX  = [0, 4, 6];
+  var ORIG_TEXT = 'Get Traveler Hacks';
+  var LOAD_TEXT = 'Finding insider intel\u2026';
+
+  function reset() {
+    chips.forEach(function (c) { c.classList.remove('sel'); });
+    citySelect.classList.remove('demo-focus');
+    btn.textContent = ORIG_TEXT;
+    btn.classList.remove('demo-press', 'demo-loading');
+    divider.classList.remove('demo-show');
+    results.forEach(function (r) { r.classList.remove('demo-show'); });
+  }
+
+  // Reduced-motion: show final state statically, no loop
+  if (reduced) {
+    CHIP_IDX.forEach(function (i) { chips[i].classList.add('sel'); });
+    divider.classList.add('demo-show');
+    results.forEach(function (r) { r.classList.add('demo-show'); });
+    return;
+  }
+
+  function run() {
+    reset();
+    var t = 280; // quick start
+
+    // Intro: city field glows briefly — "look here"
+    setTimeout(function () { citySelect.classList.add('demo-focus'); }, t);
+    setTimeout(function () { citySelect.classList.remove('demo-focus'); }, t + 550);
+    t += 820;
+
+    // Chips light up one by one
+    CHIP_IDX.forEach(function (chipIdx, i) {
+      setTimeout(function () { chips[chipIdx].classList.add('sel'); }, t + i * 500);
+    });
+    t += CHIP_IDX.length * 500 + 320;
+
+    // Button press then loading pulse — hold long enough to read it
+    setTimeout(function () { btn.classList.add('demo-press'); }, t);
+    setTimeout(function () {
+      btn.classList.remove('demo-press');
+      btn.textContent = LOAD_TEXT;
+      btn.classList.add('demo-loading');
+    }, t + 200);
+    t += 1500; // 1.3s of visible loading state before anything appears
+
+    // Loading finishes — stop pulse, show divider, then results
+    setTimeout(function () {
+      btn.classList.remove('demo-loading');
+      divider.classList.add('demo-show');
+    }, t + 200);
+    results.forEach(function (r, i) {
+      setTimeout(function () { r.classList.add('demo-show'); }, t + 600 + i * 680);
+    });
+    t += 600 + results.length * 680 + 2800;
+
+    setTimeout(run, t);
+  }
+
+  run();
+}());
+</script>
+</body>
+</html>

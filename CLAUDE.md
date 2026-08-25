@@ -2,18 +2,21 @@
 # Tier 1 — Enterprise Grade | OCTech Services
 
 ## 1. Project Purpose
-**Amig0 Travel Company** is a group travel CRM platform built for tour operators managing clients, tours, passengers, quotes, invoicing, and tour guides — all from a lean, zero-dependency web stack.
+**amig0 Travel Company** is a group travel CRM platform built for tour operators managing clients, tours, passengers, quotes, invoicing, and tour guides — all from a lean, zero-dependency web stack.
 
-The platform consists of three apps in one codebase:
+The platform consists of five apps in one codebase:
 - **CRM (index.html)** — internal operator dashboard for full lifecycle management
 - **Client Portal (portal.html)** — client-facing portal for viewing bookings and itineraries
 - **Guide App (guide.html)** — mobile-first PWA for tour guides in the field
+- **Habit Tracker (health/index.html)** — personal discipline dashboard (Daniel + Lupe), at amig0.vercel.app/health/
+- **Traveler Hacks (hacks/index.html)** — public AI-powered travel intel tool at amig0.vercel.app/hacks/
 
 **Commercial Intent:** Revenue-generating
 **Target Users:** Tour operators, travel agents, clients, tour guides
 **Tier:** 1 — Enterprise Grade
 **Status:** Active
-**Last Updated:** 2026-05-04
+**Last Updated:** 2026-08-24 (Session 16)
+**Brand:** `amig0` — brand name, always lowercase. `@amig0trips` — exclusive social handle (Instagram + Facebook). These are distinct: amig0 is the product, @amig0trips is the channel.
 
 ## 2. Architecture Overview
 **Stack:**
@@ -23,7 +26,7 @@ The platform consists of three apps in one codebase:
 - Maps: Leaflet.js 1.9.4
 - PDF Generation: jsPDF (quotes + itineraries)
 - PWA: Service worker + manifest (installable on mobile)
-- Hosting: GitHub Pages + custom domain
+- Hosting: Firebase Hosting (CRM/Portal/Guide) + Vercel (Habit Tracker — amig0.vercel.app)
 
 **Codebase Scale:**
 - Active build — Sessions 2–3 complete. CRM and Client Portal fully scaffolded and live.
@@ -39,43 +42,49 @@ The platform consists of three apps in one codebase:
 - Rules: firestore.rules (role-based: operators + user_profiles + partners + checkins + marketplace_listings + invites), storage.rules (vetting paths, operator-only)
 - Hooks: .claude/hooks/pre-commit.sh, .claude/hooks/session-end.sh
 - Standalone: checkin.html (QR deep-link check-in), landing.html
+- Habit Tracker: health/index.html, health/api/recipe.py (Vercel serverless), health/server.py (local dev)
+- Traveler Hacks: hacks/index.html, api/hacks.py (Vercel serverless)
+- Content Engine: content/index.html (internal, amig0.vercel.app/content/), api/ig-post.py (Vercel serverless IG publish)
 
-**Session 6–9 additions (2026-05-03):**
-- partners.js: Partner Network CRM module with lat/lng map pin fields
-- marketplace.js + invites.js: Marketplace listings and invite code CRM modules
-- portal-perks.js: Partner perks + check-in history tab in portal
-- portal-map.js: Leaflet partner map with category pins + user QR pass tab
-- portal-marketplace.js: Invite-gated marketplace tab with code redemption
-- checkin.html: Standalone QR check-in deep-link page
-- reports.js: Rewritten — KPI strip, check-in analytics, marketplace stats, bar charts
-- quotes.js + invoicing.js + portal-quotes.js + portal-invoices.js + pdf.js: Dual-currency MXN/USD display + PDF secondary line
-- tours.js + portal-overview.js: Group chat link field + portal card (I05)
-- firestore.rules: partners, checkins, marketplace_listings, invites rules added
-- storage.rules: Created — vetting/guides/ and vetting/providers/ operator-only
-- firebase.json: storage.rules config added
-- portal.html: Leaflet CSS/JS, Perks/Map/Marketplace tabs, new scripts
-- index.html: Partners, Marketplace, Invites nav + scripts
-- css/portal.css: Perks, map, secondary currency, marketplace cards, mobile nav fix (8-tab scrollable strip)
-- css/main.css: KPI strip, bar charts, country pills, marketplace stats, dual-currency helpers
-- landing.html: contact@opcoretech.com replacing demo@amig0travel.com (I11 closed)
+**Session history:** see docs/changelog.md
 
-**Session 10 additions (2026-05-04):**
-- landing.html: Full landing page sprint — all changes in one file
-  - Bracelet access form: name/email/proof fields, Formspree submit + mailto fallback
-  - Persona gate: page stops at Pleasure/Revenue toggle — content below hidden until selection
-  - Pleasure mode: hides operator sections, toggle fades, CTA takes focus
-  - Revenue mode: reveals full operator page below persona section
-  - Back button: appears in pleasure-focused state, resets gate + scrolls to top
-  - Live-stream reaction particles: pleasure (✈️ travel emojis), revenue (🪙 coins + follower chips)
-  - Hero notification stream: 12 international travelers cycle top-right of hero
-  - Hero carousel captions repositioned to top (visible on load)
-  - Bracelet headline: single-line, smaller clamp
-  - Stack flow: nowrap single line with horizontal scroll
-  - Mobile responsive pass: persona stacks, captions scale, nav trimmed, win-win single column
-  - Video slide 1: MP4 primary source (user converted .mov → .mp4 via QuickTime)
+**Session 16 additions (2026-08-24):**
+- home.html: Mobile nav fix — `btn-nav-venue` class added to "For venues" link, hidden at <640px. "Traveler Hacks" stays visible on mobile.
+- hacks/index.html: Major QA overhaul — Plus Jakarta Sans, amig0 nav (sticky, blurred, SVG zero wordmark), globe continent outlines via GeoJSON polygons (vasturiano/globe.gl ne_110m_countries.json, indigo strokes rgba(129,140,248,0.32)), card 3px indigo top stripe, editorial numbering (01/05), chip invite animation (breathing glow until first selection, re-adds if all chips deselected), shake + amber hint on failed generate attempt, "23 cities and counting" globe sub, city-aware tool ordering (cityRegion() + toolRelevance() functions, renderTools() re-sorts on every city change).
+- hacks/index.html: Maps URL accuracy — hybrid format `VenueName/@lat,lng,17z` when coordinates available, name+city fallback. copyAsText() includes website and instagram below maps URL. Card footer: "Get directions ↗" + globe icon (website) + instagram handle — all in one row. Watermarks tried and removed.
+- deals.html: "Near me" geolocation button — haversine distance sort, distance badge on cards ("0.4 km · 5 min walk"), user "you are here" indigo circleMarker on map included in fitBounds.
+- api/hacks.py: `website` and `instagram` optional fields added to discover and custom prompt schemas. Instructions: include only if confident, omit or empty string if unsure.
 
-**Pending:**
-- None — all planned items complete
+**Session 15 additions (2026-08-22):**
+- home.html: Rotating hero — 3 scenes (Mexico City skyline / San Diego coast / Oaxaca mountains), 3s cycle, CSS opacity fade. Option A: city chip above h1. Option D: rotating word in h1 ("city"→"coast"→"valley"). Both active simultaneously. localStorage not used — stateless JS interval.
+- deals.html: Full consumer deal flow built for launch. Category filter chips (All/Bars/Coffee/Food/Breweries/Nightlife/Culture) — client-side filter on `allDeals` cache, no extra Firestore reads. Deal count label dynamic ("N deals in City"). Plus Jakarta Sans throughout. Hero redesigned: section label + clamp(2.6→4rem) weight-800 h1.
+- deals.html: Card redesign — tool-pass aesthetic (hacks page): #141414 bg, rgba(255,255,255,0.07) border, 3px indigo top stripe, border-radius 16px, address line, website in card footer.
+- deals.html: Full-screen redemption display — replaces small modal. Pulsing green glow, offer text clamp(2.4→4rem), 2-hour countdown timer (localStorage-persisted, survives refresh). Amber at <30min, red at <5min, expired state with close-only footer.
+- deals.html: Full-screen success state — green check + pulsing glow, venue name in green, "Come back in 30 days." Matches redemption screen weight.
+- deals.html: localRedeemed session cache — fixes Firestore server-timestamp timing gap where card showed "Redeem deal" immediately after confirmation. localRedeemed merged with Firestore results on re-render.
+- deals.html: Map z-index fix — overlay z-index 1000 (Leaflet panes top out at 700). Map container gets `isolation: isolate`.
+- business.html: Plus Jakarta Sans, h1 clamp(2.2→3.2rem) weight 800, category options aligned to deal chip values (bar/brewery/coffee/food/nightlife/culture), emoji → Lucide check-circle-2.
+- Booze Bros Brewing Co: added to `affiliates` Firestore collection (doc: Jqn3sAmlK7qgqcXgd1u4). Vista CA, lat: 33.1482, lng: -117.2181 (Nominatim geocoded), offer: "Free Half Pint", category: brewery. Added via gcloud token + Python urllib Firestore REST API.
+- Firestore write pattern: `gcloud auth print-access-token` → Python urllib POST/PATCH to Firestore REST API. No Admin SDK or service account needed.
+- Typography: Plus Jakarta Sans now the standard for all consumer-facing pages (home.html, deals.html, business.html). DM Sans / Playfair Display remain in CRM/portal only.
+
+**Session 14 additions (2026-08-19):**
+- content/index.html: Venue map slide (`__VENMAP__`) added to all 3 post types — OSM tiles zoom 13, Nominatim geocoding → Claude lat/lng fallback → city center fallback. Bottom gradient strip (175px) keeps legend below pins. Top-left gradient locks header contrast. No inline pin labels — numbered circles + legend only.
+- content/index.html: `drawInterestSelectorSlide()` added to finale carousel. Iztapalapa shoutout removed from all finale captions.
+- api/hacks.py: Authenticity HARD RULE added to discover prompt. `lat`/`lng` added to discover schema. Session-based focus angle rotation (10 angles, 1–20 random session ID).
+- api/ig-post.py: `_ig_post` retries once on 403 (4s wait). `_ig_publish` wraps 400/403 as soft success — returns 200 with warning instead of 502. Client displays amber warning when present.
+- hacks/index.html: Globe + Submit sections updated to match Tools section visual treatment (border-top, #141414 bg, rgba(255,255,255,0.07) border). Lucide icons throughout tools section.
+- hacks/index.html: Referral links added — Uber, Uber Eats, Wise, Rakuten. Remaining: DiDi, Bolt, Revolut, Rappi.
+- cities.json: Expanded to 23 cities (Mexico 6, USA 10, Europe 7).
+- Oaxaca city series: Posts 1, 2, 3 complete and live on @amig0trips.
+
+**Session 13 additions (2026-08-16):**
+- content/index.html: Internal IG carousel content engine — Canvas 1080×1080 slide rendering, imgbb upload, Instagram Graph API carousel publish. 3-carousel city series format: Post 1 (standalone), Post 2 (continuation, interests-filtered), Post 3 (finale — OSM map cover slide, country flag tri-color bar at top, amig0 pin at city coords, city name large bottom-third). Series finale checkbox toggles map cover + closing caption.
+- api/ig-post.py: Vercel Python serverless — imgbb upload → IG child containers → carousel container → publish → permalink. GET handler for token identity check. maxDuration: 60s.
+- @amig0trips: Instagram Business account linked to Meta Business Suite. IG_USER_ID=28153112260984867. IGAAX token stored as IG_ACCESS_TOKEN in Vercel env vars. IMGBB_API_KEY stored in Vercel env vars.
+- Brand enforced: `amig0` (all lowercase) across all HTML files — titles, meta tags, canvas slides, body copy.
+- Social asset kit: Facebook Page cover (820×360), 8 Story Highlight covers, Facebook/IG Story vertical (1080×1920) — Canvas-rendered, /tmp/amig0-ig-covers.html + /tmp/amig0-story.html.
+- hacks/index.html page heading: "Traveler Hacks" (not "Insider Hacks").
 
 **Key Modules:**
 Auth · Dashboard · CRM · Clients · Tours · Passengers · Quotes · Invoicing · Email · PDF · Providers · Briefings · Data · Guide App · Client Portal
@@ -84,7 +93,12 @@ Auth · Dashboard · CRM · Clients · Tours · Passengers · Quotes · Invoicin
 - Firebase (Firestore, Auth, Storage) — v10.12 compat SDK
 - Leaflet.js 1.9.4 (maps)
 - jsPDF (PDF generation)
-- GitHub Pages + custom domain (hosting)
+- Firebase Hosting (CRM/Portal/Guide) + Vercel (Habit Tracker + Traveler Hacks)
+- Anthropic API — claude-haiku-4-5-20251001 (recipe generator + hacks generator, server-side only)
+- Formspree (Traveler Hacks submit form)
+- Instagram Graph API v21.0 (graph.instagram.com) — @amig0trips carousel publishing
+- imgbb.com — public image hosting for IG slide URLs (IMGBB_API_KEY in Vercel env)
+- OpenStreetMap tiles — map backdrop for content engine finale slide (no API key, crossOrigin anonymous)
 
 ## 3. Working Rules
 - No build step — never introduce a bundler, npm, or package.json
@@ -102,8 +116,12 @@ open portal.html         # Client portal
 open guide.html          # Guide app
 
 # Firebase CLI
-firebase deploy          # Deploy to Firebase Hosting (if migrated from GitHub Pages)
+firebase deploy          # Deploy CRM / Portal / Guide to Firebase Hosting
 firebase emulators:start # Local Firebase emulator suite
+
+# Habit Tracker
+ANTHROPIC_API_KEY=sk-ant-... python3 health/server.py  # Local dev (port 8082)
+npx vercel --prod                                        # Deploy to Vercel
 ```
 
 ## 5. Code Standards
@@ -151,6 +169,7 @@ firebase emulators:start # Local Firebase emulator suite
 - [ ] Security checklist passed (see Section 6)
 - [ ] Change is small and reviewable
 - [ ] Existing patterns respected
+- [ ] If public-facing site: AEO patterns applied (llms.txt at domain root, AI crawlers allowed in robots.txt, Quick Answer block on key pages, question-format H2s, FAQ schema where relevant)
 
 ## 8. Tooling Guidance
 - Playwright: Not approved (no build step — use manual browser testing)

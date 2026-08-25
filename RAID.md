@@ -1,6 +1,6 @@
 # RAID Log: amig0-travel-company
 # Tier 1 — Enterprise Grade | OCTech Services
-# Last Updated: 2026-05-04 (Session 10)
+# Last Updated: 2026-08-24 (Session 16)
 
 ---
 
@@ -40,6 +40,12 @@
 | I11 | landing.html contact email is placeholder — demo@amig0travel.com used in 5 locations (nav CTA, hero CTA x2, form handler, footer) | Session 7 | Low | Closed — replaced with contact@opcoretech.com across all 5 occurrences in landing.html, and portal-marketplace.js. (2026-05-03) |
 | I12 | landing.html bracelet access section had no submission path — users read criteria then hit a dead end | Session 10 | Medium | Closed — apply form added (name, email, proof URL). Formspree submit + mailto fallback. (2026-05-04) |
 | I13 | landing.html persona selector showed all page content by default — no progressive disclosure | Session 10 | Low | Closed — persona gate implemented. Sections below persona hidden until Pleasure or Revenue selected. Revenue reveals full operator page. Pleasure keeps gate closed, focuses onboarding CTA. (2026-05-04) |
+| I14 | Habit Tracker needed a shareable live URL — local server not viable for two-person accountability use case | Session 11 | Medium | Closed — deployed to Vercel (amig0.vercel.app/health/) via CLI. api/recipe.py serverless function handles Anthropic API proxy. ANTHROPIC_API_KEY set as Vercel env var. (2026-08-16) |
+| I15 | Traveler Hacks needed a public-facing tool for AI-generated city travel intel | Session 12 | Medium | Closed — hacks/index.html built + deployed at amig0.vercel.app/hacks/. Discover mode (interests → Claude picks venues) + Custom mode (named venues). api/hacks.py Vercel serverless. Copy as text export. Submit your city community form with mailto fallback. (2026-08-16) |
+| I16 | Instagram carousel publishing failing — IG_USER_ID env var pointed to wrong account | Session 13 | High | Closed — IG_USER_ID corrected to 28153112260984867 (@amig0trips). Added GET handler to api/ig-post.py for token identity verification at /api/ig-post. Removed inter-child sleep, reduced container wait to 5s to fix 504 timeouts. (2026-08-16) |
+| I17 | IG Graph API returns 403/400 on publish even when carousel posts successfully | Session 14 | Medium | Closed — _ig_post retries on 403 (4s wait). _ig_publish wraps 400/403 as soft 200 with amber warning to user. Post confirmed live on @amig0trips despite error codes. (2026-08-19) |
+| I18 | Venue map slide pins missing — Nominatim too strict as gatekeeper for small bars/restaurants | Session 14 | Medium | Closed — 3-tier coordinate fallback: Nominatim → Claude lat/lng (schema) → city center. All 5 pins always render. City center anchor ensures map context regardless of geocoding accuracy. (2026-08-19) |
+| I19 | deal_redemptions composite index missing — query (userId == x, redeemedAt >= cutoff) fails silently on fresh page load, card shows "Redeem deal" even after recent redemption | Session 15 | High | Closed — removed composite query entirely. renderCards now queries by userId only (single-field, no index needed) and filters redeemedAt >= cutoff in JS. Hard refresh now correctly shows "Redeemed this month". (2026-08-22) |
 
 ## Vision Backlog
 Product ideas and strategic opportunities — captured for future prioritization. Not yet scoped or committed.
@@ -92,5 +98,5 @@ Features confirmed for future build — not yet in active sprint.
 ## Governance Backlog
 | ID | Item | Priority | Notes |
 |---|---|---|---|
-| GB-01 | Trim CLAUDE.md to PP01 200-line limit | Medium | CLAUDE.md is 206 lines as of 2026-08-02 audit (PP01 limit: 200). Fix: move sprint changelogs and historical detail to `docs/changelog.md`; keep CLAUDE.md to current-state facts only. Foundation BL17. |
+| GB-01 | Trim CLAUDE.md to PP01 200-line limit | Medium | Closed — session changelogs moved to docs/changelog.md (2026-08-16). CLAUDE.md trimmed to current-state facts only. |
 | D06 | Native mobile app (iOS/Android) | Future decision | Dan confirmed intent to ship a mobile app — stack decision (React Native vs Flutter vs PWA-only) pending; guide.html already scoped as installable PWA which may be sufficient |

@@ -1,0 +1,1209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>amig0 Deals — Local deals for smart travelers</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="description" content="Exclusive deals at verified cafes, bars, restaurants and more — for amig0 members.">
+  <meta property="og:title" content="amig0 Deals">
+  <meta property="og:description" content="Local deals for smart travelers. Join free.">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <style>
+    :root {
+      --bg:      #09090b;
+      --surface: #18181b;
+      --border:  #27272a;
+      --text:    #fafafa;
+      --muted:   #71717a;
+      --p1:      #818cf8;
+      --green:   #4ade80;
+      --amber:   #fbbf24;
+      --red:     #f87171;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-variant-numeric: slashed-zero; }
+    .hidden { display: none !important; }
+
+    /* ── Header ── */
+    .header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 24px; border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; background: var(--bg); z-index: 200;
+    }
+    .brand { font-size: 1.05rem; font-weight: 700; color: var(--text); text-decoration: none; letter-spacing: -0.02em; }
+    .brand-zero-svg {
+      display: inline-block; width: 0.62em; height: 0.88em;
+      vertical-align: -0.06em; color: var(--p1);
+      cursor: pointer; transition: opacity 0.15s;
+    }
+    .brand-zero-svg:hover { opacity: 0.65; }
+    .header-right { display: flex; align-items: center; gap: 10px; }
+    .btn-sm {
+      font-family: inherit; font-size: 0.8rem; font-weight: 600;
+      padding: 7px 16px; border-radius: 8px; cursor: pointer;
+      border: 1px solid var(--border); background: var(--surface); color: var(--text);
+      transition: background 0.15s;
+    }
+    .btn-sm:hover { background: #27272a; }
+    .btn-sm.primary { background: var(--p1); border-color: var(--p1); color: #fff; }
+    .btn-sm.primary:hover { background: #6366f1; }
+    .user-email { font-size: 0.77rem; color: var(--muted); }
+    .sign-out-btn { background: none; border: none; color: var(--muted); font-family: inherit; font-size: 0.78rem; cursor: pointer; padding: 0; }
+    .sign-out-btn:hover { color: var(--text); }
+
+    /* ── Trial banner ── */
+    .trial-banner {
+      padding: 10px 24px; display: flex; align-items: center; justify-content: space-between;
+      font-size: 0.81rem; flex-wrap: wrap; gap: 8px;
+      background: rgba(129,140,248,0.1); border-bottom: 1px solid rgba(129,140,248,0.2);
+    }
+    .trial-banner strong { color: var(--p1); }
+    .trial-banner.expired {
+      background: rgba(248,113,113,0.08); border-bottom-color: rgba(248,113,113,0.2); color: var(--red);
+    }
+
+    /* ── Hero ── */
+    .hero { max-width: 560px; margin: 80px auto 80px; padding: 0 24px; text-align: center; }
+    .hero-label {
+      font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.14em;
+      color: var(--p1); margin-bottom: 14px;
+    }
+    .hero h1 {
+      font-size: clamp(2.6rem, 7vw, 4rem); font-weight: 800; line-height: 1.04;
+      letter-spacing: -0.05em; margin-bottom: 16px;
+    }
+    .hero h1 span { color: var(--p1); }
+    .hero p { font-size: 0.97rem; color: var(--muted); line-height: 1.65; margin-bottom: 32px; max-width: 380px; margin-left: auto; margin-right: auto; }
+
+    /* ── Category chips ── */
+    .cat-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+    .cat-chip {
+      font-size: 0.75rem; font-weight: 500; font-family: inherit;
+      padding: 6px 14px; border-radius: 20px; cursor: pointer;
+      border: 1px solid var(--border); color: var(--muted); background: transparent;
+      transition: all 0.15s;
+    }
+    .cat-chip:hover { border-color: rgba(129,140,248,0.4); color: var(--text); }
+    .cat-chip.active { border-color: var(--p1); color: var(--p1); background: rgba(129,140,248,0.08); }
+    .btn-cta {
+      font-family: inherit; font-size: 0.95rem; font-weight: 600;
+      padding: 13px 32px; border-radius: 10px; cursor: pointer;
+      background: var(--p1); border: none; color: #fff; transition: background 0.15s;
+    }
+    .btn-cta:hover { background: #6366f1; }
+    .hero-perks { display: flex; gap: 20px; justify-content: center; margin-top: 22px; flex-wrap: wrap; }
+    .hero-perk { font-size: 0.78rem; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+    .hero-perk::before { content: '✓'; color: var(--green); font-weight: 700; }
+
+    /* ── App ── */
+    .app-wrap { max-width: 960px; margin: 0 auto; padding: 24px; }
+    .city-row { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; flex-wrap: wrap; }
+    .city-row label { font-size: 0.72rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
+    .city-row select {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+      color: var(--text); font-family: inherit; font-size: 0.86rem;
+      padding: 8px 14px; outline: none; cursor: pointer; appearance: none;
+    }
+    .city-row select:focus { border-color: var(--p1); }
+
+    /* ── Near me button ── */
+    .btn-near-me {
+      font-family: inherit; font-size: 0.78rem; font-weight: 600;
+      padding: 7px 14px; border-radius: 8px; cursor: pointer;
+      border: 1px solid var(--border); background: transparent; color: var(--muted);
+      transition: all 0.15s; display: inline-flex; align-items: center; gap: 5px;
+    }
+    .btn-near-me:hover:not(:disabled) { border-color: var(--p1); color: var(--p1); }
+    .btn-near-me.active { border-color: var(--p1); color: var(--p1); background: rgba(129,140,248,0.08); }
+    .btn-near-me:disabled { opacity: 0.5; cursor: default; }
+    .deal-distance { font-size: 0.68rem; color: var(--p1); font-weight: 600; margin-top: 2px; }
+
+    /* ── Map ── */
+    #deals-map { width: 100%; height: 300px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 24px; isolation: isolate; }
+
+    /* ── Deal cards ── */
+    .section-label { font-size: 0.72rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 14px; }
+    .deals-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(272px, 1fr)); gap: 12px; }
+    .deal-card {
+      background: #141414; border: 1px solid rgba(255,255,255,0.07); border-radius: 16px;
+      overflow: hidden; display: flex; flex-direction: column; transition: border-color 0.2s;
+    }
+    .deal-card:hover { border-color: rgba(129,140,248,0.3); }
+    .deal-stripe { height: 3px; background: var(--p1); flex-shrink: 0; }
+    .deal-card-body { padding: 16px 18px 10px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
+    .deal-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+    .deal-name { font-size: 0.93rem; font-weight: 700; color: var(--text); line-height: 1.2; }
+    .deal-cat { font-size: 0.7rem; color: var(--muted); text-transform: capitalize; margin-top: 3px; }
+    .affiliate-badge {
+      font-size: 0.58rem; font-weight: 700; letter-spacing: 0.06em;
+      background: rgba(129,140,248,0.1); color: var(--p1);
+      border: 1px solid rgba(129,140,248,0.22); border-radius: 4px;
+      padding: 3px 7px; white-space: nowrap; flex-shrink: 0;
+    }
+    .deal-offer { font-size: 0.97rem; color: var(--green); font-weight: 700; }
+    .deal-address { font-size: 0.68rem; color: var(--muted); line-height: 1.4; }
+    .deal-card-foot {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 18px 14px; border-top: 1px solid rgba(255,255,255,0.05); gap: 10px;
+    }
+    .deal-website { font-size: 0.7rem; color: var(--muted); text-decoration: none; }
+    .deal-website:hover { color: var(--text); text-decoration: underline; text-underline-offset: 2px; }
+    .btn-redeem {
+      font-family: inherit; font-size: 0.78rem; font-weight: 600;
+      padding: 7px 14px; border-radius: 8px; cursor: pointer; white-space: nowrap; flex-shrink: 0;
+      background: transparent; border: 1px solid var(--p1); color: var(--p1); transition: background 0.15s;
+    }
+    .btn-redeem:hover { background: rgba(129,140,248,0.08); }
+    .redeemed-note { font-size: 0.72rem; color: var(--muted); }
+    .deal-foot-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+    .deal-limit { font-size: 0.62rem; color: var(--muted); }
+    .empty-state { color: var(--muted); font-size: 0.88rem; text-align: center; padding: 40px 0; }
+
+    /* ── Savings strip ── */
+    .savings-strip {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 20px 0 4px; font-size: 0.78rem; color: var(--muted);
+    }
+    .savings-strip strong { font-weight: 700; color: var(--text); }
+    .savings-amount strong { color: var(--green); }
+    .savings-sep { color: var(--border); }
+
+    /* ── Venue spotlight ── */
+    .venue-spotlight {
+      background: linear-gradient(135deg, rgba(129,140,248,0.08), rgba(74,222,128,0.06));
+      border-bottom: 1px solid rgba(129,140,248,0.2);
+      padding: 18px 24px; display: flex; align-items: center;
+      justify-content: space-between; gap: 16px; flex-wrap: wrap;
+    }
+    .spotlight-at { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--p1); margin-bottom: 3px; }
+    .spotlight-name { font-size: 1.05rem; font-weight: 700; margin-bottom: 4px; }
+    .spotlight-offer { font-size: 0.88rem; color: var(--green); font-weight: 600; }
+    .btn-spotlight {
+      font-family: inherit; font-size: 0.86rem; font-weight: 600;
+      padding: 10px 22px; border-radius: 9px; cursor: pointer;
+      background: var(--p1); border: none; color: #fff; white-space: nowrap;
+      transition: background 0.15s;
+    }
+    .btn-spotlight:hover { background: #6366f1; }
+
+    /* ── Modals ── */
+    .overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.72);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 1000; padding: 20px;
+    }
+    .modal {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; padding: 28px; width: 100%; max-width: 400px;
+      position: relative;
+    }
+    .modal h2 { font-size: 1.15rem; font-weight: 700; margin-bottom: 8px; }
+    .modal p { font-size: 0.86rem; color: var(--muted); line-height: 1.65; margin-bottom: 18px; }
+    .modal-x {
+      position: absolute; top: 14px; right: 16px; background: none; border: none;
+      color: var(--muted); font-size: 1.35rem; cursor: pointer; line-height: 1;
+    }
+    .modal-x:hover { color: var(--text); }
+    .field-lbl { display: block; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 6px; }
+    .field-inp {
+      width: 100%; background: var(--bg); border: 1px solid var(--border);
+      border-radius: 8px; color: var(--text); font-family: inherit; font-size: 0.9rem;
+      padding: 11px 14px; outline: none; margin-bottom: 14px; transition: border-color 0.15s;
+    }
+    .field-inp:focus { border-color: var(--p1); }
+    .btn-block {
+      width: 100%; font-family: inherit; font-size: 0.88rem; font-weight: 600;
+      padding: 11px; border-radius: 9px; cursor: pointer;
+      background: var(--p1); border: none; color: #fff; transition: background 0.15s;
+    }
+    .btn-block:hover { background: #6366f1; }
+    .btn-block:disabled { opacity: 0.45; cursor: default; }
+    .btn-ghost {
+      width: 100%; font-family: inherit; font-size: 0.84rem;
+      padding: 9px; border-radius: 9px; cursor: pointer; margin-top: 9px;
+      background: transparent; border: 1px solid var(--border); color: var(--muted);
+      transition: background 0.15s;
+    }
+    .btn-ghost:hover { background: rgba(255,255,255,0.04); }
+    .field-err { font-size: 0.78rem; color: var(--red); margin-bottom: 10px; }
+    .form-note { font-size: 0.74rem; color: var(--muted); text-align: center; margin-top: 10px; }
+    .success-center { text-align: center; padding: 8px 0; }
+    .success-icon { margin-bottom: 12px; color: var(--p1); }
+    .success-icon svg { width: 40px; height: 40px; }
+
+    /* Paywall features list */
+    .feature-list { list-style: none; margin: 14px 0 22px; }
+    .feature-list li { font-size: 0.84rem; color: var(--text); padding: 5px 0; display: flex; gap: 10px; align-items: flex-start; }
+    .feature-list li::before { content: '✓'; color: var(--green); font-weight: 700; flex-shrink: 0; margin-top: 1px; }
+
+    /* ── Redemption full-screen ── */
+    #redeem-overlay { align-items: stretch; padding: 0; }
+    .redeem-screen { width: 100%; display: flex; flex-direction: column; background: var(--bg); }
+    .redeem-screen-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 24px; border-bottom: 1px solid var(--border); flex-shrink: 0;
+    }
+    .redeem-screen-brand { font-size: 1rem; font-weight: 800; letter-spacing: -0.03em; color: var(--text); }
+    .redeem-screen-close {
+      background: none; border: none; color: var(--muted);
+      font-size: 1.6rem; line-height: 1; cursor: pointer; padding: 0;
+    }
+    .redeem-screen-close:hover { color: var(--text); }
+    .redeem-screen-body {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 40px 24px; text-align: center; gap: 10px;
+    }
+    .redeem-screen-at {
+      font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.14em; color: var(--muted);
+    }
+    .redeem-screen-venue { font-size: 1.3rem; font-weight: 800; letter-spacing: -0.04em; }
+    .redeem-screen-glow {
+      position: relative; display: flex; align-items: center;
+      justify-content: center; padding: 48px; margin: 8px 0;
+    }
+    .redeem-screen-glow::before {
+      content: ''; position: absolute; inset: 0; border-radius: 50%;
+      background: radial-gradient(circle, rgba(74,222,128,0.16) 0%, transparent 70%);
+      animation: redeemPulse 2.2s ease-in-out infinite;
+    }
+    @keyframes redeemPulse {
+      0%, 100% { opacity: 0.5; transform: scale(0.92); }
+      50%       { opacity: 1;   transform: scale(1.08); }
+    }
+    .redeem-screen-offer {
+      font-size: clamp(2.4rem, 11vw, 4rem); font-weight: 800;
+      color: var(--green); letter-spacing: -0.04em; line-height: 1;
+      position: relative; z-index: 1;
+    }
+    .redeem-screen-instr { font-size: 0.82rem; color: var(--muted); margin-top: 4px; }
+    .redeem-screen-foot {
+      flex-shrink: 0; padding: 20px 24px 44px;
+      border-top: 1px solid var(--border);
+      display: flex; flex-direction: column; gap: 10px;
+      max-width: 400px; width: 100%; margin: 0 auto;
+    }
+    .redeem-limit { font-size: 0.72rem; color: var(--muted); text-align: center; }
+
+    /* ── Success full-screen ── */
+    #success-overlay { align-items: stretch; padding: 0; }
+    .success-screen { width: 100%; display: flex; flex-direction: column; background: var(--bg); }
+    .success-screen-header {
+      display: flex; align-items: center; padding: 16px 24px;
+      border-bottom: 1px solid var(--border); flex-shrink: 0;
+    }
+    .success-screen-body {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 40px 24px; text-align: center; gap: 10px;
+    }
+    .success-screen-glow {
+      position: relative; display: flex; align-items: center;
+      justify-content: center; padding: 44px; margin-bottom: 4px;
+    }
+    .success-screen-glow::before {
+      content: ''; position: absolute; inset: 0; border-radius: 50%;
+      background: radial-gradient(circle, rgba(74,222,128,0.18) 0%, transparent 70%);
+      animation: redeemPulse 2.2s ease-in-out infinite;
+    }
+    .success-screen-icon { color: var(--green); position: relative; z-index: 1; }
+    .success-screen-icon svg { width: 64px; height: 64px; }
+    .success-screen-title { font-size: 1.7rem; font-weight: 800; letter-spacing: -0.04em; }
+    .success-screen-venue { font-size: 1rem; color: var(--green); font-weight: 600; }
+    .success-screen-note { font-size: 0.8rem; color: var(--muted); margin-top: 2px; }
+
+    /* ── PIN entry (staff enter on user's phone) ── */
+    .pin-user-instr  { font-size: 0.92rem; font-weight: 600; color: var(--text); text-align: center; margin-bottom: 16px; line-height: 1.4; }
+    .pin-entry-lbl   { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); margin-bottom: 20px; }
+    .pin-entry-boxes { display: flex; gap: 12px; justify-content: center; margin-bottom: 16px; }
+    .pin-box {
+      width: 62px; height: 72px; font-family: inherit;
+      font-size: 2rem; font-weight: 800; text-align: center;
+      background: var(--bg); border: 2px solid var(--border);
+      border-radius: 12px; color: var(--text); outline: none;
+      caret-color: var(--p1); transition: border-color 0.15s;
+      -moz-appearance: textfield;
+    }
+    .pin-box::-webkit-outer-spin-button,
+    .pin-box::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    .pin-box:focus { border-color: var(--p1); }
+    .pin-entry-err { font-size: 0.8rem; color: var(--red); text-align: center; min-height: 20px; }
+    .success-screen-foot {
+      flex-shrink: 0; padding: 20px 24px 44px;
+      border-top: 1px solid var(--border);
+      max-width: 400px; width: 100%; margin: 0 auto;
+    }
+
+    @media (max-width: 600px) {
+      .app-wrap { padding: 16px; }
+      #deals-map { height: 220px; }
+      .deals-grid { grid-template-columns: 1fr; }
+      .hero { margin-top: 48px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="header">
+    <a href="/home.html" class="brand">amig<svg id="brand-zero" class="brand-zero-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 26" aria-label="amig0"><path fill="currentColor" fill-rule="evenodd" d="M10,1.5 C14.97,1.5 19,6.65 19,13 C19,19.35 14.97,24.5 10,24.5 C5.03,24.5 1,19.35 1,13 C1,6.65 5.03,1.5 10,1.5 Z M10,7 C7.51,7 5.5,9.69 5.5,13 C5.5,16.31 7.51,19 10,19 C12.49,19 14.5,16.31 14.5,13 C14.5,9.69 12.49,7 10,7 Z"/><line id="brand-zero-line" x1="6.5" y1="21" x2="13.5" y2="5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/></svg></a>
+    <div class="header-right" id="header-right">
+      <a href="/home.html" class="btn-sm" style="text-decoration:none">Home</a>
+      <button class="btn-sm primary" id="hdr-join-btn">Join free</button>
+    </div>
+  </header>
+
+  <!-- Auth modal -->
+  <div id="auth-overlay" class="overlay hidden">
+    <div class="modal">
+      <button class="modal-x" id="auth-close">&times;</button>
+      <div id="auth-form-view">
+        <h2>Join amig0</h2>
+        <p>Start your free 14-day trial. Get exclusive deals at verified local spots — no credit card needed.</p>
+        <label class="field-lbl" for="auth-email">Email address</label>
+        <input class="field-inp" type="email" id="auth-email" placeholder="you@example.com" autocomplete="email">
+        <p id="auth-err" class="field-err hidden"></p>
+        <button class="btn-block" id="send-link-btn">Send magic link</button>
+        <p class="form-note">No password needed — we'll email you a sign-in link.</p>
+      </div>
+      <div id="auth-sent-view" class="success-center hidden">
+        <div class="success-icon"><i data-lucide="mail-check"></i></div>
+        <h2>Check your inbox</h2>
+        <p>We sent a sign-in link to <strong id="sent-email"></strong>.<br>Click the link to access your deals.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Paywall modal -->
+  <div id="paywall-overlay" class="overlay hidden">
+    <div class="modal">
+      <button class="modal-x" id="paywall-close">&times;</button>
+      <h2>Unlock your deals</h2>
+      <p>Your 14-day free trial has ended. Subscribe to keep accessing exclusive amig0 deals.</p>
+      <ul class="feature-list">
+        <li>Deals at all verified amig0 affiliates</li>
+        <li>New venues added every month</li>
+        <li>Redemption history and savings tracker</li>
+        <li>AI-powered city intel via Traveler Hacks</li>
+      </ul>
+      <button class="btn-block" id="subscribe-btn">Subscribe — Coming Soon</button>
+      <button class="btn-ghost" id="paywall-later-btn">Maybe later</button>
+    </div>
+  </div>
+
+  <!-- Redeem full-screen -->
+  <div id="redeem-overlay" class="overlay hidden">
+    <div class="redeem-screen">
+      <div class="redeem-screen-header">
+        <span class="redeem-screen-brand">amig0</span>
+        <button class="redeem-screen-close" id="redeem-close">&times;</button>
+      </div>
+      <div class="redeem-screen-body">
+        <div class="redeem-screen-at">Your deal at</div>
+        <div class="redeem-screen-venue" id="redeem-venue"></div>
+        <div class="redeem-screen-glow">
+          <div class="redeem-screen-offer" id="redeem-offer"></div>
+        </div>
+        <div class="redeem-screen-instr">Show this screen to staff</div>
+      </div>
+      <div class="redeem-screen-foot">
+        <button class="btn-block" id="confirm-redeem-btn">Hand to staff</button>
+        <button class="btn-ghost" id="redeem-cancel-btn">Cancel</button>
+        <p class="redeem-limit">1 redemption per venue per 30 days</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Success full-screen -->
+  <div id="success-overlay" class="overlay hidden">
+    <div class="success-screen">
+      <div class="success-screen-header">
+        <span class="redeem-screen-brand">amig0</span>
+      </div>
+      <div class="success-screen-body">
+        <div class="success-screen-glow">
+          <div class="success-screen-icon"><i data-lucide="check-circle-2"></i></div>
+        </div>
+        <div class="success-screen-title">Deal redeemed!</div>
+        <div class="success-screen-venue" id="success-venue"></div>
+        <div class="success-screen-note">Come back in 30 days for your next one.</div>
+      </div>
+      <div class="success-screen-foot">
+        <button class="btn-block" id="success-close-btn">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hero (not signed in) -->
+  <section id="hero" class="hero hidden">
+    <div class="hero-label">Deals</div>
+    <h1>Local deals.<br><span>Yours to keep.</span></h1>
+    <p>Exclusive discounts at verified cafes, bars, breweries and restaurants — for amig0 members in every city.</p>
+    <button class="btn-cta" id="hero-join-btn">Start free — 14 days</button>
+    <div class="hero-perks">
+      <span class="hero-perk">No credit card required</span>
+      <span class="hero-perk">14 days free access</span>
+      <span class="hero-perk">Cancel anytime</span>
+    </div>
+  </section>
+
+  <!-- Main app (signed in) -->
+  <div id="app" class="hidden">
+    <div id="trial-banner"></div>
+    <!-- Venue spotlight — visible when arriving via venue QR code -->
+    <div id="venue-spotlight" class="venue-spotlight hidden">
+      <div>
+        <div class="spotlight-at">You're at</div>
+        <div class="spotlight-name" id="spotlight-name"></div>
+        <div class="spotlight-offer" id="spotlight-offer"></div>
+      </div>
+      <button class="btn-spotlight" id="spotlight-redeem-btn">Redeem now</button>
+    </div>
+    <div class="app-wrap">
+      <div class="savings-strip hidden" id="savings-strip">
+        <span><strong id="savings-count">0</strong> redeemed</span>
+        <span class="savings-sep">·</span>
+        <span class="savings-amount"><strong id="savings-total">$0</strong> saved</span>
+      </div>
+      <div class="city-row">
+        <label for="city-select">City</label>
+        <select id="city-select"><option value="">All cities</option></select>
+        <button class="btn-near-me" id="near-me-btn" onclick="handleNearMe()">
+          <i data-lucide="navigation" style="width:13px;height:13px;stroke-width:2"></i>Near me
+        </button>
+      </div>
+      <div id="deals-map"></div>
+      <div class="cat-chips" id="cat-chips">
+        <button class="cat-chip active" data-cat="">All</button>
+        <button class="cat-chip" data-cat="bar">Bars</button>
+        <button class="cat-chip" data-cat="coffee">Coffee</button>
+        <button class="cat-chip" data-cat="food">Food</button>
+        <button class="cat-chip" data-cat="brewery">Breweries</button>
+        <button class="cat-chip" data-cat="nightlife">Nightlife</button>
+        <button class="cat-chip" data-cat="culture">Culture</button>
+      </div>
+      <p class="section-label" id="deals-label">Active deals</p>
+      <div id="deals-grid"><p class="empty-state">Loading deals…</p></div>
+    </div>
+  </div>
+
+  <!-- Firebase v10.12.0 -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <script>
+    // ── Bootstrap ─────────────────────────────────────────────────────────────
+    var db   = firebase.firestore();
+    var auth = firebase.auth();
+
+    var currentUser       = null;
+    var memberDoc         = null;
+    var mapInstance       = null;
+    var pendingRedeem     = null; // { affiliateId, name, offer }
+    var EMAIL_LS_KEY      = 'amig0_signin_email';
+    var venueParam        = new URLSearchParams(window.location.search).get('v');
+    var venueData         = null;
+    var allDeals          = [];
+    var activeCategory    = '';
+    var redeemState   = 'show'; // 'show' | 'pin'
+    var pinAttempts   = 0;
+    var PIN_MAX_ATTEMPTS = 5;
+    var localRedeemed = {}; // affiliateId → true, session-level cache
+    var userLat       = null;
+    var userLng       = null;
+    var nearMeActive  = false;
+
+    // ── Geolocation helpers ───────────────────────────────────────────────────
+    function haversineDist(lat1, lng1, lat2, lng2) {
+      var R  = 6371000;
+      var f1 = lat1 * Math.PI / 180, f2 = lat2 * Math.PI / 180;
+      var df = (lat2 - lat1) * Math.PI / 180;
+      var dl = (lng2 - lng1) * Math.PI / 180;
+      var a  = Math.sin(df/2)*Math.sin(df/2) + Math.cos(f1)*Math.cos(f2)*Math.sin(dl/2)*Math.sin(dl/2);
+      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
+
+    function fmtDist(m) {
+      if (m < 1000) return Math.round(m) + ' m';
+      return (m / 1000).toFixed(1) + ' km';
+    }
+
+    function handleNearMe() {
+      var btn = document.getElementById('near-me-btn');
+      if (!navigator.geolocation) return;
+
+      if (nearMeActive) {
+        nearMeActive = false; userLat = null; userLng = null;
+        btn.classList.remove('active');
+        applyFilter();
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = '<i data-lucide="loader" style="width:13px;height:13px;stroke-width:2"></i>Locating…';
+      if (window.lucide) lucide.createIcons();
+
+      navigator.geolocation.getCurrentPosition(
+        function(pos) {
+          userLat = pos.coords.latitude;
+          userLng = pos.coords.longitude;
+          nearMeActive = true;
+          btn.disabled = false;
+          btn.innerHTML = '<i data-lucide="navigation" style="width:13px;height:13px;stroke-width:2"></i>Near me';
+          btn.classList.add('active');
+          if (window.lucide) lucide.createIcons();
+          document.getElementById('city-select').value = '';
+          loadDeals('');
+        },
+        function() {
+          btn.disabled = false;
+          btn.innerHTML = '<i data-lucide="navigation" style="width:13px;height:13px;stroke-width:2"></i>Near me';
+          if (window.lucide) lucide.createIcons();
+        },
+        { timeout: 8000, maximumAge: 60000 }
+      );
+    }
+
+    // ── Venue QR param — load affiliate data immediately (public collection) ──
+    if (venueParam) {
+      db.collection('affiliates').doc(venueParam).get()
+        .then(function (snap) {
+          if (!snap.exists) return;
+          venueData = snap.data();
+          venueData._id = venueParam;
+          if (!currentUser) updateVenueHero();
+          else showVenueSpotlight();
+        })
+        .catch(function (err) { console.error('[deals] venue load:', err.message); });
+    }
+
+    function updateVenueHero() {
+      if (!venueData) return;
+      var h1 = document.querySelector('#hero h1');
+      var p  = document.querySelector('#hero p');
+      if (h1) h1.innerHTML = 'Your deal at<br><span>' + esc(venueData.name || '') + '</span>';
+      if (p)  p.innerHTML  =
+        '<strong style="color:var(--green)">' + esc(venueData.offer || '') + '</strong><br>' +
+        'Join amig0 free — your 14-day trial starts instantly.';
+    }
+
+    function showVenueSpotlight() {
+      if (!venueData) return;
+      document.getElementById('spotlight-name').textContent  = venueData.name  || '';
+      document.getElementById('spotlight-offer').textContent = venueData.offer || '';
+      document.getElementById('venue-spotlight').classList.remove('hidden');
+      document.getElementById('spotlight-redeem-btn').onclick = function () {
+        handleRedeem({ affiliateId: venueParam, name: venueData.name, offer: venueData.offer || '' });
+      };
+    }
+
+    // ── Handle email-link redirect back ───────────────────────────────────────
+    if (auth.isSignInWithEmailLink(window.location.href)) {
+      var linkEmail = localStorage.getItem(EMAIL_LS_KEY);
+      if (!linkEmail) {
+        linkEmail = window.prompt('Please re-enter your email to complete sign-in:');
+      }
+      if (linkEmail) {
+        auth.signInWithEmailLink(linkEmail, window.location.href)
+          .then(function () {
+            localStorage.removeItem(EMAIL_LS_KEY);
+            window.history.replaceState({}, document.title, '/deals.html');
+          })
+          .catch(function (err) {
+            console.error('[deals] email link sign-in:', err.message);
+            showAuthErr('Sign-in link expired or already used. Request a new one.');
+            openAuthModal();
+          });
+      }
+    }
+
+    // ── Auth state ────────────────────────────────────────────────────────────
+    auth.onAuthStateChanged(function (user) {
+      currentUser = user;
+      if (user) {
+        renderSignedIn(user);
+        ensureMemberDoc(user);
+      } else {
+        renderSignedOut();
+      }
+    });
+
+    // ── Auth UI ───────────────────────────────────────────────────────────────
+    function renderSignedOut() {
+      document.getElementById('hero').classList.remove('hidden');
+      document.getElementById('app').classList.add('hidden');
+      document.getElementById('header-right').innerHTML =
+        '<a href="/home.html" class="btn-sm" style="text-decoration:none">Home</a>' +
+        '<button class="btn-sm primary" id="hdr-join-btn">Join free</button>';
+      document.getElementById('hdr-join-btn').addEventListener('click', openAuthModal);
+      if (venueData) updateVenueHero();
+    }
+
+    function renderSignedIn(user) {
+      document.getElementById('hero').classList.add('hidden');
+      document.getElementById('app').classList.remove('hidden');
+      document.getElementById('header-right').innerHTML =
+        '<span class="user-email">' + esc(user.email) + '</span>' +
+        '<button class="sign-out-btn" id="signout-btn">Sign out</button>';
+      document.getElementById('signout-btn').addEventListener('click', function () { auth.signOut(); });
+      buildCityDropdown();
+      loadDeals('');
+      if (venueData) showVenueSpotlight();
+    }
+
+    function openAuthModal() {
+      document.getElementById('auth-overlay').classList.remove('hidden');
+      setTimeout(function () { document.getElementById('auth-email').focus(); }, 50);
+    }
+
+    function closeAuthModal() {
+      document.getElementById('auth-overlay').classList.add('hidden');
+      document.getElementById('auth-form-view').classList.remove('hidden');
+      document.getElementById('auth-sent-view').classList.add('hidden');
+      document.getElementById('auth-email').value = '';
+      clearAuthErr();
+    }
+
+    function showAuthErr(msg) {
+      var el = document.getElementById('auth-err');
+      el.textContent = msg;
+      el.classList.remove('hidden');
+    }
+
+    function clearAuthErr() {
+      var el = document.getElementById('auth-err');
+      el.textContent = '';
+      el.classList.add('hidden');
+    }
+
+    // ── Send magic link ───────────────────────────────────────────────────────
+    document.getElementById('send-link-btn').addEventListener('click', function () {
+      var email = document.getElementById('auth-email').value.trim();
+      clearAuthErr();
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        showAuthErr('Please enter a valid email address.');
+        return;
+      }
+      var btn = this;
+      btn.disabled = true;
+      btn.textContent = 'Sending…';
+
+      auth.sendSignInLinkToEmail(email, {
+        url: window.location.origin + '/deals.html',
+        handleCodeInApp: true
+      })
+      .then(function () {
+        localStorage.setItem(EMAIL_LS_KEY, email);
+        document.getElementById('auth-form-view').classList.add('hidden');
+        document.getElementById('sent-email').textContent = email;
+        document.getElementById('auth-sent-view').classList.remove('hidden');
+      })
+      .catch(function (err) {
+        console.error('[deals] send link:', err.message);
+        showAuthErr('Failed to send link. Please try again.');
+        btn.disabled = false;
+        btn.textContent = 'Send magic link';
+      });
+    });
+
+    // ── Member doc + trial ────────────────────────────────────────────────────
+    // ── Zero variant (amigo / amiga) ──────────────────────────────────────────
+    function applyZeroVariant(variant) {
+      var line = document.getElementById('brand-zero-line');
+      if (!line) return;
+      line.style.display = variant === 'amigo' ? 'none' : '';
+    }
+
+    document.getElementById('brand-zero').addEventListener('click', function (e) {
+      e.preventDefault();
+      if (!currentUser || !memberDoc) return;
+      var current = memberDoc.zeroVariant || 'amiga';
+      var next = current === 'amiga' ? 'amigo' : 'amiga';
+      memberDoc.zeroVariant = next;
+      applyZeroVariant(next);
+      db.collection('amig0_members').doc(currentUser.uid).update({ zeroVariant: next })
+        .catch(function (e) { console.error('[deals] zeroVariant update:', e.message); });
+    });
+
+    function ensureMemberDoc(user) {
+      var ref = db.collection('amig0_members').doc(user.uid);
+      ref.get()
+        .then(function (snap) {
+          if (snap.exists) {
+            memberDoc = snap.data();
+            applyZeroVariant(memberDoc.zeroVariant || 'amiga');
+            renderTrialBanner();
+          } else {
+            var trialEnd = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
+            var payload = {
+              email: user.email,
+              trialStartedAt: firebase.firestore.FieldValue.serverTimestamp(),
+              trialEndsAt:    firebase.firestore.Timestamp.fromDate(trialEnd),
+              subscriptionStatus: 'trial',
+              createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+            ref.set(payload)
+              .then(function () { return ref.get(); })
+              .then(function (s) { memberDoc = s.data(); renderTrialBanner(); })
+              .catch(function (e) { console.error('[deals] member doc set:', e.message); });
+          }
+        })
+        .catch(function (err) { console.error('[deals] member doc get:', err.message); });
+    }
+
+    function isAccessAllowed() {
+      if (!memberDoc) return false;
+      if (memberDoc.subscriptionStatus === 'active') return true;
+      if (memberDoc.subscriptionStatus === 'trial') {
+        var end = memberDoc.trialEndsAt && memberDoc.trialEndsAt.toDate
+          ? memberDoc.trialEndsAt.toDate() : null;
+        return end && end > new Date();
+      }
+      return false;
+    }
+
+    function trialDaysLeft() {
+      if (!memberDoc || !memberDoc.trialEndsAt) return 0;
+      var end = memberDoc.trialEndsAt.toDate ? memberDoc.trialEndsAt.toDate() : new Date(memberDoc.trialEndsAt);
+      return Math.max(0, Math.ceil((end - Date.now()) / 86400000));
+    }
+
+    function renderTrialBanner() {
+      var el = document.getElementById('trial-banner');
+      if (!memberDoc) { el.innerHTML = ''; return; }
+      if (memberDoc.subscriptionStatus === 'trial') {
+        var days = trialDaysLeft();
+        if (days > 0) {
+          el.className = 'trial-banner';
+          el.innerHTML =
+            '<span>Free trial — <strong>' + days + ' day' + (days === 1 ? '' : 's') + ' remaining</strong>. Redeem deals at any verified amig0 affiliate.</span>' +
+            '<span style="font-size:0.72rem;color:var(--muted)">Subscription required after trial</span>';
+        } else {
+          el.className = 'trial-banner expired';
+          el.innerHTML =
+            '<span>Your free trial has ended.</span>' +
+            '<button class="btn-sm primary" id="banner-sub-btn" style="padding:5px 12px;font-size:0.76rem">Subscribe to unlock</button>';
+          setTimeout(function () {
+            var b = document.getElementById('banner-sub-btn');
+            if (b) b.addEventListener('click', showPaywall);
+          }, 0);
+        }
+      }
+    }
+
+    // ── Cities dropdown ───────────────────────────────────────────────────────
+    function buildCityDropdown() {
+      db.collection('affiliates').where('active', '==', true).get()
+        .then(function (snap) {
+          var cities = {};
+          snap.docs.forEach(function (d) { if (d.data().city) cities[d.data().city] = true; });
+          var sel = document.getElementById('city-select');
+          Object.keys(cities).sort().forEach(function (c) {
+            var opt = document.createElement('option');
+            opt.value = c; opt.textContent = c;
+            sel.appendChild(opt);
+          });
+          sel.addEventListener('change', function () { loadDeals(sel.value); });
+        })
+        .catch(function (err) { console.error('[deals] cities:', err.message); });
+    }
+
+    // ── Load deals ────────────────────────────────────────────────────────────
+    function loadDeals(city) {
+      var grid = document.getElementById('deals-grid');
+      grid.innerHTML = '<p class="empty-state">Loading…</p>';
+
+      var q = city
+        ? db.collection('affiliates').where('active', '==', true).where('city', '==', city)
+        : db.collection('affiliates').where('active', '==', true);
+
+      q.get()
+        .then(function (snap) {
+          allDeals = snap.docs.map(function (d) { return Object.assign({ _id: d.id }, d.data()); });
+          applyFilter();
+        })
+        .catch(function (err) {
+          console.error('[deals] load:', err.message);
+          grid.innerHTML = '<p class="empty-state">Failed to load deals.</p>';
+        });
+    }
+
+    function applyFilter() {
+      var filtered = activeCategory
+        ? allDeals.filter(function(a) { return (a.category || '').toLowerCase() === activeCategory; })
+        : allDeals.slice();
+
+      if (nearMeActive && userLat !== null) {
+        filtered = filtered.map(function(a) {
+          var d = (a.lat && a.lng) ? haversineDist(userLat, userLng, a.lat, a.lng) : Infinity;
+          return Object.assign({}, a, { _distMeters: d });
+        }).sort(function(a, b) { return a._distMeters - b._distMeters; });
+      }
+
+      renderMap(filtered);
+      renderCards(filtered);
+    }
+
+    // ── Map ───────────────────────────────────────────────────────────────────
+    function renderMap(affiliates) {
+      if (mapInstance) { mapInstance.remove(); mapInstance = null; }
+      mapInstance = L.map('deals-map', { zoomControl: true });
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors', maxZoom: 18
+      }).addTo(mapInstance);
+
+      var pins = affiliates.filter(function(a) { return a.lat && a.lng; });
+
+      // "You are here" pin
+      if (nearMeActive && userLat !== null) {
+        L.circleMarker([userLat, userLng], {
+          radius: 8, fillColor: '#818cf8', fillOpacity: 1, color: '#fff', weight: 2.5
+        }).addTo(mapInstance).bindPopup('You are here');
+      }
+
+      if (!pins.length) {
+        if (nearMeActive && userLat !== null) {
+          mapInstance.setView([userLat, userLng], 14);
+        } else {
+          mapInstance.setView([19.4326, -99.1332], 11);
+        }
+        return;
+      }
+
+      var bounds = L.latLngBounds(pins.map(function(a) { return [a.lat, a.lng]; }));
+      if (nearMeActive && userLat !== null) bounds.extend([userLat, userLng]);
+      mapInstance.fitBounds(bounds, { padding: [40, 40] });
+
+      pins.forEach(function(a) {
+        L.marker([a.lat, a.lng], {
+          icon: L.divIcon({
+            className: '',
+            html: '<div style="width:13px;height:13px;background:#818cf8;border-radius:50%;border:2px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,0.5)"></div>',
+            iconSize: [13, 13], iconAnchor: [6, 6]
+          })
+        }).addTo(mapInstance)
+          .bindPopup('<strong>' + esc(a.name) + '</strong><br><span style="color:#4ade80;font-size:0.8rem">' + esc(a.offer || '') + '</span>');
+      });
+    }
+
+    // ── Cards ─────────────────────────────────────────────────────────────────
+    function renderCards(affiliates) {
+      if (!affiliates.length) {
+        document.getElementById('deals-grid').innerHTML = '<p class="empty-state">No active deals in this area yet — check back soon.</p>';
+        return;
+      }
+      if (!currentUser) { renderCardHtml(affiliates, {}); return; }
+
+      var cutoffMs = Date.now() - 30 * 86400000;
+      db.collection('deal_redemptions')
+        .where('userId', '==', currentUser.uid)
+        .get()
+        .then(function (snap) {
+          var redeemed = Object.assign({}, localRedeemed);
+          var totalSaved = 0;
+          snap.docs.forEach(function (d) {
+            var data = d.data();
+            var ts = data.redeemedAt && data.redeemedAt.toMillis ? data.redeemedAt.toMillis() : 0;
+            if (ts >= cutoffMs) redeemed[data.affiliateId] = true;
+            var dv = data.dealValue;
+            if (!dv) {
+              var aff = allDeals.find(function (a) { return a._id === data.affiliateId; });
+              dv = aff ? (aff.dealValue || 0) : 0;
+            }
+            totalSaved += dv;
+          });
+          var allTimeCount = snap.docs.length;
+          updateSavingsStrip(allTimeCount, totalSaved);
+          renderCardHtml(affiliates, redeemed);
+        })
+        .catch(function () { renderCardHtml(affiliates, localRedeemed); });
+    }
+
+    function renderCardHtml(affiliates, redeemed) {
+      var grid = document.getElementById('deals-grid');
+      grid.innerHTML = '';
+      grid.className = 'deals-grid';
+
+      // Update count label
+      var city = document.getElementById('city-select').value;
+      var lbl  = document.getElementById('deals-label');
+      if (lbl) {
+        var n = affiliates.length;
+        lbl.textContent = n + ' deal' + (n === 1 ? '' : 's') + (city ? ' in ' + city : '');
+      }
+
+      affiliates.forEach(function (a) {
+        var used = redeemed[a._id];
+        var card = document.createElement('div');
+        card.className = 'deal-card';
+        card.innerHTML =
+          '<div class="deal-stripe"></div>' +
+          '<div class="deal-card-body">' +
+            '<div class="deal-card-top">' +
+              '<div>' +
+                '<div class="deal-name">' + esc(a.name) + '</div>' +
+                '<div class="deal-cat">' + esc(a.category || '') + (a.city ? ' · ' + esc(a.city) : '') + '</div>' +
+              '</div>' +
+              '<span class="affiliate-badge">amig0</span>' +
+            '</div>' +
+            '<div class="deal-offer">' + esc(a.offer || 'Exclusive deal for members') + '</div>' +
+            (a.address ? '<div class="deal-address">' + esc(a.address) + '</div>' : '') +
+            (a._distMeters !== undefined && a._distMeters !== Infinity
+              ? '<div class="deal-distance">' + fmtDist(a._distMeters) + ' · ' + Math.ceil(a._distMeters / 80) + ' min walk</div>'
+              : '') +
+          '</div>' +
+          '<div class="deal-card-foot">' +
+            (a.website
+              ? '<a href="' + esc(/^https?:\/\//.test(a.website) ? a.website : 'https://' + a.website) + '" target="_blank" rel="noopener" class="deal-website">' + esc(a.website.replace(/^https?:\/\//, '')) + '</a>'
+              : '<span></span>') +
+            (used
+              ? '<div class="redeemed-note">Redeemed this month</div>'
+              : '<div class="deal-foot-right"><button class="btn-redeem">Redeem deal</button><div class="deal-limit">1 per 30 days</div></div>') +
+          '</div>';
+
+        if (!used) {
+          card.querySelector('.btn-redeem').addEventListener('click', function () {
+            handleRedeem({ affiliateId: a._id, name: a.name, offer: a.offer || '' });
+          });
+        }
+        grid.appendChild(card);
+      });
+    }
+
+    // ── Redemption flow ───────────────────────────────────────────────────────
+    function handleRedeem(info) {
+      if (!isAccessAllowed()) { showPaywall(); return; }
+      if (localRedeemed[info.affiliateId]) return; // already redeemed this session
+      pendingRedeem = info;
+      pinAttempts = 0;
+      document.getElementById('redeem-venue').textContent = info.name;
+      document.getElementById('redeem-offer').textContent = info.offer || 'Exclusive deal';
+      document.getElementById('redeem-overlay').classList.remove('hidden');
+    }
+
+    function pad2(n) { return n < 10 ? '0' + n : String(n); }
+
+    function updateSavingsStrip(count, saved) {
+      var strip = document.getElementById('savings-strip');
+      if (!strip) return;
+      if (count < 1) { strip.classList.add('hidden'); return; }
+      document.getElementById('savings-count').textContent = count;
+      document.getElementById('savings-total').textContent = '$' + saved;
+      strip.classList.remove('hidden');
+    }
+
+    // ── PIN entry helpers ─────────────────────────────────────────────────────
+    function redeemBodyHtml() {
+      var name  = pendingRedeem ? esc(pendingRedeem.name)  : '';
+      var offer = pendingRedeem ? esc(pendingRedeem.offer) : '';
+      return '<div class="redeem-screen-at">Your deal at</div>' +
+        '<div class="redeem-screen-venue" id="redeem-venue">' + name + '</div>' +
+        '<div class="redeem-screen-glow"><div class="redeem-screen-offer" id="redeem-offer">' + offer + '</div></div>' +
+        '<div class="redeem-screen-instr">Show this screen to staff</div>';
+    }
+
+    function redeemFootHtml() {
+      return '<button class="btn-block" id="confirm-redeem-btn">Hand to staff</button>' +
+        '<button class="btn-ghost" id="redeem-cancel-btn">Cancel</button>' +
+        '<p class="redeem-limit">1 redemption per venue per 30 days</p>';
+    }
+
+    function attachRedeemFootListeners() {
+      document.getElementById('confirm-redeem-btn').addEventListener('click', showPinEntry);
+      document.getElementById('redeem-cancel-btn').addEventListener('click', closeRedeem);
+    }
+
+    // ── Show PIN entry state (bartender types their venue code on user's phone) ─
+    function showPinEntry() {
+      if (!pendingRedeem) return;
+      redeemState = 'pin';
+      document.querySelector('.redeem-screen-body').innerHTML =
+        '<div class="pin-user-instr">Hand your phone<br>to the bartender</div>' +
+        '<div class="pin-entry-lbl">Staff — enter your venue code</div>' +
+        '<div class="pin-entry-boxes">' +
+          '<input class="pin-box" type="tel" maxlength="1" inputmode="numeric" autocomplete="off">' +
+          '<input class="pin-box" type="tel" maxlength="1" inputmode="numeric" autocomplete="off">' +
+          '<input class="pin-box" type="tel" maxlength="1" inputmode="numeric" autocomplete="off">' +
+          '<input class="pin-box" type="tel" maxlength="1" inputmode="numeric" autocomplete="off">' +
+        '</div>' +
+        '<div id="pin-entry-err" class="pin-entry-err hidden"></div>';
+      document.querySelector('.redeem-screen-foot').innerHTML =
+        '<button class="btn-block" id="pin-confirm-btn">Confirm</button>' +
+        '<button class="btn-ghost" id="pin-back-btn">Back</button>';
+
+      // Auto-advance between boxes
+      var boxes = document.querySelectorAll('.pin-box');
+      boxes.forEach(function (box, i) {
+        box.addEventListener('input', function () {
+          box.value = box.value.replace(/\D/g, '').slice(0, 1);
+          if (box.value && i < boxes.length - 1) boxes[i + 1].focus();
+        });
+        box.addEventListener('keydown', function (e) {
+          if (e.key === 'Backspace' && !box.value && i > 0) boxes[i - 1].focus();
+        });
+      });
+
+      document.getElementById('pin-confirm-btn').addEventListener('click', validateVenuePin);
+      document.getElementById('pin-back-btn').addEventListener('click', function () {
+        redeemState = 'show';
+        document.querySelector('.redeem-screen-body').innerHTML = redeemBodyHtml();
+        document.querySelector('.redeem-screen-foot').innerHTML = redeemFootHtml();
+        attachRedeemFootListeners();
+      });
+
+      setTimeout(function () { boxes[0].focus(); }, 50);
+    }
+
+    // ── Validate venue PIN via Firestore rule (PIN never exposed to client) ────
+    function validateVenuePin() {
+      var boxes = document.querySelectorAll('.pin-box');
+      var pin   = Array.from(boxes).map(function (b) { return b.value; }).join('');
+      var errEl = document.getElementById('pin-entry-err');
+      errEl.textContent = ''; errEl.classList.add('hidden');
+
+      if (!/^\d{4}$/.test(pin)) {
+        errEl.textContent = 'Enter all 4 digits.';
+        errEl.classList.remove('hidden');
+        return;
+      }
+
+      var btn = document.getElementById('pin-confirm-btn');
+      btn.disabled = true; btn.textContent = 'Checking…';
+
+      var affiliateId = pendingRedeem.affiliateId;
+      var name        = pendingRedeem.name;
+      var offer       = pendingRedeem.offer;
+
+      // Firestore rule reads affiliates/{id}/secrets/verify and validates pin server-side.
+      // PIN value never returned to the client — only success or permission-denied.
+      // Batch: (1) deal_redemptions doc — rule enforces PIN + membership + 30-day lockout
+      //        (2) sentinel amig0_members/{uid}/redemptions/{affiliateId} — sets redeemedAt
+      //            so the next create attempt within 30 days fails isNotRecentlyRedeemed().
+      var affiliateDoc = allDeals.find(function (a) { return a._id === affiliateId; });
+      var dealValue    = affiliateDoc ? (affiliateDoc.dealValue || 0) : 0;
+
+      var yearMonth    = new Date().toISOString().slice(0, 7); // "2026-08"
+      var batch        = db.batch();
+      var redemptionRef = db.collection('deal_redemptions').doc(currentUser.uid + '_' + affiliateId + '_' + yearMonth);
+      var sentinelRef   = db.collection('amig0_members').doc(currentUser.uid)
+                           .collection('redemptions').doc(affiliateId);
+      var ts = firebase.firestore.FieldValue.serverTimestamp();
+
+      batch.set(redemptionRef, {
+        userId:        currentUser.uid,
+        userEmail:     currentUser.email,
+        affiliateId:   affiliateId,
+        affiliateName: name,
+        dealOffer:     offer,
+        dealValue:     dealValue,
+        pin:           pin,
+        redeemedAt:    ts
+      });
+      batch.set(sentinelRef, { redeemedAt: ts });
+
+      batch.commit()
+      .then(function () {
+        localRedeemed[affiliateId] = true;
+        closeRedeem();
+        document.getElementById('success-venue').textContent = name;
+        document.getElementById('success-overlay').classList.remove('hidden');
+        lucide.createIcons();
+        loadDeals(document.getElementById('city-select').value);
+      })
+      .catch(function (err) {
+        console.error('[deals] validate pin:', err.code, err.message);
+        if (err.code === 'permission-denied') {
+          pinAttempts++;
+          if (pinAttempts >= PIN_MAX_ATTEMPTS) {
+            showPinLockout();
+            return;
+          }
+          var left = PIN_MAX_ATTEMPTS - pinAttempts;
+          errEl.textContent = 'Incorrect code — ' + left + ' attempt' + (left === 1 ? '' : 's') + ' remaining';
+        } else {
+          errEl.textContent = 'Something went wrong. Please try again.';
+        }
+        btn.disabled = false; btn.textContent = 'Confirm';
+        errEl.classList.remove('hidden');
+        boxes.forEach(function (b) { b.value = ''; });
+        boxes[0].focus();
+      });
+    }
+
+    document.getElementById('confirm-redeem-btn').addEventListener('click', showPinEntry);
+
+    function showPinLockout() {
+      redeemState = 'show';
+      document.querySelector('.redeem-screen-body').innerHTML =
+        '<div style="text-align:center;padding:0 8px">' +
+          '<div style="font-size:1.6rem;margin-bottom:16px;color:var(--red)"><i data-lucide="shield-off"></i></div>' +
+          '<div style="font-size:0.9rem;font-weight:700;color:var(--red);margin-bottom:10px">Too many incorrect attempts</div>' +
+          '<div style="font-size:0.82rem;color:var(--muted);line-height:1.6">Ask your server to confirm the venue code, or contact amig0 support.</div>' +
+        '</div>';
+      document.querySelector('.redeem-screen-foot').innerHTML =
+        '<button class="btn-ghost" onclick="closeRedeem()">Close</button>';
+      lucide.createIcons();
+    }
+
+    function closeRedeem() {
+      redeemState = 'show';
+      pinAttempts = 0;
+      // Restore body if in pin entry state
+      if (!document.getElementById('redeem-venue')) {
+        document.querySelector('.redeem-screen-body').innerHTML = redeemBodyHtml();
+      }
+      // Restore footer if replaced (pin state or expired state)
+      if (!document.getElementById('confirm-redeem-btn')) {
+        document.querySelector('.redeem-screen-foot').innerHTML = redeemFootHtml();
+        attachRedeemFootListeners();
+      } else {
+        var btn = document.getElementById('confirm-redeem-btn');
+        if (btn) { btn.disabled = false; btn.textContent = 'Hand to staff'; }
+      }
+      document.getElementById('redeem-overlay').classList.add('hidden');
+      pendingRedeem = null;
+    }
+
+    function showPaywall() { document.getElementById('paywall-overlay').classList.remove('hidden'); }
+
+    // ── Event bindings ────────────────────────────────────────────────────────
+    // ── Category chips ────────────────────────────────────────────────────────
+    document.getElementById('cat-chips').addEventListener('click', function (e) {
+      var chip = e.target.closest('.cat-chip');
+      if (!chip) return;
+      activeCategory = chip.dataset.cat;
+      document.querySelectorAll('.cat-chip').forEach(function (c) { c.classList.remove('active'); });
+      chip.classList.add('active');
+      applyFilter();
+    });
+
+    document.getElementById('hero-join-btn').addEventListener('click', openAuthModal);
+    document.getElementById('hdr-join-btn').addEventListener('click', openAuthModal);
+    document.getElementById('auth-close').addEventListener('click', closeAuthModal);
+    document.getElementById('paywall-close').addEventListener('click', function () { document.getElementById('paywall-overlay').classList.add('hidden'); });
+    document.getElementById('paywall-later-btn').addEventListener('click', function () { document.getElementById('paywall-overlay').classList.add('hidden'); });
+    document.getElementById('subscribe-btn').addEventListener('click', function () {
+      alert('Subscription coming soon! Stay tuned.');
+    });
+    document.getElementById('redeem-close').addEventListener('click', closeRedeem);
+    document.getElementById('redeem-cancel-btn').addEventListener('click', closeRedeem);
+    document.getElementById('success-close-btn').addEventListener('click', function () {
+      document.getElementById('success-overlay').classList.add('hidden');
+    });
+
+    lucide.createIcons();
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
+    function esc(s) {
+      return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+  </script>
+</body>
+</html>
