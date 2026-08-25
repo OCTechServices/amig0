@@ -1,4 +1,4 @@
-// portal-marketplace.js — amig0-travel-company | OCTech Services
+// portal-marketplace.js — amig0 | OCTech Services
 // Portal: Marketplace — invite-gated open tour seat listings
 
 (function () {

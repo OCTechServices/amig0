@@ -1,0 +1,36 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//amig0trips//Content Queue//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+BEGIN:VEVENT
+UID:amig0-city-a-mwf@amig0trips
+DTSTART:20260824T100000
+DTEND:20260824T100500
+RRULE:FREQ=WEEKLY;BYDAY=MO,WE,FR
+SUMMARY:amig0 — City A · Approve + Publish
+DESCRIPTION:Open amig0.vercel.app/content/queue\nReview City A carousel\nApprove + Publish to @amig0trips
+URL:https://amig0.vercel.app/content/
+STATUS:CONFIRMED
+BEGIN:VALARM
+TRIGGER:-PT0M
+ACTION:DISPLAY
+DESCRIPTION:amig0 City A ready — approve and publish
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:amig0-city-b-tths@amig0trips
+DTSTART:20260820T100000
+DTEND:20260820T100500
+RRULE:FREQ=WEEKLY;BYDAY=TU,TH,SA
+SUMMARY:amig0 — City B · Approve + Publish
+DESCRIPTION:Open amig0.vercel.app/content/queue\nReview City B carousel\nApprove + Publish to @amig0trips
+URL:https://amig0.vercel.app/content/
+STATUS:CONFIRMED
+BEGIN:VALARM
+TRIGGER:-PT0M
+ACTION:DISPLAY
+DESCRIPTION:amig0 City B ready — approve and publish
+END:VALARM
+END:VEVENT
+END:VCALENDAR

@@ -1,4 +1,4 @@
-// auth.js — amig0-travel-company | OCTech Services
+// auth.js — amig0 | OCTech Services
 // Firebase Auth: state listener, login form, sign-out
 // Depends on: firebase-config.js (firebase already initialised via compat SDK)
 

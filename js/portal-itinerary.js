@@ -1,4 +1,4 @@
-// portal-itinerary.js — amig0-travel-company | OCTech Services
+// portal-itinerary.js — amig0 | OCTech Services
 // Portal: Day-by-day itinerary for client's confirmed tour
 
 (function () {

@@ -1,4 +1,4 @@
-// guide-nav.js — amig0-travel-company | OCTech Services
+// guide-nav.js — amig0 | OCTech Services
 // Guide PWA: Bottom nav routing
 
 (function () {

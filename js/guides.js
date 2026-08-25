@@ -1,4 +1,4 @@
-// guides.js — amig0-travel-company | OCTech Services
+// guides.js — amig0 | OCTech Services
 // Guides module: list, add, edit, delete guides
 // Depends on: firebase-config.js, auth.js, nav.js
 

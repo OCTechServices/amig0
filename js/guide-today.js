@@ -1,4 +1,4 @@
-// guide-today.js — amig0-travel-company | OCTech Services
+// guide-today.js — amig0 | OCTech Services
 // Guide PWA: Today view — current day hero + tour stats
 
 (function () {

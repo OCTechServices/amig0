@@ -1,4 +1,4 @@
-// guide-passengers.js — amig0-travel-company | OCTech Services
+// guide-passengers.js — amig0 | OCTech Services
 // Guide PWA: Confirmed passenger roster with dietary/medical flags
 
 (function () {

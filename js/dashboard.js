@@ -1,4 +1,4 @@
-// dashboard.js — amig0-travel-company | OCTech Services
+// dashboard.js — amig0 | OCTech Services
 // Dashboard section: summary stats + recent activity
 // Depends on: firebase-config.js, auth.js, nav.js
 

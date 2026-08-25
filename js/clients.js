@@ -1,4 +1,4 @@
-// clients.js — amig0-travel-company | OCTech Services
+// clients.js — amig0 | OCTech Services
 // Clients module: list, add, edit, delete
 // Depends on: firebase-config.js, auth.js, nav.js
 

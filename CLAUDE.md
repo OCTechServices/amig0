@@ -1,4 +1,4 @@
-# amig0-travel-company
+# amig0
 # Tier 1 — Enterprise Grade | OCTech Services
 
 ## 1. Project Purpose

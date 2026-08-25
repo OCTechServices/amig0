@@ -1,4 +1,4 @@
-// portal-nav.js — amig0-travel-company | OCTech Services
+// portal-nav.js — amig0 | OCTech Services
 // Portal navigation — section routing
 
 (function () {

@@ -1,4 +1,4 @@
-// invites.js — amig0-travel-company | OCTech Services
+// invites.js — amig0 | OCTech Services
 // Invite management: generate, track, and revoke invite codes
 // Depends on: firebase-config.js, auth.js, nav.js
 

@@ -1,4 +1,4 @@
-// partners.js — amig0-travel-company | OCTech Services
+// partners.js — amig0 | OCTech Services
 // Partners module: verified merchant network — restaurants, bars, transport, experiences
 // Depends on: firebase-config.js, auth.js, nav.js
 

@@ -1,4 +1,4 @@
-// reports.js — amig0-travel-company | OCTech Services
+// reports.js — amig0 | OCTech Services
 // Reports: KPI summary, revenue by tour, bookings by tour,
 //          outstanding by client, partner check-ins, marketplace stats
 // Depends on: firebase-config.js, auth.js, nav.js

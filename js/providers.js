@@ -1,4 +1,4 @@
-// providers.js — amig0-travel-company | OCTech Services
+// providers.js — amig0 | OCTech Services
 // Providers module: accommodation, transport, activity, restaurant vendors
 // Depends on: firebase-config.js, auth.js, nav.js
 

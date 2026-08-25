@@ -1,4 +1,4 @@
-// config.js — amig0-travel-company | OCTech Services
+// config.js — amig0 | OCTech Services
 // Instance configuration — branding, labels, locale.
 // Fork this file per deployment. Never hardcode instance values in module code.
 //

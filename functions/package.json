@@ -1,7 +1,7 @@
 {
   "name": "amig0-travel-functions",
   "version": "1.0.0",
-  "description": "Firebase Cloud Functions — amig0-travel-company | OCTech Services",
+  "description": "Firebase Cloud Functions — amig0 | OCTech Services",
   "main": "index.js",
   "engines": {
     "node": "22"

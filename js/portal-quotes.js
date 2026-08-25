@@ -1,4 +1,4 @@
-// portal-quotes.js — amig0-travel-company | OCTech Services
+// portal-quotes.js — amig0 | OCTech Services
 // Portal: client's quotes view (read-only)
 
 (function () {

@@ -1,4 +1,4 @@
-// functions/index.js — amig0-travel-company | OCTech Services
+// functions/index.js — amig0 | OCTech Services
 // Cloud Functions: operator role management via Firebase Auth custom claims
 //
 // addOperator(uid, name, email)  — grants operator claim + creates operators/ record (superAdmin only)

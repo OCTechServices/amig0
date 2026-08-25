@@ -1,4 +1,4 @@
-// briefings.js — amig0-travel-company | OCTech Services
+// briefings.js — amig0 | OCTech Services
 // Briefings module: guide, client, and internal documents linked to tours
 // Depends on: firebase-config.js, auth.js, nav.js
 

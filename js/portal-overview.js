@@ -1,4 +1,4 @@
-// portal-overview.js — amig0-travel-company | OCTech Services
+// portal-overview.js — amig0 | OCTech Services
 // Portal: My Trip overview — upcoming tour hero + fellow passengers
 
 (function () {

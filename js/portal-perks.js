@@ -1,4 +1,4 @@
-// portal-perks.js — amig0-travel-company | OCTech Services
+// portal-perks.js — amig0 | OCTech Services
 // Portal: Partner Perks — verified partner directory + my check-in history
 
 (function () {

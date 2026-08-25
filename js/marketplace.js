@@ -1,4 +1,4 @@
-// marketplace.js — amig0-travel-company | OCTech Services
+// marketplace.js — amig0 | OCTech Services
 // Marketplace listings module: open tour seats for vetted travelers
 // Depends on: firebase-config.js, auth.js, nav.js
 

@@ -1,4 +1,4 @@
-// portal-invoices.js — amig0-travel-company | OCTech Services
+// portal-invoices.js — amig0 | OCTech Services
 // Portal: client's invoices view (read-only) with balance summary
 
 (function () {

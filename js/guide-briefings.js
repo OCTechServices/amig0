@@ -1,4 +1,4 @@
-// guide-briefings.js — amig0-travel-company | OCTech Services
+// guide-briefings.js — amig0 | OCTech Services
 // Guide PWA: Guide briefings for this tour — collapsible cards
 
 (function () {

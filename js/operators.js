@@ -1,4 +1,4 @@
-// operators.js — amig0-travel-company | OCTech Services
+// operators.js — amig0 | OCTech Services
 // Operators module: manage Firebase Auth operator accounts
 // Depends on: firebase-config.js, auth.js, nav.js
 // Requires: Firebase Functions SDK (firebase-functions-compat.js)

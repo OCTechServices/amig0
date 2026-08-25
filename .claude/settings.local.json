@@ -12,7 +12,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/Users/danielbolanos/Documents/amig0-travel-company/.claude/hooks/session-end.sh"
+            "command": "/Users/danielbolanos/Documents/amig0/.claude/hooks/session-end.sh"
           }
         ]
       }

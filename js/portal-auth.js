@@ -1,4 +1,4 @@
-// portal-auth.js — amig0-travel-company | OCTech Services
+// portal-auth.js — amig0 | OCTech Services
 // Client portal: Firebase Auth + user_profiles role check
 // Exposes: window.PortalAuth.clientId, window.PortalAuth.clientName
 

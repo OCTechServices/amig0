@@ -1,4 +1,4 @@
-// tours.js — amig0-travel-company | OCTech Services
+// tours.js — amig0 | OCTech Services
 // Tours module: list, add, edit, delete, status management + itinerary editor
 // Depends on: firebase-config.js, auth.js, nav.js
 

@@ -1,4 +1,4 @@
-// guide-itinerary.js — amig0-travel-company | OCTech Services
+// guide-itinerary.js — amig0 | OCTech Services
 // Guide PWA: Full day-by-day itinerary — today's day highlighted
 
 (function () {

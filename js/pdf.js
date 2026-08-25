@@ -1,4 +1,4 @@
-// pdf.js — amig0-travel-company | OCTech Services
+// pdf.js — amig0 | OCTech Services
 // PDF generation for quotes and invoices using jsPDF + autoTable
 // Exposes: window.PDF.generateQuote(data, clientName, tourName)
 //          window.PDF.generateInvoice(data, clientName, tourName)

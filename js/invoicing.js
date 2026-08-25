@@ -1,4 +1,4 @@
-// invoicing.js — amig0-travel-company | OCTech Services
+// invoicing.js — amig0 | OCTech Services
 // Invoicing module: list, add, edit, delete, payment tracking
 // Depends on: firebase-config.js, auth.js, nav.js
 

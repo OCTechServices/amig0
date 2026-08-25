@@ -1,4 +1,4 @@
-// nav.js — amig0-travel-company | OCTech Services
+// nav.js — amig0 | OCTech Services
 // Sidebar navigation: active state, section title, content area placeholder
 // Depends on: auth.js (app-shell must be in DOM)
 

@@ -1,4 +1,4 @@
-// portal-map.js — amig0-travel-company | OCTech Services
+// portal-map.js — amig0 | OCTech Services
 // Portal: Partner Map — Leaflet pins for verified partners + user Amig0 QR pass
 
 (function () {

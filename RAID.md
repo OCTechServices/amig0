@@ -1,4 +1,4 @@
-# RAID Log: amig0-travel-company
+# RAID Log: amig0
 # Tier 1 — Enterprise Grade | OCTech Services
 # Last Updated: 2026-08-24 (Session 17)
 

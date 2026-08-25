@@ -1,4 +1,4 @@
-// quotes.js — amig0-travel-company | OCTech Services
+// quotes.js — amig0 | OCTech Services
 // Quotes module: list, add, edit, delete, dynamic line items, totals
 // Depends on: firebase-config.js, auth.js, nav.js
 

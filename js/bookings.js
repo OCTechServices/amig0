@@ -1,4 +1,4 @@
-// bookings.js — amig0-travel-company | OCTech Services
+// bookings.js — amig0 | OCTech Services
 // Bookings module: link passengers to tours
 // Depends on: firebase-config.js, auth.js, nav.js
 

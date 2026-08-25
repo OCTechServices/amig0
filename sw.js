@@ -1,4 +1,4 @@
-// sw.js — amig0-travel-company | OCTech Services
+// sw.js — amig0 | OCTech Services
 // Service worker for Guide PWA — cache-first for static assets, network-first for Firestore
 //
 // ─── DEPLOY PROTOCOL ────────────────────────────────────────────────────────

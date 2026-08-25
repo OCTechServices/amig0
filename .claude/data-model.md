@@ -1,4 +1,4 @@
-# Firestore Data Model — amig0-travel-company
+# Firestore Data Model — amig0
 # OCTech Services | Last Updated: 2026-04-19
 # This document is the source of truth for all collection schemas.
 # Update here first before touching any module.

@@ -1,4 +1,4 @@
-// guide-auth.js — amig0-travel-company | OCTech Services
+// guide-auth.js — amig0 | OCTech Services
 // Guide PWA: Firebase Auth + user_profiles role check
 // Exposes: window.GuideAuth.guideId, window.GuideAuth.guideName, window.GuideAuth.tourId
 

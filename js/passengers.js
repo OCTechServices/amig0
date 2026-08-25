@@ -1,4 +1,4 @@
-// passengers.js — amig0-travel-company | OCTech Services
+// passengers.js — amig0 | OCTech Services
 // Passengers module: list, add, edit, delete
 // Depends on: firebase-config.js, auth.js, nav.js
 
