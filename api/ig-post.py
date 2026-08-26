@@ -15,9 +15,10 @@ import urllib.parse
 import urllib.error
 from http.server import BaseHTTPRequestHandler
 
-IG_USER_ID = os.environ.get('IG_USER_ID', '')
-IG_TOKEN   = os.environ.get('IG_ACCESS_TOKEN', '')
-IMGBB_KEY  = os.environ.get('IMGBB_API_KEY', '')
+IG_USER_ID     = os.environ.get('IG_USER_ID', '')
+IG_TOKEN       = os.environ.get('IG_ACCESS_TOKEN', '')
+IMGBB_KEY      = os.environ.get('IMGBB_API_KEY', '')
+PUBLISH_SECRET = os.environ.get('PUBLISH_SECRET', '')
 
 GRAPH = 'https://graph.instagram.com/v21.0'
 
@@ -45,6 +46,8 @@ class handler(BaseHTTPRequestHandler):
         self.end_headers()
 
     def do_POST(self):
+        if PUBLISH_SECRET and self.headers.get('X-Publish-Token') != PUBLISH_SECRET:
+            return self._json(403, {'error': 'Unauthorized'})
         if not IG_USER_ID or not IG_TOKEN or not IMGBB_KEY:
             return self._json(503, {'error': 'Missing server credentials — check Vercel env vars'})
 
@@ -182,9 +185,9 @@ class handler(BaseHTTPRequestHandler):
         self.wfile.write(body)
 
     def _cors(self):
-        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Access-Control-Allow-Origin', 'https://amig0.com')
         self.send_header('Access-Control-Allow-Methods', 'POST, OPTIONS')
-        self.send_header('Access-Control-Allow-Headers', 'Content-Type')
+        self.send_header('Access-Control-Allow-Headers', 'Content-Type, X-Publish-Token')
 
     def log_message(self, fmt, *args):
         if '/api/' in str(args[0] if args else ''):

@@ -475,6 +475,8 @@ const COUNTRY_COLORS = {
   'Czech Republic': ['#D7141A', '#FFFFFF', '#11457E'],
 };
 
+const PUBLISH_TOKEN = 'e2f85abed64da8fa6577cdc77dbe000d877dd65dd28cdbb1683f2f027f928e89';
+
 let lastData          = null;
 let currentMode       = 'discover';
 let selectedInterests = new Set();
@@ -667,7 +669,7 @@ function buildIGPanel(data) {
 
   // CTA slide
   igSlides.push(
-    `Your city next?\n\nSubmit your spots at\namig0.vercel.app/hacks\n\nWe'll feature you in\nour next city guide.\n\n@amig0trips`
+    `Your city next?\n\nSubmit your spots at\namig0.com/hacks\n\nWe'll feature you in\nour next city guide.\n\n@amig0trips`
   );
 
   // Caption
@@ -675,13 +677,13 @@ function buildIGPanel(data) {
   const cityTag    = destination.toLowerCase().replace(/\s+/g, '');
   if (postType === 'finale') {
     const interestLine = lastInterests ? `Final drop: ${lastInterests} — the spots locals actually love.\n\n` : '';
-    igCaption = `That's a wrap on our ${destination} series. 🔑\n\n${interestLine}In this post:\n${venueLines}\n\nSave this series for your next ${destination} trip → amig0.vercel.app/hacks\n\n🔗 All recommended tools → link in bio\n\n💬 Which city should we cover next? Drop it below.\n\n#${cityTag} #${cityTag}travel #iztapalapa #travelhacks #insidertips #localknowledge #travelsmarter #amig0trips`;
+    igCaption = `That's a wrap on our ${destination} series. 🔑\n\n${interestLine}In this post:\n${venueLines}\n\nSave this series for your next ${destination} trip → amig0.com/hacks\n\n🔗 All recommended tools → link in bio\n\n💬 Which city should we cover next? Drop it below.\n\n#${cityTag} #${cityTag}travel #travelhacks #insidertips #localknowledge #travelsmarter #amig0trips`;
   } else if (postType === 'continuation') {
     const interestLine = lastInterests ? `This time: ${lastInterests} — the spots locals actually know.\n\n` : '';
-    igCaption = `Back in ${destination}. 🔑\n\n${interestLine}In this post:\n${venueLines}\n\nPart of our ongoing ${destination} city series → amig0.vercel.app/hacks\n\n🔗 All recommended tools → link in bio\n\n💬 Drop your city below — we might feature it next.\n\n#${cityTag} #${cityTag}travel #travelhacks #insidertips #localknowledge #travelsmarter #amig0trips`;
+    igCaption = `Back in ${destination}. 🔑\n\n${interestLine}In this post:\n${venueLines}\n\nPart of our ongoing ${destination} city series → amig0.com/hacks\n\n🔗 All recommended tools → link in bio\n\n💬 Drop your city below — we might feature it next.\n\n#${cityTag} #${cityTag}travel #travelhacks #insidertips #localknowledge #travelsmarter #amig0trips`;
   } else {
     const interestLine = lastInterests ? `${lastInterests} — ` : '';
-    igCaption = `Insider hacks for ${destination} — ${interestLine}the spots locals actually know. 🔑\n\nIn this post:\n${venueLines}\n\nGenerate personalized hacks for any city → amig0.vercel.app/hacks\n\n🔗 All recommended tools → link in bio\n\n💬 Drop your city below — we might feature it next.\n\n#${cityTag} #${cityTag}travel #travelhacks #insidertips #localknowledge #travelsmarter #amig0trips`;
+    igCaption = `Insider hacks for ${destination} — ${interestLine}the spots locals actually know. 🔑\n\nIn this post:\n${venueLines}\n\nGenerate personalized hacks for any city → amig0.com/hacks\n\n🔗 All recommended tools → link in bio\n\n💬 Drop your city below — we might feature it next.\n\n#${cityTag} #${cityTag}travel #travelhacks #insidertips #localknowledge #travelsmarter #amig0trips`;
   }
 
   const slidesHTML = igSlides.map((s, i) => {
@@ -762,7 +764,7 @@ async function publishCarousel() {
 
     const res  = await fetch('/api/ig-post', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'X-Publish-Token': PUBLISH_TOKEN },
       body: JSON.stringify({ slides, caption: igCaption }),
     });
     const data = await res.json();
@@ -1150,7 +1152,7 @@ function drawCoverSlide(ctx) {
   // URL — bottom
   ctx.font = '400 22px system-ui,sans-serif';
   ctx.fillStyle = 'rgba(194,113,79,0.55)';
-  ctx.fillText('amig0.vercel.app/hacks  ·  @amig0trips', PAD, H - PAD);
+  ctx.fillText('amig0.com/hacks  ·  @amig0trips', PAD, H - PAD);
 }
 
 function drawVenueSlide(ctx, idx) {
@@ -1227,7 +1229,7 @@ function drawVenueSlide(ctx, idx) {
   ctx.textAlign = 'right';
   ctx.font = '400 22px system-ui,sans-serif';
   ctx.fillStyle = 'rgba(250,245,240,0.20)';
-  ctx.fillText('amig0.vercel.app/hacks', W - PAD, H - PAD);
+  ctx.fillText('amig0.com/hacks', W - PAD, H - PAD);
   ctx.textAlign = 'left';
 }
 
@@ -1319,7 +1321,7 @@ function drawInterestSelectorSlide(ctx) {
   // URL — bottom left
   ctx.font = '400 23px system-ui,sans-serif';
   ctx.fillStyle = 'rgba(194,113,79,0.60)';
-  ctx.fillText('amig0.vercel.app/hacks', PAD, H - PAD);
+  ctx.fillText('amig0.com/hacks', PAD, H - PAD);
   // CTA — bottom right
   ctx.textAlign = 'right';
   ctx.font = '500 23px system-ui,sans-serif';
@@ -1366,7 +1368,7 @@ function drawCTASlide(ctx) {
   // URL
   ctx.font = '600 40px system-ui,sans-serif';
   ctx.fillStyle = '#818cf8';
-  ctx.fillText('amig0.vercel.app/hacks', W/2, H*0.60 + 54);
+  ctx.fillText('amig0.com/hacks', W/2, H*0.60 + 54);
   // Link in bio line
   ctx.font = '400 26px system-ui,sans-serif';
   ctx.fillStyle = 'rgba(250,245,240,0.30)';
@@ -1421,7 +1423,7 @@ function copyHacks(btn) {
     lines.push('');
     lines.push('');
   });
-  lines.push('amig0.vercel.app/hacks');
+  lines.push('amig0.com/hacks');
   navigator.clipboard.writeText(lines.join('\n')).then(() => {
     const orig = btn.textContent;
     btn.textContent = 'Copied!';
