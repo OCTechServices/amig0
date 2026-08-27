@@ -484,6 +484,7 @@ let igSlides          = [];
 let igCaption         = '';
 let lastInterests     = '';
 let postType          = 'new-city';
+let truncatedVenues   = [];
 
 function setPostType(type, el) {
   postType = type;
@@ -495,15 +496,26 @@ function setPostType(type, el) {
 const LOG_KEY = 'amig0_queue_log';
 const TYPE_LABELS = { 'new-city': 'New City', 'continuation': 'Continuation', 'finale': 'Finale' };
 
-function logEntry(city, type, status) {
+function logEntry(city, type, status, venues) {
   const log = JSON.parse(localStorage.getItem(LOG_KEY) || '[]');
   const d   = new Date();
   const dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   const code = city.replace(/\s+/g, '').substring(0, 3).toUpperCase();
-  log.unshift({ city, code, type, dateStr, status, ts: Date.now() });
+  log.unshift({ city, code, type, dateStr, status, venues: venues || [], ts: Date.now() });
   if (log.length > 30) log.pop();
   localStorage.setItem(LOG_KEY, JSON.stringify(log));
   renderQueueLog();
+}
+
+function checkDuplicates(city, currentVenues) {
+  const log = JSON.parse(localStorage.getItem(LOG_KEY) || '[]');
+  const past = new Set();
+  log.forEach(e => {
+    if (e.city === city && Array.isArray(e.venues)) {
+      e.venues.forEach(v => past.add(v.toLowerCase()));
+    }
+  });
+  return currentVenues.filter(v => past.has(v.toLowerCase()));
 }
 
 function renderQueueLog() {
@@ -600,7 +612,7 @@ async function generate() {
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || `Error ${res.status}`);
     lastData = data;
-    logEntry(data.destination, postType, 'draft');
+    logEntry(data.destination, postType, 'draft', data.locations.map(l => l.name));
     panel.innerHTML = renderOutput(data);
   } catch (err) {
     panel.innerHTML = `<div class="state err">${err.message}</div>`;
@@ -640,6 +652,8 @@ function renderOutput(data) {
 // ─── IG Panel ─────────────────────────────────────────────────────────────────
 function buildIGPanel(data) {
   const { destination, locations } = data;
+  const venueNames = locations.map(l => l.name);
+  const dupes      = checkDuplicates(destination, venueNames);
   igSlides = [];
   lastInterests = [...selectedInterests].join(' · ');
 
@@ -711,6 +725,7 @@ function buildIGPanel(data) {
       <div class="caption-box">${escHtml(igCaption)}</div>
       <button class="copy-caption-btn" id="copyCaptionBtn" onclick="copyCaption()">Copy Caption</button>
       <div style="border-top:1px solid var(--border);margin:20px 0;"></div>
+      ${dupes.length ? `<div style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);border-radius:8px;padding:10px 14px;font-size:0.78rem;color:#f59e0b;margin-bottom:12px;">⚠ Already featured in ${escHtml(destination)}: ${dupes.map(escHtml).join(', ')}</div>` : ''}
       <button class="publish-btn" id="publishBtn" onclick="publishCarousel()">Publish to Instagram</button>
       <button class="publish-btn" id="downloadBtn" onclick="downloadSlides()" style="background:transparent;border:1px solid var(--border);color:var(--muted);margin-top:10px;">Download slides as PNG</button>
       <div class="publish-result" id="publishResult"></div>
@@ -746,19 +761,53 @@ function copyCaption() {
 }
 
 // ─── Publish to Instagram ──────────────────────────────────────────────────────
-async function publishCarousel() {
+function publishCarousel() {
   if (!igSlides.length || !lastData) return;
+  const city    = lastData.destination;
+  const type    = TYPE_LABELS[postType] || postType;
+  const nSlides = igSlides.length;
+
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.72);z-index:1000;display:flex;align-items:center;justify-content:center;';
+  overlay.innerHTML = `
+    <div style="background:#18181b;border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:32px 28px;max-width:360px;width:90%;text-align:center;">
+      <div style="font-size:1rem;font-weight:700;color:#fafafa;margin-bottom:8px;">Publish to @amig0trips?</div>
+      <div style="font-size:0.83rem;color:#a1a1aa;margin-bottom:24px;">${escHtml(city)} &middot; ${escHtml(type)} &middot; ${nSlides} slides</div>
+      <div style="display:flex;gap:12px;justify-content:center;">
+        <button id="_cfmCancel" style="padding:10px 22px;background:transparent;border:1px solid rgba(255,255,255,0.12);border-radius:8px;color:#a1a1aa;font-size:0.88rem;cursor:pointer;font-family:inherit;">Cancel</button>
+        <button id="_cfmPublish" style="padding:10px 22px;background:#818cf8;border:none;border-radius:8px;color:#fff;font-size:0.88rem;font-weight:600;cursor:pointer;font-family:inherit;">Publish</button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+  document.getElementById('_cfmCancel').onclick  = () => overlay.remove();
+  document.getElementById('_cfmPublish').onclick = () => { overlay.remove(); doPublish(); };
+}
+
+async function doPublish() {
   const btn      = document.getElementById('publishBtn');
   const resultEl = document.getElementById('publishResult');
 
   btn.disabled = true;
   resultEl.style.display = 'none';
+  truncatedVenues = [];
 
   try {
     btn.textContent = 'Rendering slides...';
     await document.fonts.ready;
 
-    const slides = await Promise.all(igSlides.map((_, i) => makeSlide(i)));
+    const results = await Promise.allSettled(igSlides.map((_, i) => makeSlide(i)));
+    const failed  = results.filter(r => r.status === 'rejected');
+    if (failed.length) throw new Error(`${failed.length} slide(s) failed to render — check console`);
+    const slides = results.map(r => r.value);
+
+    if (truncatedVenues.length) {
+      resultEl.textContent = `⚠ Tip text truncated on: ${truncatedVenues.join(', ')} — review before publishing.`;
+      resultEl.className   = 'publish-result';
+      resultEl.style.cssText = 'display:block;color:#f59e0b;';
+      btn.disabled    = false;
+      btn.textContent = 'Publish to Instagram';
+      return;
+    }
 
     btn.textContent = `Uploading ${slides.length} slides & publishing...`;
 
@@ -775,7 +824,7 @@ async function publishCarousel() {
     resultEl.className  = 'publish-result ok';
     resultEl.style.display = 'block';
     btn.textContent = 'Posted to Instagram';
-    logEntry(lastData.destination, postType, 'published');
+    logEntry(lastData.destination, postType, 'published', lastData.locations.map(l => l.name));
   } catch (err) {
     resultEl.textContent   = `Error: ${err.message}`;
     resultEl.className     = 'publish-result err';
@@ -1208,7 +1257,9 @@ function drawVenueSlide(ctx, idx) {
     ctx.fillText(T.label, PAD, afterName + 104);
     ctx.font = '400 36px system-ui,sans-serif';
     ctx.fillStyle = 'rgba(250,245,240,0.78)';
-    canvasWrap(ctx, best.tip, W - PAD*2).slice(0, 4).forEach((l, i) => {
+    const tipLines = canvasWrap(ctx, best.tip, W - PAD*2);
+    if (tipLines.length > 4) truncatedVenues.push(loc.name);
+    tipLines.slice(0, 4).forEach((l, i) => {
       ctx.fillText(l, PAD, afterName + 152 + i * 50);
     });
   }
