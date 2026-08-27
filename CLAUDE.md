@@ -15,7 +15,7 @@ The platform consists of five apps in one codebase:
 **Target Users:** Tour operators, travel agents, clients, tour guides
 **Tier:** 1 — Enterprise Grade
 **Status:** Active
-**Last Updated:** 2026-08-24 (Session 17)
+**Last Updated:** 2026-08-27 (Session 18)
 **Brand:** `amig0` — brand name, always lowercase. `@amig0trips` — exclusive social handle (Instagram + Facebook). These are distinct: amig0 is the product, @amig0trips is the channel.
 
 ## 2. Architecture Overview
@@ -47,6 +47,26 @@ The platform consists of five apps in one codebase:
 - Content Engine: content/index.html (internal, amig0.vercel.app/content/), api/ig-post.py (Vercel serverless IG publish)
 
 **Session history:** see docs/changelog.md
+
+**Session 18 additions (2026-08-27):**
+- og.png (globe design, Atlantic-center, city dots): approved, committed, live at amig0.com/og.png
+- Google Search Console: verified (google3bac279bc2f9d80b.html), sitemap.xml submitted (4 pages)
+- deals.html: PIN brute-force rate limiting — 5 attempts / 15-min localStorage lockout per user per venue
+- Affiliate infrastructure (all 3 active, status:pending in Firestore):
+  - Booze Bros (Jqn3sAmlK7qgqcXgd1u4) — model:hub, PIN:2847, test redemptions cleared
+  - Vigilante Coffee (vigilante_vista) — model:discovery, offer: free drip, PIN:6565, trial until 2026-10-25
+  - Revo Roasters (revo_oceanside) — model:discovery, offer: free pastry, PIN:9246, trial until 2026-10-25
+- Content Engine Phase 1 (production hardening):
+  - CORS restricted: `*` → `https://amig0.com` on both api/hacks.py and api/ig-post.py
+  - X-Publish-Token auth gate on api/ig-post.py (PUBLISH_SECRET in Vercel env)
+  - PUBLISH_TOKEN constant + header injected into publishCarousel() fetch
+  - #iztapalapa removed from finale caption
+  - 9× amig0.vercel.app/hacks → amig0.com/hacks across canvas footers + captions
+- Content Engine Phase 2 (quality guardrails):
+  - Duplicate venue detection — checkDuplicates() warns if venue was featured before in same city; logEntry() now stores venues[]
+  - Tip overflow protection — drawVenueSlide() tracks truncated tips; doPublish() blocks + warns operator
+  - Promise.all → Promise.allSettled — per-slide render failures surfaced individually
+  - Pre-publish confirm modal — city / type / slide count shown; Cancel / Publish gate before any upload
 
 **Session 17 additions (2026-08-24):**
 - Ecosystem QA — 43-section review across home.html, hacks/index.html, deals.html as one product. P0→P2 findings executed and deployed.
