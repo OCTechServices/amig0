@@ -649,6 +649,27 @@ function renderOutput(data) {
     ${buildIGPanel(data)}`;
 }
 
+// ─── Hashtag builder — base + interest-aware city-specific tags ───────────────
+function buildHashtags(cityTag, interests) {
+  const base = [`#${cityTag}`, `#${cityTag}travel`, '#travelhacks', '#insidertips', '#localknowledge', '#amig0trips'];
+  const map = {
+    'Food':       [`#${cityTag}food`,      `#${cityTag}eats`,      '#foodie'],
+    'Coffee':     [`#${cityTag}coffee`,    '#specialtycoffee',     '#coffeeshop'],
+    'Bars':       [`#${cityTag}bars`,      `#${cityTag}nightlife`, '#barhopping'],
+    'Nightlife':  [`#${cityTag}nightlife`, `#${cityTag}bars`,      '#nightout'],
+    'Arts':       [`#${cityTag}art`,       `#${cityTag}culture`,   '#streetart'],
+    'Live Music': [`#${cityTag}music`,     '#livemusic',           '#musicvenue'],
+    'Music':      [`#${cityTag}music`,     '#livemusic',           '#musicscene'],
+    'Markets':    [`#${cityTag}market`,    '#localmarket',         '#freshmarket'],
+    'Nature':     [`#${cityTag}nature`,    `#${cityTag}outdoors`,  '#hiking'],
+    'Theatre':    [`#${cityTag}theatre`,   `#${cityTag}arts`,      '#performingarts'],
+    'Shopping':   [`#${cityTag}shopping`,  '#localshops',          '#boutique'],
+  };
+  const extra = new Set();
+  interests.forEach(i => (map[i] || []).forEach(t => extra.add(t)));
+  return [...base, ...[...extra].slice(0, 4)].join(' ');
+}
+
 // ─── IG Panel ─────────────────────────────────────────────────────────────────
 function buildIGPanel(data) {
   const { destination, locations } = data;
@@ -689,15 +710,33 @@ function buildIGPanel(data) {
   // Caption
   const venueLines = locations.map(l => `→ ${l.name}`).join('\n');
   const cityTag    = destination.toLowerCase().replace(/\s+/g, '');
+  const tags       = buildHashtags(cityTag, [...selectedInterests]);
+  // Hook rotates A→B→C across posts based on queue log length
+  const hookIdx    = JSON.parse(localStorage.getItem(LOG_KEY) || '[]').length % 3;
+
   if (postType === 'finale') {
     const interestLine = lastInterests ? `Final drop: ${lastInterests} — the spots locals actually love.\n\n` : '';
-    igCaption = `That's a wrap on our ${destination} series. 🔑\n\n${interestLine}In this post:\n${venueLines}\n\nSave this series for your next ${destination} trip → amig0.com/hacks\n\n🔗 All recommended tools → link in bio\n\n💬 Which city should we cover next? Drop it below.\n\n#${cityTag} #${cityTag}travel #travelhacks #insidertips #localknowledge #travelsmarter #amig0trips`;
+    const hooks = [
+      `That's a wrap on ${destination}. Save the series. 🔑`,
+      `Final ${destination} drop — best for last. 🔑`,
+      `${destination} series complete. This is the one to save. 🔑`,
+    ];
+    igCaption = `${hooks[hookIdx]}\n\n${interestLine}In this post:\n${venueLines}\n\nSave this series for your next ${destination} trip → amig0.com/hacks\n\n🔗 All recommended tools → link in bio\n\n💬 Which city should we cover next? Drop it below.\n\n${tags}`;
   } else if (postType === 'continuation') {
     const interestLine = lastInterests ? `This time: ${lastInterests} — the spots locals actually know.\n\n` : '';
-    igCaption = `Back in ${destination}. 🔑\n\n${interestLine}In this post:\n${venueLines}\n\nPart of our ongoing ${destination} city series → amig0.com/hacks\n\n🔗 All recommended tools → link in bio\n\n💬 Drop your city below — we might feature it next.\n\n#${cityTag} #${cityTag}travel #travelhacks #insidertips #localknowledge #travelsmarter #amig0trips`;
+    const hooks = [
+      `More ${destination}. Still no tourist traps. 🔑`,
+      `Back in ${destination} — more spots you need to know. 🔑`,
+      `${destination}${lastInterests ? ` — ${lastInterests}` : ''} continued. 🔑`,
+    ];
+    igCaption = `${hooks[hookIdx]}\n\n${interestLine}In this post:\n${venueLines}\n\nPart of our ongoing ${destination} city series → amig0.com/hacks\n\n🔗 All recommended tools → link in bio\n\n💬 Drop your city below — we might feature it next.\n\n${tags}`;
   } else {
-    const interestLine = lastInterests ? `${lastInterests} — ` : '';
-    igCaption = `Insider hacks for ${destination} — ${interestLine}the spots locals actually know. 🔑\n\nIn this post:\n${venueLines}\n\nGenerate personalized hacks for any city → amig0.com/hacks\n\n🔗 All recommended tools → link in bio\n\n💬 Drop your city below — we might feature it next.\n\n#${cityTag} #${cityTag}travel #travelhacks #insidertips #localknowledge #travelsmarter #amig0trips`;
+    const hooks = [
+      `${destination} without the tourist trap. 🔑`,
+      `If you're going to ${destination} — save this. 🔑`,
+      `${destination}${lastInterests ? ` — ${lastInterests}` : ''} — the spots worth knowing. 🔑`,
+    ];
+    igCaption = `${hooks[hookIdx]}\n\nIn this post:\n${venueLines}\n\nGenerate personalized hacks for any city → amig0.com/hacks\n\n🔗 All recommended tools → link in bio\n\n💬 Drop your city below — we might feature it next.\n\n${tags}`;
   }
 
   const slidesHTML = igSlides.map((s, i) => {
