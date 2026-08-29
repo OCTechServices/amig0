@@ -1,7 +1,7 @@
 [
   { "id": "mexico-city",    "name": "Mexico City",   "country": "Mexico", "region": "Latin America",  "lat": 19.4326,  "lng": -99.1332,  "status": "complete", "postsDone": 3 },
   { "id": "guadalajara",    "name": "Guadalajara",   "country": "Mexico", "region": "Latin America",  "lat": 20.6597,  "lng": -103.3496, "status": "queue",    "postsDone": 0 },
-  { "id": "oaxaca",         "name": "Oaxaca",        "country": "Mexico", "region": "Latin America",  "lat": 17.0732,  "lng": -96.7266,  "status": "queue",    "postsDone": 0 },
+  { "id": "oaxaca",         "name": "Oaxaca",        "country": "Mexico", "region": "Latin America",  "lat": 17.0732,  "lng": -96.7266,  "status": "complete", "postsDone": 3 },
   { "id": "cancun",         "name": "Cancún",        "country": "Mexico", "region": "Latin America",  "lat": 21.1619,  "lng": -86.8515,  "status": "queue",    "postsDone": 0 },
   { "id": "tijuana",        "name": "Tijuana",       "country": "Mexico", "region": "Latin America",  "lat": 32.5149,  "lng": -117.0382, "status": "queue",    "postsDone": 0 },
   { "id": "acapulco",       "name": "Acapulco",      "country": "Mexico", "region": "Latin America",  "lat": 16.8531,  "lng": -99.8237,  "status": "queue",    "postsDone": 0 },
