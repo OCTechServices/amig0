@@ -7,6 +7,7 @@ Two modes:
 Set ANTHROPIC_API_KEY in Vercel project settings.
 """
 import os
+import re
 import json
 import urllib.request
 import urllib.error
@@ -70,7 +71,10 @@ class handler(BaseHTTPRequestHandler):
                 start, end = text.find('{'), text.rfind('}')
                 if start == -1 or end == -1:
                     raise json.JSONDecodeError('No JSON object found', text, 0)
-                result = json.loads(text[start:end + 1])
+                json_str = text[start:end + 1]
+                # Strip invalid JSON escape sequences (e.g. \' \, \- that Claude sometimes emits)
+                json_str = re.sub(r'\\([^"\\/bfnrtu])', r'\1', json_str)
+                result = json.loads(json_str)
                 self._json(200, result)
         except urllib.error.HTTPError as e:
             try:
