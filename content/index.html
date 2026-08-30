@@ -729,16 +729,23 @@ function buildIGPanel(data) {
     });
     igSlides.push('__VENMAP__');
     igSlides.push(`Your city next?\n\nGet personalized hacks → amig0.com/hacks\n\n@amig0trips`);
-    const cityTag  = destination.toLowerCase().replace(/\s+/g, '');
+    const cityTag  = destination.toLowerCase().replace(/[^a-z0-9]/g, '');
     const catTag   = venue.category.toLowerCase().replace(/\s+/g, '');
     const tags     = `#${cityTag} #${cityTag}${catTag} #localinsider #insidertips #travelhacks #amig0trips`;
-    const hackLines  = hacks.map((h, i) => `${i + 1}. ${h.tip}`).join('\n');
+    const hackLines  = hacks.map((h, i) => {
+      const t = TYPES[h.type] || TYPES.pro_tip;
+      return `${i + 1}. ${t.emoji} ${h.tip}`;
+    }).join('\n');
     const tagHandle  = document.getElementById('spotlightTagToggle')?.checked;
     const handle     = (tagHandle && venue.instagram) ? `@${venue.instagram}` : venue.name;
     const hookIdx    = JSON.parse(localStorage.getItem(LOG_KEY) || '[]').length % 3;
+    const CAT_EMOJI  = { 'Bar':'🍺', 'Dining':'🍽️', 'Coffee':'☕', 'Music':'🎵',
+                         'Art':'🎨', 'Nature':'🌿', 'Market':'🛒', 'Shopping':'🛍️',
+                         'Entertainment':'🎭', 'Other':'📍' };
+    const vEmoji     = CAT_EMOJI[venue.category] || '📍';
     const collabHooks = [
       `We teamed up with ${handle} to bring you 5 hacks you won't find online. 🔑`,
-      `${handle} × amig0 — here's what the regulars actually know. 🔑`,
+      `${handle} × amig0 ${vEmoji} — here's what the regulars actually know. 🔑`,
       `Our latest collab with ${handle}. 5 insider tips, straight from the source. 🔑`,
     ];
     const websiteLine = venue.website ? `\n🌐 ${venue.website}` : '';
@@ -778,7 +785,7 @@ function buildIGPanel(data) {
 
   // Caption
   const venueLines = locations.map(l => `→ ${l.name}`).join('\n');
-  const cityTag    = destination.toLowerCase().replace(/\s+/g, '');
+  const cityTag    = destination.toLowerCase().replace(/[^a-z0-9]/g, '');
   const tags       = buildHashtags(cityTag, [...selectedInterests]);
   // Hook rotates A→B→C across posts based on queue log length
   const hookIdx    = JSON.parse(localStorage.getItem(LOG_KEY) || '[]').length % 3;
