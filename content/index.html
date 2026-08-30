@@ -372,6 +372,10 @@
           <label class="input-label" for="spotlightWebsite">Website URL <span style="color:var(--muted);font-weight:400;">(optional — improves accuracy)</span></label>
           <input type="url" id="spotlightWebsite" placeholder="https://boozebros.com" style="width:100%;padding:10px 14px;background:#1a1a1e;border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:inherit;font-size:0.9rem;box-sizing:border-box;">
         </div>
+        <label style="display:flex;align-items:center;gap:8px;font-size:0.82rem;color:var(--muted);cursor:pointer;margin-top:4px;">
+          <input type="checkbox" id="spotlightTagToggle" style="accent-color:#818cf8;">
+          Tag @handle in caption
+        </label>
       </div>
 
       <div class="post-type-seg" id="postTypeSeg">
@@ -728,9 +732,10 @@ function buildIGPanel(data) {
     const cityTag  = destination.toLowerCase().replace(/\s+/g, '');
     const catTag   = venue.category.toLowerCase().replace(/\s+/g, '');
     const tags     = `#${cityTag} #${cityTag}${catTag} #localinsider #insidertips #travelhacks #amig0trips`;
-    const hackLines = hacks.map((h, i) => `${i + 1}. ${h.tip}`).join('\n');
-    const handle   = venue.instagram ? `@${venue.instagram}` : venue.name;
-    const hookIdx  = JSON.parse(localStorage.getItem(LOG_KEY) || '[]').length % 3;
+    const hackLines  = hacks.map((h, i) => `${i + 1}. ${h.tip}`).join('\n');
+    const tagHandle  = document.getElementById('spotlightTagToggle')?.checked;
+    const handle     = (tagHandle && venue.instagram) ? `@${venue.instagram}` : venue.name;
+    const hookIdx    = JSON.parse(localStorage.getItem(LOG_KEY) || '[]').length % 3;
     const collabHooks = [
       `We teamed up with ${handle} to bring you 5 hacks you won't find online. 🔑`,
       `${handle} × amig0 — here's what the regulars actually know. 🔑`,
@@ -1147,21 +1152,30 @@ async function drawVenueMapSlide(ctx) {
   const PAD = 56;
 
   // Geocode: Nominatim (accurate) → Claude lat/lng → city center fallback
-  // City center is always the last resort — venue authenticity is enforced by the prompt,
-  // not by coordinate precision. A pin at city center means "go to this area."
-  const cityCenter = CITY_COORDS[city] || { lat: 19.4326, lng: -99.1332 };
+  const cityCenter = CITY_COORDS[city] || null;
   const pinned = [];
   for (const loc of lastData.locations) {
     const nominatim = await geocodeVenue(loc.name, city);
     const claudeCoords = (loc.lat != null && loc.lng != null && Math.abs(loc.lat) > 0.001 && Math.abs(loc.lng) > 0.001)
       ? { lat: loc.lat, lng: loc.lng } : null;
-    const coords = nominatim || claudeCoords || cityCenter;
+    const coords = nominatim || claudeCoords || cityCenter || { lat: 0, lng: 0 };
     pinned.push({ ...loc, coords });
   }
 
-  // Always center on city — gives users spatial context within the city
-  const centerLat = cityCenter.lat;
-  const centerLng = cityCenter.lng;
+  // Venue spotlight: center on the single venue's coords, not a city center lookup.
+  // City posts: center on known city coords; unknown city → centroid of pinned venues.
+  let centerLat, centerLng;
+  if (postType === 'venue-spotlight' && pinned[0]?.coords) {
+    centerLat = pinned[0].coords.lat;
+    centerLng = pinned[0].coords.lng;
+  } else if (cityCenter) {
+    centerLat = cityCenter.lat;
+    centerLng = cityCenter.lng;
+  } else {
+    const valid = pinned.filter(p => Math.abs(p.coords.lat) > 0.001);
+    centerLat = valid.length ? valid.reduce((s, p) => s + p.coords.lat, 0) / valid.length : 0;
+    centerLng = valid.length ? valid.reduce((s, p) => s + p.coords.lng, 0) / valid.length : 0;
+  }
 
   const zoom = 13, GRID = 4, TS = 256;
   const scale = W / (TS * GRID);
@@ -1230,7 +1244,7 @@ async function drawVenueMapSlide(ctx) {
   ctx.fillText(city.toUpperCase(), PAD, PAD + 40);
   ctx.font = '500 26px "Inter",system-ui,sans-serif';
   ctx.fillStyle = ACCENT;
-  ctx.fillText('WHERE TO FIND THEM', PAD, PAD + 76);
+  ctx.fillText(postType === 'venue-spotlight' ? 'WHERE TO FIND US' : 'WHERE TO FIND THEM', PAD, PAD + 76);
 
   // Numbered legend inside the strip — always in the safe zone
   const legendY = H - STRIP_H + 18;
