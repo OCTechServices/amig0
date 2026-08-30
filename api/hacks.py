@@ -192,11 +192,13 @@ class handler(BaseHTTPRequestHandler):
             "Use these hack types:\n"
             "- app: digital tools, apps, cashback platforms, or loyalty programs to use\n"
             "- timing: best time to visit, happy hours, live sets, quiet hours, seasonal advantages\n"
-            "- local_alternative: a better or less obvious nearby option a local would know\n"
             "- pro_tip: insider knowledge — what to order, where to sit, what to ask for, what to avoid\n\n"
+            "HARD RULE — No competitors or alternatives: This is an exclusive brand spotlight. "
+            "Never mention, reference, or suggest any other venue, brand, bar, brewery, café, or business. "
+            "Every hack must be about this venue only.\n\n"
             "Rules:\n"
             "- Exactly 5 hacks — no more, no fewer.\n"
-            "- Vary hack types — use at least 3 different types across the 5 hacks.\n"
+            "- Vary hack types — use all 3 types across the 5 hacks (app, timing, pro_tip).\n"
             "- Be specific to this venue. No generic advice.\n"
             "- Tip quality: every tip must contain a concrete action — what to ORDER, ASK FOR, TIME, or AVOID. "
             "Maximum 2 sentences. Never open with a description of the venue or its atmosphere.\n"
@@ -211,11 +213,11 @@ class handler(BaseHTTPRequestHandler):
             "Respond with valid JSON only — no markdown, no code fences, no extra text.\n"
             "Schema (exactly one location in the array, exactly 5 hacks):\n"
             '{"destination":"...","locations":[{"name":"...","category":"Shopping|Dining|Entertainment|Bar|Music|Art|Nature|Market|Other","lat":0.0,"lng":0.0,"website":"","instagram":"","hacks":['
-            '{"type":"app|timing|local_alternative|pro_tip","tip":"..."},'
-            '{"type":"app|timing|local_alternative|pro_tip","tip":"..."},'
-            '{"type":"app|timing|local_alternative|pro_tip","tip":"..."},'
-            '{"type":"app|timing|local_alternative|pro_tip","tip":"..."},'
-            '{"type":"app|timing|local_alternative|pro_tip","tip":"..."}'
+            '{"type":"app|timing|pro_tip","tip":"..."},'
+            '{"type":"app|timing|pro_tip","tip":"..."},'
+            '{"type":"app|timing|pro_tip","tip":"..."},'
+            '{"type":"app|timing|pro_tip","tip":"..."},'
+            '{"type":"app|timing|pro_tip","tip":"..."}'
             ']}]}'
         )
 
