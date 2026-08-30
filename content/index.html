@@ -336,6 +336,7 @@
         <input type="text" id="cityOther" placeholder="Enter city..." style="display:none;margin-top:8px">
       </div>
 
+      <div id="modeSection">
       <label class="input-label">Mode</label>
       <div class="mode-toggle">
         <button class="mode-btn active" id="modeDiscover" onclick="setMode('discover')">Discover</button>
@@ -359,11 +360,21 @@
           <div class="quick-picks" id="quickPicks"></div>
         </div>
       </div>
+      </div>
+
+      <!-- Venue Spotlight -->
+      <div id="spotlightPanel" style="display:none">
+        <div class="field">
+          <label class="input-label" for="spotlightInput">Venue or brand name</label>
+          <input type="text" id="spotlightInput" placeholder="e.g. Booze Bros Brewing Co" style="width:100%;padding:10px 14px;background:#1a1a1e;border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:inherit;font-size:0.9rem;box-sizing:border-box;" onkeydown="if(event.key==='Enter') generate()">
+        </div>
+      </div>
 
       <div class="post-type-seg" id="postTypeSeg">
         <button class="seg-btn active" onclick="setPostType('new-city',this)">New City</button>
         <button class="seg-btn" onclick="setPostType('continuation',this)">Continuation</button>
         <button class="seg-btn" onclick="setPostType('finale',this)">Series Finale</button>
+        <button class="seg-btn" onclick="setPostType('venue-spotlight',this)">Venue Spotlight</button>
       </div>
       <button class="generate-btn" id="generateBtn" onclick="generate()">Generate</button>
       <div class="queue-log" id="queueLog">
@@ -491,11 +502,14 @@ function setPostType(type, el) {
   postType = type;
   document.querySelectorAll('.seg-btn').forEach(b => b.classList.remove('active'));
   el.classList.add('active');
+  const isSpotlight = type === 'venue-spotlight';
+  document.getElementById('modeSection').style.display    = isSpotlight ? 'none' : 'block';
+  document.getElementById('spotlightPanel').style.display = isSpotlight ? 'block' : 'none';
 }
 
 // ─── Queue log (localStorage) ─────────────────────────────────────────────────
 const LOG_KEY = 'amig0_queue_log';
-const TYPE_LABELS = { 'new-city': 'New City', 'continuation': 'Continuation', 'finale': 'Finale' };
+const TYPE_LABELS = { 'new-city': 'New City', 'continuation': 'Continuation', 'finale': 'Finale', 'venue-spotlight': 'Venue Spotlight' };
 
 function logEntry(city, type, status, venues) {
   const log = JSON.parse(localStorage.getItem(LOG_KEY) || '[]');
@@ -591,7 +605,11 @@ async function generate() {
   if (!city) return;
 
   let body;
-  if (currentMode === 'discover') {
+  if (postType === 'venue-spotlight') {
+    const venue = document.getElementById('spotlightInput').value.trim();
+    if (!venue) return;
+    body = { city, locations: venue, spotlight: true };
+  } else if (currentMode === 'discover') {
     if (!selectedInterests.size) return;
     body = { city, preferences: [...selectedInterests], session: Math.ceil(Math.random() * 20) };
   } else {
@@ -679,6 +697,27 @@ function buildIGPanel(data) {
   igSlides = [];
   lastInterests = [...selectedInterests].join(' · ');
 
+  // ── Venue Spotlight ─────────────────────────────────────────────────────────
+  if (postType === 'venue-spotlight') {
+    const venue = locations[0];
+    const hacks = venue.hacks.slice(0, 5);
+    igSlides.push(`LOCAL PICK\n📍 ${venue.name.toUpperCase()}\n${destination.toUpperCase()} · ${venue.category.toUpperCase()}`);
+    hacks.forEach((h, i) => {
+      const t = TYPES[h.type] || TYPES.pro_tip;
+      igSlides.push(`${i + 1}/5  ${t.emoji} ${t.label.toUpperCase()}\n\n${h.tip}`);
+    });
+    igSlides.push('__VENMAP__');
+    igSlides.push(`Your city next?\n\nGet personalized hacks → amig0.com/hacks\n\n@amig0trips`);
+    const cityTag = destination.toLowerCase().replace(/\s+/g, '');
+    const catTag  = venue.category.toLowerCase().replace(/\s+/g, '');
+    const tags    = `#${cityTag} #${cityTag}${catTag} #localinsider #insidertips #travelhacks #amig0trips`;
+    const hackLines = hacks.map((h, i) => `${i + 1}. ${h.tip}`).join('\n');
+    const igHandle  = venue.instagram ? `\n\nFollow them: @${venue.instagram}` : '';
+    igCaption = `Your insider guide to ${venue.name}. 🔑\n\n${hackLines}${igHandle}\n\nGet personalized city hacks → amig0.com/hacks\n\n🔗 Recommended tools → link in bio\n\n💬 What's your go-to spot in ${destination}?\n\n${tags}`;
+    return buildIGPanelHTML(data, dupes);
+  }
+
+  // ── City discovery (new-city / continuation / finale) ───────────────────────
   // Cover slide
   const coverTheme = lastInterests ? lastInterests.toUpperCase() : 'LOCAL INSIDER PICKS';
   igSlides.push(
@@ -740,6 +779,11 @@ function buildIGPanel(data) {
     igCaption = `${hooks[hookIdx]}\n\nIn this post:\n${venueLines}\n\nGenerate personalized hacks for any city → amig0.com/hacks\n\n🔗 All recommended tools → link in bio\n\n💬 Drop your city below — we might feature it next.\n\n${tags}`;
   }
 
+  return buildIGPanelHTML(data, dupes);
+}
+
+function buildIGPanelHTML(data, dupes) {
+  const { destination } = data;
   const slidesHTML = igSlides.map((s, i) => {
     const display = s === '__VENMAP__'   ? '[Venue map slide — OSM pins, renders on export]'
                   : s === '__SELECTOR__' ? '[Interest selector slide — renders on export]'
@@ -1189,12 +1233,14 @@ async function makeSlide(idx) {
   const ctx = canvas.getContext('2d');
   ctx.fillStyle = '#100c08';
   ctx.fillRect(0, 0, SLIDE_W, SLIDE_H);
-  if (idx === 0 && postType === 'finale') await drawFinaleMapSlide(ctx);
-  else if (idx === 0)                        drawCoverSlide(ctx);
-  else if (igSlides[idx] === '__VENMAP__')   await drawVenueMapSlide(ctx);
-  else if (igSlides[idx] === '__SELECTOR__') drawInterestSelectorSlide(ctx);
-  else if (idx === igSlides.length - 1)      drawCTASlide(ctx);
-  else                                        drawVenueSlide(ctx, idx);
+  if (idx === 0 && postType === 'finale')            await drawFinaleMapSlide(ctx);
+  else if (idx === 0 && postType === 'venue-spotlight') drawVenueSpotlightCover(ctx);
+  else if (idx === 0)                                drawCoverSlide(ctx);
+  else if (igSlides[idx] === '__VENMAP__')           await drawVenueMapSlide(ctx);
+  else if (igSlides[idx] === '__SELECTOR__')         drawInterestSelectorSlide(ctx);
+  else if (idx === igSlides.length - 1)              drawCTASlide(ctx);
+  else if (postType === 'venue-spotlight')           drawSpotlightHackSlide(ctx, idx - 1);
+  else                                               drawVenueSlide(ctx, idx);
   return canvas.toDataURL('image/jpeg', 0.85);
 }
 
@@ -1299,6 +1345,126 @@ function drawCoverSlide(ctx) {
   ctx.font = '400 22px system-ui,sans-serif';
   ctx.fillStyle = 'rgba(194,113,79,0.55)';
   ctx.fillText('amig0.com/hacks  ·  @amig0trips', PAD, H - PAD);
+}
+
+function drawVenueSpotlightCover(ctx) {
+  const W = SLIDE_W, H = SLIDE_H;
+  const venue = lastData.locations[0];
+  // Warm glow — lower right
+  const glow = ctx.createRadialGradient(W*0.8, H*0.75, 0, W*0.8, H*0.75, W*0.6);
+  glow.addColorStop(0, 'rgba(194,113,79,0.09)'); glow.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = glow; ctx.fillRect(0, 0, W, H);
+  drawBrandZero(ctx, W*0.74, H*0.62, 560, 0.042);
+  drawArchMotif(ctx, W*0.74, H*0.47, 390);
+  // Left editorial rule
+  ctx.fillStyle = 'rgba(194,113,79,0.16)';
+  ctx.fillRect(PAD - 28, PAD + 48, 1, H - (PAD + 48) - PAD);
+  // amig0 wordmark
+  ctx.textAlign = 'left';
+  ctx.font = '600 28px system-ui,sans-serif';
+  ctx.fillStyle = '#818cf8';
+  ctx.fillText('amig0', PAD, PAD + 28);
+  // Top rule
+  ctx.fillStyle = 'rgba(194,113,79,0.30)';
+  ctx.fillRect(PAD, PAD + 48, W - PAD*2, 1.5);
+  // "LOCAL PICK" label
+  ctx.font = '500 22px system-ui,sans-serif';
+  ctx.fillStyle = '#c2714f';
+  ctx.fillText('LOCAL PICK', PAD, PAD + 86);
+  // Venue name — adaptive, max 3 lines
+  const name = venue.name.toUpperCase();
+  const maxW = W - PAD * 2;
+  let nameSize = 128, nameLines;
+  for (let s = 128; s >= 48; s -= 4) {
+    ctx.font = `700 ${s}px "Cormorant Garamond",serif`;
+    nameLines = canvasWrap(ctx, name, maxW);
+    if (nameLines.length <= 3) { nameSize = s; break; }
+  }
+  if (!nameLines || nameLines.length > 3) nameLines = (nameLines || [name]).slice(0, 3);
+  const lineH = Math.round(nameSize * 1.06);
+  ctx.font = `700 ${nameSize}px "Cormorant Garamond",serif`;
+  ctx.fillStyle = '#faf7f4';
+  nameLines.forEach((l, i) => ctx.fillText(l, PAD, H*0.44 + i * lineH));
+  const afterName = H*0.44 + nameLines.length * lineH;
+  // Bottom rule — dynamic
+  const ruleY = Math.round(afterName + nameSize * 0.28);
+  ctx.fillStyle = 'rgba(194,113,79,0.30)';
+  ctx.fillRect(PAD, ruleY, W - PAD*2, 1.5);
+  // Tagline — city · category
+  const tagline = (lastData.destination + '  ·  ' + venue.category).toUpperCase();
+  ctx.font = '400 24px system-ui,sans-serif';
+  ctx.fillStyle = 'rgba(250,245,240,0.40)';
+  ctx.fillText(tagline, PAD, ruleY + 44);
+  // URL bottom
+  ctx.font = '400 22px system-ui,sans-serif';
+  ctx.fillStyle = 'rgba(194,113,79,0.55)';
+  ctx.fillText('amig0.com/hacks  ·  @amig0trips', PAD, H - PAD);
+}
+
+function drawSpotlightHackSlide(ctx, hackIdx) {
+  const W = SLIDE_W, H = SLIDE_H;
+  const venue = lastData.locations[0];
+  const hack  = venue.hacks[hackIdx];
+  if (!hack) return;
+  const T = TYPES[hack.type] || TYPES.pro_tip;
+  // Warm glow — alternates corner per slide
+  const glowX = hackIdx % 2 === 0 ? W*0.12 : W*0.88;
+  const glow  = ctx.createRadialGradient(glowX, H*0.20, 0, glowX, H*0.20, W*0.55);
+  glow.addColorStop(0, 'rgba(194,113,79,0.09)'); glow.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = glow; ctx.fillRect(0, 0, W, H);
+  drawBrandZero(ctx, W + 30, H*0.70, 300, 0.032, 'right');
+  drawArchMotif(ctx, W*0.84, H*0.70, 220);
+  // Left editorial rule
+  ctx.fillStyle = 'rgba(194,113,79,0.15)';
+  ctx.fillRect(PAD - 28, PAD + 46, 1, H - (PAD + 46) - PAD - 38);
+  // amig0 wordmark — top left
+  ctx.textAlign = 'left';
+  ctx.font = '600 28px system-ui,sans-serif';
+  ctx.fillStyle = '#818cf8';
+  ctx.fillText('amig0', PAD, PAD + 28);
+  // Hack progress — top right
+  ctx.textAlign = 'right';
+  ctx.font = '600 22px system-ui,sans-serif';
+  ctx.fillStyle = '#c2714f';
+  ctx.fillText(`${hackIdx + 1} / 5`, W - PAD, PAD + 26);
+  // Top rule
+  ctx.fillStyle = 'rgba(194,113,79,0.22)';
+  ctx.fillRect(PAD, PAD + 46, W - PAD*2, 1.5);
+  // Venue name — small persistent header
+  ctx.textAlign = 'left';
+  ctx.font = '500 26px system-ui,sans-serif';
+  ctx.fillStyle = '#c2714f';
+  ctx.fillText(venue.name.toUpperCase(), PAD, PAD + 90);
+  // Hack type label
+  ctx.font = `600 22px system-ui,sans-serif`;
+  ctx.fillStyle = T.color;
+  ctx.fillText(`${T.emoji}  ${T.label}`, PAD, PAD + 130);
+  // Mid rule
+  ctx.fillStyle = 'rgba(194,113,79,0.18)';
+  ctx.fillRect(PAD, PAD + 150, W - PAD*2, 1.5);
+  // Hack text — hero, adaptive size
+  const maxW = W - PAD * 2;
+  let tipSize = 52, tipLines;
+  for (let s = 52; s >= 32; s -= 4) {
+    ctx.font = `400 ${s}px system-ui,sans-serif`;
+    tipLines = canvasWrap(ctx, hack.tip, maxW);
+    if (tipLines.length <= 5) { tipSize = s; break; }
+  }
+  ctx.font = `400 ${tipSize}px system-ui,sans-serif`;
+  ctx.fillStyle = 'rgba(250,245,240,0.85)';
+  const tipLineH = Math.round(tipSize * 1.45);
+  tipLines.slice(0, 5).forEach((l, i) => {
+    ctx.fillText(l, PAD, PAD + 150 + 70 + i * tipLineH);
+  });
+  // Bottom rule
+  ctx.fillStyle = 'rgba(194,113,79,0.18)';
+  ctx.fillRect(PAD, H - PAD - 38, W - PAD*2, 1.5);
+  // Footer URL — right
+  ctx.textAlign = 'right';
+  ctx.font = '400 22px system-ui,sans-serif';
+  ctx.fillStyle = 'rgba(250,245,240,0.20)';
+  ctx.fillText('amig0.com/hacks', W - PAD, H - PAD);
+  ctx.textAlign = 'left';
 }
 
 function drawVenueSlide(ctx, idx) {

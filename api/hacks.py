@@ -37,12 +37,15 @@ class handler(BaseHTTPRequestHandler):
         locations   = body.get('locations', '').strip()
         preferences = body.get('preferences', [])
         session     = int(body.get('session', 1))
+        spotlight   = bool(body.get('spotlight', False))
 
         if not city:
             return self._json(400, {'error': 'city is required'})
 
         if preferences:
             prompt = self._discover_prompt(city, preferences, session)
+        elif locations and spotlight:
+            prompt = self._spotlight_prompt(city, locations)
         elif locations:
             prompt = self._custom_prompt(city, locations)
         else:
@@ -150,6 +153,41 @@ class handler(BaseHTTPRequestHandler):
             "Respond with valid JSON only — no markdown, no code fences, no extra text.\n"
             "Schema:\n"
             '{"destination":"...","locations":[{"name":"...","category":"Shopping|Dining|Entertainment|Bar|Music|Art|Nature|Market|Other","lat":0.0,"lng":0.0,"website":"","instagram":"","hacks":[{"type":"app|timing|local_alternative|pro_tip","tip":"..."}]}]}'
+        )
+
+    def _spotlight_prompt(self, city, venue):
+        return (
+            f"You are a savvy local travel insider. Generate exactly 5 specific, actionable insider hacks "
+            f"for ONE venue: {venue} in {city}.\n\n"
+            "Use these hack types:\n"
+            "- app: digital tools, apps, cashback platforms, or loyalty programs to use\n"
+            "- timing: best time to visit, happy hours, live sets, quiet hours, seasonal advantages\n"
+            "- local_alternative: a better or less obvious nearby option a local would know\n"
+            "- pro_tip: insider knowledge — what to order, where to sit, what to ask for, what to avoid\n\n"
+            "Rules:\n"
+            "- Exactly 5 hacks — no more, no fewer.\n"
+            "- Vary hack types — use at least 3 different types across the 5 hacks.\n"
+            "- Tone: confident and insider. Smart travel, not budget travel.\n"
+            "- Be specific to this venue. No generic advice.\n"
+            "- Tip quality: every tip must contain a concrete action — what to ORDER, ASK FOR, TIME, or AVOID. "
+            "Maximum 2 sentences. Never open with a description of the venue or its atmosphere.\n"
+            "  Bad: 'This bar is known for its natural wine selection.'\n"
+            "  Good: 'Ask for the off-menu orange wine — they keep a case behind the bar for regulars.'\n"
+            "- website: official website URL if you are confident it is correct — omit or leave empty string if unsure.\n"
+            "- instagram: Instagram handle (without @) if you are confident it is correct — omit or leave empty string if unsure.\n"
+            "- lat/lng: approximate latitude and longitude of the venue.\n\n"
+            f"HARD RULE — Authenticity: Only generate hacks for {venue} if you are CERTAIN it exists and is "
+            f"currently operating in {city}. If you are not confident, describe the closest known equivalent "
+            f"and name it accurately.\n\n"
+            "Respond with valid JSON only — no markdown, no code fences, no extra text.\n"
+            "Schema (exactly one location in the array, exactly 5 hacks):\n"
+            '{"destination":"...","locations":[{"name":"...","category":"Shopping|Dining|Entertainment|Bar|Music|Art|Nature|Market|Other","lat":0.0,"lng":0.0,"website":"","instagram":"","hacks":['
+            '{"type":"app|timing|local_alternative|pro_tip","tip":"..."},'
+            '{"type":"app|timing|local_alternative|pro_tip","tip":"..."},'
+            '{"type":"app|timing|local_alternative|pro_tip","tip":"..."},'
+            '{"type":"app|timing|local_alternative|pro_tip","tip":"..."},'
+            '{"type":"app|timing|local_alternative|pro_tip","tip":"..."}'
+            ']}]}'
         )
 
     def _custom_prompt(self, city, locations):
