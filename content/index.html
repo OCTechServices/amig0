@@ -366,7 +366,11 @@
       <div id="spotlightPanel" style="display:none">
         <div class="field">
           <label class="input-label" for="spotlightInput">Venue or brand name</label>
-          <input type="text" id="spotlightInput" placeholder="e.g. Booze Bros Brewing Co" style="width:100%;padding:10px 14px;background:#1a1a1e;border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:inherit;font-size:0.9rem;box-sizing:border-box;" onkeydown="if(event.key==='Enter') generate()">
+          <input type="text" id="spotlightInput" placeholder="e.g. Booze Bros Brewing Co" style="width:100%;padding:10px 14px;background:#1a1a1e;border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:inherit;font-size:0.9rem;box-sizing:border-box;margin-bottom:8px;" onkeydown="if(event.key==='Enter') generate()">
+        </div>
+        <div class="field">
+          <label class="input-label" for="spotlightWebsite">Website URL <span style="color:var(--muted);font-weight:400;">(optional — improves accuracy)</span></label>
+          <input type="url" id="spotlightWebsite" placeholder="https://boozebros.com" style="width:100%;padding:10px 14px;background:#1a1a1e;border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:inherit;font-size:0.9rem;box-sizing:border-box;">
         </div>
       </div>
 
@@ -505,6 +509,18 @@ function setPostType(type, el) {
   const isSpotlight = type === 'venue-spotlight';
   document.getElementById('modeSection').style.display    = isSpotlight ? 'none' : 'block';
   document.getElementById('spotlightPanel').style.display = isSpotlight ? 'block' : 'none';
+  // Force free-text city entry for spotlight — dropdown default silently corrupts location
+  const sel   = document.getElementById('citySelect');
+  const other = document.getElementById('cityOther');
+  if (isSpotlight) {
+    sel.value             = 'other';
+    other.style.display   = 'block';
+    other.value           = '';
+    other.placeholder     = 'Venue city (e.g. Vista, CA)';
+    other.focus();
+  } else {
+    other.placeholder = 'Enter city...';
+  }
 }
 
 // ─── Queue log (localStorage) ─────────────────────────────────────────────────
@@ -606,9 +622,10 @@ async function generate() {
 
   let body;
   if (postType === 'venue-spotlight') {
-    const venue = document.getElementById('spotlightInput').value.trim();
+    const venue   = document.getElementById('spotlightInput').value.trim();
+    const website = document.getElementById('spotlightWebsite').value.trim();
     if (!venue) return;
-    body = { city, locations: venue, spotlight: true };
+    body = { city, locations: venue, spotlight: true, ...(website && { website }) };
   } else if (currentMode === 'discover') {
     if (!selectedInterests.size) return;
     body = { city, preferences: [...selectedInterests], session: Math.ceil(Math.random() * 20) };

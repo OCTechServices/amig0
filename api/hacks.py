@@ -38,6 +38,7 @@ class handler(BaseHTTPRequestHandler):
         preferences = body.get('preferences', [])
         session     = int(body.get('session', 1))
         spotlight   = bool(body.get('spotlight', False))
+        website_url = body.get('website', '').strip()
 
         if not city:
             return self._json(400, {'error': 'city is required'})
@@ -45,7 +46,8 @@ class handler(BaseHTTPRequestHandler):
         if preferences:
             prompt = self._discover_prompt(city, preferences, session)
         elif locations and spotlight:
-            prompt = self._spotlight_prompt(city, locations)
+            site_content = self._fetch_website(website_url) if website_url else ''
+            prompt = self._spotlight_prompt(city, locations, site_content)
         elif locations:
             prompt = self._custom_prompt(city, locations)
         else:
@@ -155,10 +157,34 @@ class handler(BaseHTTPRequestHandler):
             '{"destination":"...","locations":[{"name":"...","category":"Shopping|Dining|Entertainment|Bar|Music|Art|Nature|Market|Other","lat":0.0,"lng":0.0,"website":"","instagram":"","hacks":[{"type":"app|timing|local_alternative|pro_tip","tip":"..."}]}]}'
         )
 
-    def _spotlight_prompt(self, city, venue):
+    def _fetch_website(self, url):
+        """Fetch a venue's website and return stripped plain text (max 3000 chars)."""
+        try:
+            req = urllib.request.Request(
+                url,
+                headers={'User-Agent': 'Mozilla/5.0 (compatible; amig0bot/1.0)'}
+            )
+            with urllib.request.urlopen(req, timeout=8) as resp:
+                raw = resp.read(65536).decode('utf-8', errors='ignore')
+            # Strip script/style blocks
+            raw = re.sub(r'<(script|style)[^>]*>.*?</(script|style)>', ' ', raw, flags=re.DOTALL | re.IGNORECASE)
+            # Strip all remaining HTML tags
+            text = re.sub(r'<[^>]+>', ' ', raw)
+            # Collapse whitespace
+            text = re.sub(r'\s+', ' ', text).strip()
+            return text[:3000]
+        except Exception:
+            return ''
+
+    def _spotlight_prompt(self, city, venue, site_content=''):
+        grounding = (
+            f"\n\nVENUE WEBSITE CONTENT (use this as your primary source of truth — "
+            f"hours, menu items, events, and details here override anything you assumed):\n"
+            f"---\n{site_content}\n---\n"
+        ) if site_content else ''
         return (
             f"You are producing a brand collaboration post between amig0 (a travel insider platform) "
-            f"and {venue}, a venue in {city}.\n\n"
+            f"and {venue}, a venue in {city}.{grounding}\n\n"
             f"Framing: These 5 hacks should feel like insider tips that {venue} itself would endorse — "
             f"the kind of staff-level knowledge that regulars know and tourists miss. Write from the "
             f"perspective of someone who has spent real time there, not an outside observer. "
