@@ -708,12 +708,19 @@ function buildIGPanel(data) {
     });
     igSlides.push('__VENMAP__');
     igSlides.push(`Your city next?\n\nGet personalized hacks → amig0.com/hacks\n\n@amig0trips`);
-    const cityTag = destination.toLowerCase().replace(/\s+/g, '');
-    const catTag  = venue.category.toLowerCase().replace(/\s+/g, '');
-    const tags    = `#${cityTag} #${cityTag}${catTag} #localinsider #insidertips #travelhacks #amig0trips`;
+    const cityTag  = destination.toLowerCase().replace(/\s+/g, '');
+    const catTag   = venue.category.toLowerCase().replace(/\s+/g, '');
+    const tags     = `#${cityTag} #${cityTag}${catTag} #localinsider #insidertips #travelhacks #amig0trips`;
     const hackLines = hacks.map((h, i) => `${i + 1}. ${h.tip}`).join('\n');
-    const igHandle  = venue.instagram ? `\n\nFollow them: @${venue.instagram}` : '';
-    igCaption = `Your insider guide to ${venue.name}. 🔑\n\n${hackLines}${igHandle}\n\nGet personalized city hacks → amig0.com/hacks\n\n🔗 Recommended tools → link in bio\n\n💬 What's your go-to spot in ${destination}?\n\n${tags}`;
+    const handle   = venue.instagram ? `@${venue.instagram}` : venue.name;
+    const hookIdx  = JSON.parse(localStorage.getItem(LOG_KEY) || '[]').length % 3;
+    const collabHooks = [
+      `We teamed up with ${handle} to bring you 5 hacks you won't find online. 🔑`,
+      `${handle} × amig0 — here's what the regulars actually know. 🔑`,
+      `Our latest collab with ${handle}. 5 insider tips, straight from the source. 🔑`,
+    ];
+    const websiteLine = venue.website ? `\n🌐 ${venue.website}` : '';
+    igCaption = `${collabHooks[hookIdx]}\n\n${hackLines}${websiteLine}\n\nGet personalized city hacks → amig0.com/hacks\n\n🔗 Recommended tools → link in bio\n\n💬 Visited ${venue.name}? What would you add?\n\n${tags}`;
     return buildIGPanelHTML(data, dupes);
   }
 
