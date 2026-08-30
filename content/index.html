@@ -485,6 +485,7 @@ let igCaption         = '';
 let lastInterests     = '';
 let postType          = 'new-city';
 let truncatedVenues   = [];
+let publishInFlight   = false;
 
 function setPostType(type, el) {
   postType = type;
@@ -823,12 +824,17 @@ function publishCarousel() {
 }
 
 async function doPublish() {
+  if (publishInFlight) return;  // prevent double-submit
+  publishInFlight = true;
+
   const btn      = document.getElementById('publishBtn');
   const resultEl = document.getElementById('publishResult');
 
   btn.disabled = true;
   resultEl.style.display = 'none';
   truncatedVenues = [];
+
+  const attemptId = Math.random().toString(36).slice(2, 10);
 
   try {
     btn.textContent = 'Rendering slides...';
@@ -840,36 +846,79 @@ async function doPublish() {
     const slides = results.map(r => r.value);
 
     if (truncatedVenues.length) {
-      resultEl.textContent = `⚠ Tip text truncated on: ${truncatedVenues.join(', ')} — review before publishing.`;
-      resultEl.className   = 'publish-result';
+      resultEl.textContent   = `⚠ Tip text truncated on: ${truncatedVenues.join(', ')} — review before publishing.`;
+      resultEl.className     = 'publish-result';
       resultEl.style.cssText = 'display:block;color:#f59e0b;';
       btn.disabled    = false;
       btn.textContent = 'Publish to Instagram';
+      publishInFlight = false;
       return;
     }
 
-    btn.textContent = `Uploading ${slides.length} slides & publishing...`;
+    btn.textContent = 'Preparing media for Instagram...';
 
-    const res  = await fetch('/api/ig-post', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-Publish-Token': PUBLISH_TOKEN },
-      body: JSON.stringify({ slides, caption: igCaption }),
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || `Error ${res.status}`);
+    let data;
+    try {
+      const res = await fetch('/api/ig-post', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Publish-Token': PUBLISH_TOKEN },
+        body:    JSON.stringify({ slides, caption: igCaption, attemptId }),
+      });
+      data = await res.json();
+    } catch (fetchErr) {
+      // Network-level failure (ERR_NETWORK_CHANGED, timeout, etc.)
+      // Publication state is UNKNOWN — server may have succeeded.
+      resultEl.innerHTML     = `⚠ Network error — publication state unknown.<br>
+        <span style="font-size:0.82rem;color:#a1a1aa;">
+        Check <a href="https://www.instagram.com/amig0trips/" target="_blank" rel="noopener" style="color:#818cf8;">@amig0trips</a>
+        before retrying. If the post is live, do not publish again. (ref: ${attemptId})</span>`;
+      resultEl.className     = 'publish-result';
+      resultEl.style.cssText = 'display:block;color:#f59e0b;border:1px solid rgba(245,158,11,0.3);border-radius:8px;padding:12px;';
+      btn.disabled    = false;
+      btn.textContent = 'Publish to Instagram';
+      publishInFlight = false;
+      return;
+    }
 
-    const warnHtml = data.warning ? `<br><span style="color:#f59e0b;font-size:0.8rem">${data.warning}</span>` : '';
-    resultEl.innerHTML  = `Posted! <a href="${data.permalink}" target="_blank" rel="noopener noreferrer">${data.permalink}</a>${warnHtml}`;
-    resultEl.className  = 'publish-result ok';
-    resultEl.style.display = 'block';
-    btn.textContent = 'Posted to Instagram';
-    logEntry(lastData.destination, postType, 'published', lastData.locations.map(l => l.name));
+    // Structured response handling
+    if (data.stage === 'SUCCESS') {
+      const warnHtml = data.warning ? `<br><span style="color:#f59e0b;font-size:0.8rem">${escHtml(data.warning)}</span>` : '';
+      resultEl.innerHTML  = `Posted! <a href="${data.permalink}" target="_blank" rel="noopener noreferrer">${escHtml(data.permalink)}</a>${warnHtml}`;
+      resultEl.className  = 'publish-result ok';
+      resultEl.style.cssText = 'display:block;';
+      btn.textContent = 'Posted to Instagram';
+      logEntry(lastData.destination, postType, 'published', lastData.locations.map(l => l.name));
+
+    } else if (data.stage === 'PUBLISH_STATE_UNKNOWN') {
+      resultEl.innerHTML     = `⚠ ${escHtml(data.warning || 'Publication state unknown — verify on @amig0trips before retrying.')}`;
+      resultEl.className     = 'publish-result';
+      resultEl.style.cssText = 'display:block;color:#f59e0b;border:1px solid rgba(245,158,11,0.3);border-radius:8px;padding:12px;';
+      btn.disabled    = false;
+      btn.textContent = 'Publish to Instagram';
+
+    } else if (data.retryable) {
+      resultEl.textContent   = `Publishing failed — safe to retry. (${escHtml(data.stage || '')})`;
+      resultEl.className     = 'publish-result err';
+      resultEl.style.cssText = 'display:block;';
+      btn.disabled    = false;
+      btn.textContent = 'Retry Publish';
+
+    } else {
+      resultEl.textContent   = data.message || 'An error occurred.';
+      resultEl.className     = 'publish-result err';
+      resultEl.style.cssText = 'display:block;';
+      btn.disabled    = false;
+      btn.textContent = 'Publish to Instagram';
+    }
+
   } catch (err) {
     resultEl.textContent   = `Error: ${err.message}`;
     resultEl.className     = 'publish-result err';
     resultEl.style.display = 'block';
     btn.disabled    = false;
     btn.textContent = 'Publish to Instagram';
+  } finally {
+    publishInFlight = false;
   }
 }
 
