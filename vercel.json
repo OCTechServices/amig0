@@ -5,6 +5,8 @@
     { "src": "^/$", "dest": "/home.html" },
     { "src": "^/deals/?$", "dest": "/deals.html" },
     { "src": "^/business/?$", "dest": "/business.html" },
+    { "src": "^/privacy/?$",  "dest": "/privacy.html" },
+    { "src": "^/terms/?$",    "dest": "/terms.html" },
     { "src": "/(.*)", "dest": "/$1" }
   ],
   "functions": {
