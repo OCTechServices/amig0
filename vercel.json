@@ -8,6 +8,12 @@
     { "src": "/(.*)", "dest": "/$1" }
   ],
   "functions": {
-    "api/ig-post.py": { "maxDuration": 60 }
+    "api/ig-post.py":          { "maxDuration": 60 },
+    "api/stripe-webhook.py":   { "maxDuration": 10 },
+    "api/stripe-booking.py":   { "maxDuration": 10 },
+    "api/booking-webhook.py":  { "maxDuration": 10 },
+    "api/stripe-connect.py":   { "maxDuration": 10 },
+    "api/wa-webhook.py":       { "maxDuration": 10 },
+    "api/twiml-record.py":     { "maxDuration": 10 }
   }
 }
