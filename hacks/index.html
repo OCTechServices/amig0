@@ -762,6 +762,24 @@ const SERVICES = [
       { name: 'Full Bar',   desc: 'Full bar setup · 6 hrs · custom menu + equipment', priceDisplay: '$1,100' },
     ],
   },
+  {
+    // Default city service — one vetted local partner per city
+    // To swap in a city-specific partner: update serviceId, add stripeAccountId for Path 2
+    bookingType: 'rental',
+    serviceId:   'ebike_local',
+    paymentPath: 1,
+    cities: [
+      'san diego', 'miami', 'los angeles', 'la', 'san francisco',
+      'new york', 'new york city', 'nyc',
+      'amsterdam', 'barcelona', 'lisbon', 'paris',
+      'cancun', 'tulum', 'puerto vallarta', 'mexico city', 'cdmx',
+    ],
+    badge:   'E-Bike Rental',
+    name:    'E-Bike Rental — Daily',
+    detail:  'Explore the city on your own schedule. Daily rental from a vetted local operator — no app, just ride.',
+    deposit: 1000,  // $10 reservation fee — kept by amig0, balance paid at shop
+    currency: 'usd',
+  },
 ];
 
 let lastData          = null;
@@ -1357,19 +1375,27 @@ function openBookingModal(idx) {
 
   document.getElementById('bk-badge').textContent        = `amig0 Service · ${s.badge}`;
   document.getElementById('bk-service-name').textContent = s.name;
-
-  // Render package cards
-  document.getElementById('bk-packages').innerHTML = (s.packages || []).map((pkg, i) => `
-    <div class="bk-pkg-card" onclick="selectPackage(this,${i})">
-      <div class="bk-pkg-name">${escHtml(pkg.name)}</div>
-      <div class="bk-pkg-desc">${escHtml(pkg.desc)}</div>
-      <div class="bk-pkg-price">${escHtml(pkg.priceDisplay)}</div>
-    </div>`).join('');
-
-  document.getElementById('bk-next').disabled = true;
-  document.getElementById('bk-step1').style.display = '';
-  document.getElementById('bk-step2').style.display = 'none';
   document.getElementById('booking-form').reset();
+
+  if (s.bookingType === 'rental') {
+    document.getElementById('bk-step1').style.display        = 'none';
+    document.getElementById('bk-step1-rental').style.display = '';
+    document.getElementById('bk-step2').style.display        = 'none';
+  } else {
+    // Render package cards
+    document.getElementById('bk-packages').innerHTML = (s.packages || []).map((pkg, i) => `
+      <div class="bk-pkg-card" onclick="selectPackage(this,${i})">
+        <div class="bk-pkg-name">${escHtml(pkg.name)}</div>
+        <div class="bk-pkg-desc">${escHtml(pkg.desc)}</div>
+        <div class="bk-pkg-price">${escHtml(pkg.priceDisplay)}</div>
+      </div>`).join('');
+    document.getElementById('bk-next').disabled              = true;
+    document.getElementById('bk-step1').style.display        = '';
+    document.getElementById('bk-step1-rental').style.display = 'none';
+    document.getElementById('bk-step2').style.display        = 'none';
+    document.getElementById('bk-event-fields').style.display = '';
+  }
+
   document.getElementById('booking-overlay').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
@@ -1390,15 +1416,51 @@ function bookingNextStep() {
      <div class="bk-selected-note">${escHtml(selectedPackage.desc)} · Balance due at event</div>`;
   document.getElementById('bk-type').innerHTML =
     (s.eventTypes || []).map(t => `<option value="${t}">${t}</option>`).join('');
-  document.getElementById('bk-submit').disabled    = false;
-  document.getElementById('bk-submit').textContent = 'Review & Pay $35 Booking Fee';
+  document.getElementById('bk-event-fields').style.display  = '';
+  document.getElementById('bk-price-display').textContent   = '$35';
+  document.getElementById('bk-location-label').textContent  = 'Event location / address';
+  document.getElementById('bk-location').placeholder        = 'e.g. 123 Main St, San Diego, CA 92101';
+  document.getElementById('bk-submit').disabled             = false;
+  document.getElementById('bk-submit').textContent          = 'Reserve — Pay $35 Booking Fee';
+  document.getElementById('bk-back-btn').textContent        = '← Back to packages';
+  document.getElementById('bk-booking-note').textContent    = '$35 booking fee due now · Balance due at event · Non-refundable once confirmed.';
   document.getElementById('bk-step1').style.display = 'none';
+  document.getElementById('bk-step2').style.display = '';
+}
+
+function rentalNextStep() {
+  const date   = document.getElementById('bk-rental-date').value;
+  const days   = parseInt(document.getElementById('bk-rental-days').value) || 0;
+  const bikes  = parseInt(document.getElementById('bk-rental-bikes').value) || 0;
+  const pickup = document.getElementById('bk-rental-pickup').value;
+  if (!date || days < 1 || bikes < 1) {
+    document.getElementById('bk-rental-date').reportValidity();
+    return;
+  }
+  document.getElementById('bk-selected-summary').innerHTML =
+    `<span class="bk-selected-label">Rental details</span>
+     <div class="bk-selected-name">${bikes} bike${bikes > 1 ? 's' : ''} · ${days} day${days > 1 ? 's' : ''}</div>
+     <div class="bk-selected-note">Starting ${date} · ${pickup === 'hotel' ? 'Hotel delivery' : 'Shop pickup'} · Balance due at shop</div>`;
+  document.getElementById('bk-event-fields').style.display  = 'none';
+  document.getElementById('bk-price-display').textContent   = '$10';
+  document.getElementById('bk-location-label').textContent  = 'Hotel / pickup address';
+  document.getElementById('bk-location').placeholder        = 'e.g. Hotel name or street address';
+  document.getElementById('bk-submit').disabled             = false;
+  document.getElementById('bk-submit').textContent          = 'Reserve — Pay $10 Deposit';
+  document.getElementById('bk-back-btn').textContent        = '← Back to rental details';
+  document.getElementById('bk-booking-note').textContent    = '$10 reservation fee due now · Kept by amig0 · Balance due at the shop.';
+  document.getElementById('bk-step1-rental').style.display = 'none';
   document.getElementById('bk-step2').style.display = '';
 }
 
 function bookingPrevStep() {
   document.getElementById('bk-step2').style.display = 'none';
-  document.getElementById('bk-step1').style.display = '';
+  if (activeBookingService.bookingType === 'rental') {
+    document.getElementById('bk-step1-rental').style.display = '';
+  } else {
+    document.getElementById('bk-event-fields').style.display = '';
+    document.getElementById('bk-step1').style.display = '';
+  }
 }
 
 function closeBookingModal() {
@@ -1419,25 +1481,47 @@ async function submitBooking(e) {
   btn.disabled    = true;
   btn.textContent = 'Preparing checkout…';
   const s         = activeBookingService;
-  const typeVal   = document.getElementById('bk-type').value;
-  const eventType = typeVal === 'Other'
-    ? (document.getElementById('bk-other').value.trim() || 'Other')
-    : typeVal;
-  const payload = {
-    serviceId:     s.serviceId || '',
-    paymentPath:   s.paymentPath || 1,
-    serviceName:   s.name,
-    packageName:   selectedPackage ? selectedPackage.name : '',
-    packagePrice:  selectedPackage ? selectedPackage.priceDisplay : '',
-    currency:      s.currency,
-    deposit:       s.deposit,
-    customerName:  document.getElementById('bk-name').value.trim(),
-    customerPhone: document.getElementById('bk-phone').value.trim(),
-    eventDate:     document.getElementById('bk-date').value,
-    eventType:     eventType,
-    headcount:     document.getElementById('bk-headcount').value,
-    eventLocation: document.getElementById('bk-location').value.trim(),
-  };
+  const isRental  = s.bookingType === 'rental';
+
+  let payload;
+  if (isRental) {
+    payload = {
+      serviceId:     s.serviceId || '',
+      paymentPath:   1,
+      serviceName:   s.name,
+      packageName:   `${document.getElementById('bk-rental-bikes').value} bike(s) · ${document.getElementById('bk-rental-days').value} day(s)`,
+      packagePrice:  'Balance due at shop',
+      currency:      s.currency || 'usd',
+      deposit:       s.deposit,
+      customerName:  document.getElementById('bk-name').value.trim(),
+      customerPhone: document.getElementById('bk-phone').value.trim(),
+      rentalDate:    document.getElementById('bk-rental-date').value,
+      rentalDays:    document.getElementById('bk-rental-days').value,
+      rentalBikes:   document.getElementById('bk-rental-bikes').value,
+      rentalPickup:  document.getElementById('bk-rental-pickup').value,
+      eventLocation: document.getElementById('bk-location').value.trim(),
+    };
+  } else {
+    const typeVal   = document.getElementById('bk-type').value;
+    const eventType = typeVal === 'Other'
+      ? (document.getElementById('bk-other').value.trim() || 'Other')
+      : typeVal;
+    payload = {
+      serviceId:     s.serviceId || '',
+      paymentPath:   s.paymentPath || 1,
+      serviceName:   s.name,
+      packageName:   selectedPackage ? selectedPackage.name : '',
+      packagePrice:  selectedPackage ? selectedPackage.priceDisplay : '',
+      currency:      s.currency,
+      deposit:       s.deposit,
+      customerName:  document.getElementById('bk-name').value.trim(),
+      customerPhone: document.getElementById('bk-phone').value.trim(),
+      eventDate:     document.getElementById('bk-date').value,
+      eventType:     eventType,
+      headcount:     document.getElementById('bk-headcount').value,
+      eventLocation: document.getElementById('bk-location').value.trim(),
+    };
+  }
   try {
     const res  = await fetch('/api/stripe-booking', {
       method:  'POST',
@@ -1484,11 +1568,40 @@ async function submitBooking(e) {
       <button class="booking-submit" id="bk-next" onclick="bookingNextStep()" disabled>Continue</button>
     </div>
 
+    <!-- Step 1 (rental): Rental details -->
+    <div id="bk-step1-rental" style="display:none">
+      <span class="bk-step-label">Rental details</span>
+      <div class="booking-row">
+        <div class="booking-field">
+          <label class="input-label">Start date</label>
+          <input type="date" id="bk-rental-date" required>
+        </div>
+        <div class="booking-field">
+          <label class="input-label">Days</label>
+          <input type="number" id="bk-rental-days" placeholder="1" min="1" max="30" required>
+        </div>
+      </div>
+      <div class="booking-row">
+        <div class="booking-field">
+          <label class="input-label">Number of bikes</label>
+          <input type="number" id="bk-rental-bikes" placeholder="1" min="1" required>
+        </div>
+        <div class="booking-field">
+          <label class="input-label">Pickup preference</label>
+          <select id="bk-rental-pickup">
+            <option value="shop">Pick up at shop</option>
+            <option value="hotel">Hotel delivery</option>
+          </select>
+        </div>
+      </div>
+      <button class="booking-submit" onclick="rentalNextStep()">Continue</button>
+    </div>
+
     <!-- Step 2: Your details -->
     <div id="bk-step2" style="display:none">
       <div id="bk-selected-summary" class="bk-selected-summary"></div>
       <div class="booking-price-row">
-        <span class="booking-price">$35</span>
+        <span class="booking-price" id="bk-price-display">$35</span>
         <span class="booking-price-label">booking fee · all-in, no surprises</span>
       </div>
       <form id="booking-form" onsubmit="submitBooking(event)">
@@ -1500,31 +1613,33 @@ async function submitBooking(e) {
           <label class="input-label">Your WhatsApp number</label>
           <input type="tel" id="bk-phone" placeholder="+1 555 000 0000" required>
         </div>
-        <div class="booking-row">
-          <div class="booking-field">
-            <label class="input-label">Event date</label>
-            <input type="date" id="bk-date" required>
+        <div id="bk-event-fields">
+          <div class="booking-row">
+            <div class="booking-field">
+              <label class="input-label">Event date</label>
+              <input type="date" id="bk-date" required>
+            </div>
+            <div class="booking-field">
+              <label class="input-label">Guests</label>
+              <input type="number" id="bk-headcount" placeholder="0" min="1" required>
+            </div>
           </div>
           <div class="booking-field">
-            <label class="input-label">Guests</label>
-            <input type="number" id="bk-headcount" placeholder="0" min="1" required>
+            <label class="input-label">Event type</label>
+            <select id="bk-type" onchange="toggleOtherField()" required></select>
+            <div id="bk-other-wrap" style="display:none;margin-top:8px">
+              <input type="text" id="bk-other" placeholder="Tell us about your event">
+            </div>
           </div>
         </div>
         <div class="booking-field">
-          <label class="input-label">Event type</label>
-          <select id="bk-type" onchange="toggleOtherField()" required></select>
-          <div id="bk-other-wrap" style="display:none;margin-top:8px">
-            <input type="text" id="bk-other" placeholder="Tell us about your event">
-          </div>
-        </div>
-        <div class="booking-field">
-          <label class="input-label">Event location / address</label>
+          <label class="input-label" id="bk-location-label">Event location / address</label>
           <input type="text" id="bk-location" placeholder="e.g. 123 Main St, San Diego, CA 92101" required>
         </div>
-        <button type="submit" class="booking-submit" id="bk-submit">Review &amp; Pay $35 Booking Fee</button>
-        <p class="booking-note">$35 booking fee due now · Balance due at event · Non-refundable once confirmed.</p>
+        <button type="submit" class="booking-submit" id="bk-submit">Reserve — Pay $35 Booking Fee</button>
+        <p class="booking-note" id="bk-booking-note">$35 booking fee due now · Balance due at event · Non-refundable once confirmed.</p>
       </form>
-      <button class="bk-back-btn" onclick="bookingPrevStep()">← Back to packages</button>
+      <button class="bk-back-btn" id="bk-back-btn" onclick="bookingPrevStep()">← Back to packages</button>
     </div>
   </div>
 </div>

@@ -1,0 +1,55 @@
+/* amig0 Design Tokens — single source of truth for all consumer pages */
+
+:root {
+  --bg:      #09090b;
+  --surface: #18181b;
+  --border:  #27272a;
+  --text:    #fafafa;
+  --muted:   #a1a1aa;
+  --p1:      #818cf8;
+  --green:   #4ade80;
+  --amber:   #fbbf24;
+  --red:     #f87171;
+  --blue:    #60a5fa;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ── Nav (canonical) ── */
+.nav {
+  position: sticky; top: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 32px; background: rgba(9,9,11,0.95);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(12px);
+}
+.nav-brand { font-size: 1.1rem; font-weight: 800; letter-spacing: -0.03em; text-decoration: none; color: var(--text); }
+.nav-links { display: flex; align-items: center; gap: 8px; }
+.btn-nav {
+  font-family: inherit; font-size: 0.8rem; font-weight: 600;
+  padding: 10px 16px; border-radius: 8px; cursor: pointer; text-decoration: none;
+  border: 1px solid var(--border); background: transparent; color: var(--muted);
+  transition: all 0.15s; display: inline-block;
+}
+.btn-nav:hover { background: var(--surface); color: var(--text); }
+.btn-nav.primary { background: var(--p1); border-color: var(--p1); color: #fff; }
+.btn-nav.primary:hover { background: #6366f1; }
+
+/* ── Footer (canonical) ── */
+.footer-outer { border-top: 1px solid var(--border); }
+.footer {
+  max-width: 960px; margin: 0 auto;
+  padding: 32px 24px; display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 16px;
+}
+.footer-brand { font-size: 0.9rem; font-weight: 700; color: var(--text); }
+.footer-links { display: flex; gap: 20px; flex-wrap: wrap; }
+.footer-links a { font-size: 0.78rem; color: var(--muted); text-decoration: none; }
+.footer-links a:hover { color: var(--text); }
+.footer-copy { font-size: 0.72rem; color: var(--muted); width: 100%; }
+
+@media (max-width: 640px) {
+  .nav { padding: 12px 16px; }
+  .btn-nav-venue { display: none; }
+  .footer { padding: 24px 16px; }
+}
