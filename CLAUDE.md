@@ -15,7 +15,7 @@ The platform consists of five apps in one codebase:
 **Target Users:** Tour operators, travel agents, clients, tour guides
 **Tier:** 1 — Enterprise Grade
 **Status:** Active
-**Last Updated:** 2026-08-27 (Session 18)
+**Last Updated:** 2026-09-07 (Session 20)
 **Brand:** `amig0` — brand name, always lowercase. `@amig0trips` — exclusive social handle (Instagram + Facebook). These are distinct: amig0 is the product, @amig0trips is the channel.
 
 ## 2. Architecture Overview
@@ -47,6 +47,32 @@ The platform consists of five apps in one codebase:
 - Content Engine: content/index.html (internal, amig0.vercel.app/content/), api/ig-post.py (Vercel serverless IG publish)
 
 **Session history:** see docs/changelog.md
+
+**Session 20 additions (2026-09-07):**
+- Bookable services layer in `hacks/index.html` — SERVICES array with `cities[]` filter. Three services: Luxury Photo Booth (SD, $35), Mobile Bar Service (SD, $35, WA pending), E-Bike Rental (16 cities, $10 deposit, Path 1 always). Service copy is generic — no individual provider names.
+- Rental booking modal — `bookingType: 'rental'` branch skips package selection; step 1 collects date/days/bikes/pickup pref; `bk-event-fields` hidden for rentals. `submitBooking()` branches on isRental.
+- `api/stripe-booking.py` — Path 1 ($10/$35 deposit) + Path 2 (Stripe Connect Express for partners). Path 2 not used for e-bikes.
+- `api/booking-webhook.py` — Stripe signature verify, Firestore `service_bookings` write, WA notification stub.
+- `api/stripe-connect.py` — Express account onboarding for photo booth/bartender partners.
+- WhatsApp Business — Twilio (760) 891-4152 registered + verified. WABA: 1378242627790626, Phone Number ID: 1407135942475680. WA messaging confirmed working. Display name "amig0" pending approval.
+- `api/wa-webhook.py` — Meta webhook verification. `api/twiml-record.py` — Twilio voice webhook.
+- Meta business verification — OPERATIONAL CORE TECHNOLOGIES, LLC verified via opcoretech.com DNS TXT.
+- `privacy.html` + `terms.html` — live at /privacy and /terms. noindex. Cover Stripe, Firebase, WhatsApp Cloud API.
+- `.claude/prompts/meta-growth-audit.md` — 34-section reusable OCTech Meta ecosystem audit playbook. Also saved to `_octech-foundation/docs/`.
+- hacks submit form — cross-link to /business ("Apply to be an amig0 partner →") below form.
+- Bug fix: `renderTools` guard in `onCityChange` (`typeof` check) — two script blocks, block 2 not yet parsed when block 1 init runs.
+
+**Session 19 additions (2026-08-30):**
+- `tokens.css` — canonical design token file at repo root (`:root`, nav, footer). Linked from all consumer pages. Nav/footer CSS removed from inline styles on home, hacks, deals; business.html fully aligned.
+- `deals.html` — pending affiliates now visible as inactive cards (opacity 0.55, grey stripe, "Coming soon" badge, no redeem button) instead of filtered out. Firestore query reverts to `active == true` only (no status filter). Map markers grey for pending, indigo for active.
+- `business.html` — traveler world map + cycling ticker added between hero and props. OSM tiles + CSS filter on tilePane (dark style, no API key). 24 placeholder travelers cycling every 2.8s with active dot highlight. Leaflet CSS/JS added to head.
+- Stripe integration — full $3.99/mo subscription flow live:
+  - `requirements.txt` — `stripe` + `firebase-admin` installed on Vercel
+  - `api/stripe-checkout.py` — creates Checkout Session, returns redirect URL
+  - `api/stripe-webhook.py` — verifies signature, updates `subscriptionStatus` in Firestore via Admin SDK
+  - `deals.html` — Subscribe button wired to checkout, `?subscribed=1` green toast on return
+  - Trial banner shows "Subscribe — $3.99/mo" button during active trial
+  - Vercel env vars: STRIPE_SECRET_KEY, STRIPE_PRICE_ID, STRIPE_WEBHOOK_SECRET, FIREBASE_SERVICE_ACCOUNT
 
 **Session 18 additions (2026-08-27):**
 - og.png (globe design, Atlantic-center, city dots): approved, committed, live at amig0.com/og.png
@@ -166,12 +192,13 @@ npx vercel --prod                                        # Deploy to Vercel
 - jsPDF: never embed raw Firestore documents directly into PDF metadata
 
 ## 6. Security / Data Handling
+<!-- Scaffold instruction: trim lines marked [STRIPE ONLY] or [SUPABASE ONLY] if this project does not use those services. -->
 
 ### Credentials & Secrets
 - All credentials via environment variables — never hardcoded, never committed
 - `.env` files must be in `.gitignore` before first commit
 - Never commit service account files, `.secret.local`, or key files
-- Stripe secret keys, webhook secrets, and admin tokens are server-side only
+- [STRIPE ONLY] Stripe secret keys, webhook secrets, and admin tokens are server-side only
 
 ### Trust Boundaries
 - Auth logic lives on the server — never implement authentication or signing logic client-side
@@ -181,8 +208,8 @@ npx vercel --prod                                        # Deploy to Vercel
 
 ### Database & Access Controls
 - Apply least-privilege — no table or bucket should be more permissive than it needs to be
-- For Supabase: Row Level Security (RLS) must be enabled on every table holding user data
-- Public and private storage buckets must be explicitly separated — never bundle them
+- [SUPABASE ONLY] Row Level Security (RLS) must be enabled on every table holding user data
+- [SUPABASE ONLY] Public and private storage buckets must be explicitly separated — never bundle them
 - Review and resolve all security warnings from the database provider before shipping
 
 ### API & Middleware
@@ -213,6 +240,8 @@ npx vercel --prod                                        # Deploy to Vercel
 
 ## 9. Session Protocol
 
+**Claude enforcement rule:** At session open, Claude must read CLAUDE.md, RAID.md, and .claude/prompts/master-prompt.md and explicitly confirm the current delivery phase before responding to any task. If the opener prompt is not provided, Claude must request it before continuing. Do not proceed with work until confirmation is stated.
+
 **Session open** — paste this before starting work:
 ```
 Read CLAUDE.md, RAID.md, and .claude/prompts/master-prompt.md
@@ -230,6 +259,8 @@ and state which delivery phase we are in.
 Read CLAUDE.md, RAID.md, and .claude/prompts/master-prompt.md
 and confirm all three are accurate before we sign off.
 ```
+
+**Non-negotiable:** No session closes with an uncommitted or unresolved artifact. Every change made in a session must be either committed, intentionally discarded, or logged as a RAID item with owner and next action.
 
 ## 10. Open Items
 - [x] Confirm Firebase config object is not committed with live keys — .gitignore created 2026-04-11

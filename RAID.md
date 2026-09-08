@@ -1,6 +1,6 @@
 # RAID Log: amig0
 # Tier 1 — Enterprise Grade | OCTech Services
-# Last Updated: 2026-08-27 (Session 18)
+# Last Updated: 2026-08-30 (Session 19)
 
 ---
 
@@ -45,6 +45,7 @@
 | I16 | Instagram carousel publishing failing — IG_USER_ID env var pointed to wrong account | Session 13 | High | Closed — IG_USER_ID corrected to 28153112260984867 (@amig0trips). Added GET handler to api/ig-post.py for token identity verification at /api/ig-post. Removed inter-child sleep, reduced container wait to 5s to fix 504 timeouts. (2026-08-16) |
 | I17 | IG Graph API returns 403/400 on publish even when carousel posts successfully | Session 14 | Medium | Closed — _ig_post retries on 403 (4s wait). _ig_publish wraps 400/403 as soft 200 with amber warning to user. Post confirmed live on @amig0trips despite error codes. (2026-08-19) |
 | I18 | Venue map slide pins missing — Nominatim too strict as gatekeeper for small bars/restaurants | Session 14 | Medium | Closed — 3-tier coordinate fallback: Nominatim → Claude lat/lng (schema) → city center. All 5 pins always render. City center anchor ensures map context regardless of geocoding accuracy. (2026-08-19) |
+| I20 | CartoDB dark tiles require API key — watermarks appeared on business.html traveler map | Session 19 | Medium | Closed — switched to OSM tiles + CSS filter on tilePane (grayscale+invert+brightness). No API key, no watermarks. Dark map aesthetic preserved. |
 | I19 | deal_redemptions composite index missing — query (userId == x, redeemedAt >= cutoff) fails silently on fresh page load, card shows "Redeem deal" even after recent redemption | Session 15 | High | Closed — removed composite query entirely. renderCards now queries by userId only (single-field, no index needed) and filters redeemedAt >= cutoff in JS. Hard refresh now correctly shows "Redeemed this month". (2026-08-22) |
 
 ## Vision Backlog
@@ -83,6 +84,12 @@ Features confirmed for future build — not yet in active sprint.
 | P08 | Check-in collection + portal check-in flow | Medium | **Shipped Session 9.** checkin.html standalone QR deep-link page. portal-perks.js shows active partners + check-in history. Collection: checkins {userId, partnerId, clientId, country, timestamp, tourId}. Firestore rule: client creates own check-in only. |
 | P09 | Portal map tab — verified partner discovery | Medium | **Shipped Session 9.** portal-map.js Leaflet map tab with category-colored divIcon pins. Partner popup on click. User QR pass (api.qrserver.com) shown below map. mapInstance.remove() prevents "already initialised" error on tab revisit. |
 | P10 | Dual-currency display on quotes, invoices, and portal | Medium | **Shipped Session 9.** exchangeRate field on quotes/invoices. formatSecondary() helper: MXN÷rate=USD or USD×rate=MXN. Shown in table TD, portal rows, and PDF totals block (muted secondary line). |
+
+| I21 | WhatsApp business number registration pending | Session 20 | Closed — Twilio (760) 891-4152 registered + verified. WABA: 1378242627790626, Phone Number ID: 1407135942475680. WA_TOKEN + WA_PHONE_NUMBER_ID added to Vercel. Messaging confirmed working. Display name "amig0" pending Meta approval (1-3 days). |
+| I22 | WA_TOKEN is short-lived user token from Graph API Explorer — expires ~60 days | Session 20 | Open — Permanent system user token needed. amig0-api system user created but token gen had permission issues. Workaround: re-generate via Graph API Explorer when expired. Owner: Daniel. |
+| I23 | Stripe booking flow untested end-to-end | Session 20 | Open — swap STRIPE_SECRET_KEY to sk_test_ in Vercel, book via amig0.com/hacks with card 4242 4242 4242 4242, confirm Firestore write in service_bookings. Owner: Daniel. |
+| I24 | All 3 affiliates still status:pending — deals page shows no active deals | Session 20 | Open — Booze Bros: finalize hub model conversation. Vigilante Coffee: IG DM @vigilantecoffee. Revo Roasters: IG DM @revolutionroasters. First activation unlocks the deals page for members. Owner: Daniel. |
+| I25 | San Diego e-bike partner not yet identified | Session 20 | Open — Find Google Maps 4.5+ local shop, vet, update SERVICES ebike_local entry with partner name. Owner: Daniel. |
 
 ## Dependencies
 | ID | Dependency | Type | Notes |
