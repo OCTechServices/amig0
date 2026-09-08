@@ -1438,9 +1438,18 @@ function rentalNextStep() {
   const bikes  = parseInt(document.getElementById('bk-rental-bikes').value) || 0;
   const pickup = document.getElementById('bk-rental-pickup').value;
   if (!date || days < 1 || bikes < 1) {
-    document.getElementById('bk-rental-date').reportValidity();
+    var err = document.getElementById('bk-rental-err');
+    if (!err) {
+      err = document.createElement('p');
+      err.id = 'bk-rental-err';
+      err.style.cssText = 'color:#f87171;font-size:0.82rem;margin:8px 0 0';
+      document.getElementById('bk-step1-rental').appendChild(err);
+    }
+    err.textContent = 'Please fill in start date, days, and number of bikes.';
     return;
   }
+  var err = document.getElementById('bk-rental-err');
+  if (err) err.remove();
   document.getElementById('bk-selected-summary').innerHTML =
     `<span class="bk-selected-label">Rental details</span>
      <div class="bk-selected-name">${bikes} bike${bikes > 1 ? 's' : ''} · ${days} day${days > 1 ? 's' : ''}</div>
@@ -1578,17 +1587,17 @@ async function submitBooking(e) {
       <div class="booking-row">
         <div class="booking-field">
           <label class="input-label">Start date</label>
-          <input type="date" id="bk-rental-date" required>
+          <input type="date" id="bk-rental-date">
         </div>
         <div class="booking-field">
           <label class="input-label">Days</label>
-          <input type="number" id="bk-rental-days" placeholder="1" min="1" max="30" required>
+          <input type="number" id="bk-rental-days" placeholder="1" min="1" max="30">
         </div>
       </div>
       <div class="booking-row">
         <div class="booking-field">
           <label class="input-label">Number of bikes</label>
-          <input type="number" id="bk-rental-bikes" placeholder="1" min="1" required>
+          <input type="number" id="bk-rental-bikes" placeholder="1" min="1">
         </div>
         <div class="booking-field">
           <label class="input-label">Pickup preference</label>
