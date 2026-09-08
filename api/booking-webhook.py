@@ -98,18 +98,36 @@ class handler(BaseHTTPRequestHandler):
         event_type     = metadata.get('event_type', '')
         headcount      = metadata.get('headcount', '')
         event_location = metadata.get('event_location', '')
+        rental_date    = metadata.get('rental_date', '')
+        rental_days    = metadata.get('rental_days', '')
+        rental_bikes   = metadata.get('rental_bikes', '')
+        rental_pickup  = metadata.get('rental_pickup', '')
         session_id     = session.get('id', '')
         ref            = session_id[-8:].upper() if session_id else 'N/A'
+        is_rental      = bool(rental_date)
+
+        # SLA: same-day = 30 min response / 60 min confirm. Future = 24 hours.
+        today = datetime.now(timezone.utc).strftime('%Y-%m-%d')
+        booking_date = rental_date if is_rental else event_date
+        same_day = (booking_date == today)
+        if same_day:
+            sla_msg = 'Your provider will respond within 30 minutes and confirm within 60 minutes.'
+        else:
+            sla_msg = 'Your provider will confirm your booking within 24 hours.'
 
         booking = {
             'sessionId':     session_id,
             'serviceName':   service_name,
             'customerName':  customer_name,
             'customerPhone': customer_phone,
-            'eventDate':     event_date,
+            'eventDate':     event_date or rental_date,
             'eventType':     event_type,
             'headcount':     headcount,
             'eventLocation': event_location,
+            'rentalDate':    rental_date,
+            'rentalDays':    rental_days,
+            'rentalBikes':   rental_bikes,
+            'rentalPickup':  rental_pickup,
             'amount':        session.get('amount_total', 0),
             'currency':      session.get('currency', 'usd'),
             'status':        'confirmed',
@@ -123,17 +141,33 @@ class handler(BaseHTTPRequestHandler):
             print(f'[booking-webhook] Firestore write failed: {e}')
             return self._respond(500, 'Firestore write failed')
 
-        # Customer confirmation
-        send_wa(
-            customer_phone,
-            (
-                f'\u2713 Booking confirmed via amig0!\n\n'
+        # Customer confirmation via WhatsApp
+        if is_rental:
+            pickup_label = 'Hotel delivery' if rental_pickup == 'hotel' else 'Shop pickup'
+            details = (
                 f'Service: {service_name}\n'
+                f'Date: {rental_date}\n'
+                f'Duration: {rental_days} day(s)\n'
+                f'Bikes: {rental_bikes}\n'
+                f'Pickup: {pickup_label}\n'
+                f'Location: {event_location}'
+            )
+        else:
+            details = (
+                f'Service: {service_name}\n'
+                f'Package: {metadata.get("package_name","")}\n'
                 f'Date: {event_date}\n'
                 f'Type: {event_type}\n'
                 f'Guests: {headcount}\n'
-                f'Location: {event_location}\n\n'
-                f'Your provider will reach out on WhatsApp shortly.\n'
+                f'Location: {event_location}'
+            )
+
+        send_wa(
+            customer_phone,
+            (
+                f'\u2713 Booking confirmed — amig0\n\n'
+                f'{details}\n\n'
+                f'{sla_msg}\n'
                 f'Booking ref: {ref}'
             )
         )

@@ -412,6 +412,9 @@
     .bk-pkg-name { font-size: 0.88rem; font-weight: 700; margin-bottom: 4px; }
     .bk-pkg-desc { font-size: 0.72rem; color: var(--muted); line-height: 1.5; margin-bottom: 10px; }
     .bk-pkg-price { font-size: 1.05rem; font-weight: 800; color: var(--p1); }
+    .conf-row { display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.05);color:#a1a1aa; }
+    .conf-row:last-child { border-bottom:none; }
+    .conf-row span:last-child { color:#fff;font-weight:600; }
     .bk-step-label {
       font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
       letter-spacing: 0.12em; color: var(--muted); margin-bottom: 12px; display: block;
@@ -1476,6 +1479,18 @@ function bookingPrevStep() {
   }
 }
 
+function selectPickup(btn, val) {
+  document.querySelectorAll('.pickup-opt').forEach(function(b) {
+    b.style.border = '1px solid rgba(255,255,255,0.1)';
+    b.style.background = 'transparent';
+    b.style.color = '#a1a1aa';
+  });
+  btn.style.border = '1px solid #818cf8';
+  btn.style.background = 'rgba(129,140,248,0.12)';
+  btn.style.color = '#fff';
+  document.getElementById('bk-rental-pickup').value = val;
+}
+
 function closeBookingModal() {
   document.getElementById('booking-overlay').classList.remove('open');
   document.body.style.overflow = '';
@@ -1542,7 +1557,11 @@ async function submitBooking(e) {
       body:    JSON.stringify(payload),
     });
     const data = await res.json();
-    if (data.url) { window.location.href = data.url; return; }
+    if (data.url) {
+      sessionStorage.setItem('lastBooking', JSON.stringify(payload));
+      window.location.href = data.url;
+      return;
+    }
     throw new Error(data.error || 'Checkout failed');
   } catch (err) {
     btn.disabled    = false;
@@ -1556,11 +1575,56 @@ async function submitBooking(e) {
   const params = new URLSearchParams(window.location.search);
   if (!params.has('booked')) return;
   history.replaceState({}, '', window.location.pathname);
-  const toast = document.createElement('div');
-  toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#818cf8;color:#09090b;font-weight:700;font-size:0.85rem;padding:12px 24px;border-radius:10px;z-index:3000;box-shadow:0 4px 24px rgba(129,140,248,0.35);white-space:nowrap';
-  toast.textContent = '✓ Booking confirmed — your provider will reach out on WhatsApp.';
-  document.body.appendChild(toast);
-  setTimeout(() => toast.remove(), 6000);
+
+  const b = JSON.parse(sessionStorage.getItem('lastBooking') || '{}');
+  sessionStorage.removeItem('lastBooking');
+
+  const isRental = b.rentalDate;
+  let detailsHtml = '';
+  if (isRental) {
+    const pickup = b.rentalPickup === 'hotel' ? 'Hotel delivery' : 'Shop pickup';
+    detailsHtml = `
+      <div class="conf-row"><span>Service</span><span>${b.serviceName || 'E-Bike Rental'}</span></div>
+      <div class="conf-row"><span>Date</span><span>${b.rentalDate}</span></div>
+      <div class="conf-row"><span>Duration</span><span>${b.rentalDays} day${b.rentalDays > 1 ? 's' : ''}</span></div>
+      <div class="conf-row"><span>Bikes</span><span>${b.rentalBikes}</span></div>
+      <div class="conf-row"><span>Pickup</span><span>${pickup}</span></div>`;
+  } else {
+    detailsHtml = `
+      <div class="conf-row"><span>Service</span><span>${b.serviceName || ''}</span></div>
+      <div class="conf-row"><span>Package</span><span>${b.packageName || ''}</span></div>
+      <div class="conf-row"><span>Date</span><span>${b.eventDate || ''}</span></div>`;
+  }
+
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,0.82);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:20px';
+  overlay.innerHTML = `
+    <div style="background:#141414;border:1px solid rgba(255,255,255,0.08);border-radius:20px;padding:32px;max-width:440px;width:100%;font-family:inherit">
+      <div style="text-align:center;margin-bottom:24px">
+        <div style="font-size:2.4rem;margin-bottom:8px">✓</div>
+        <div style="font-size:1.3rem;font-weight:800;letter-spacing:-0.03em;color:#fff">Booking confirmed</div>
+        <div style="font-size:0.85rem;color:#a1a1aa;margin-top:6px">$${(b.deposit/100).toFixed(0)} deposit received · Ref: ${Date.now().toString(36).toUpperCase()}</div>
+      </div>
+      <div style="border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:16px;margin-bottom:20px;font-size:0.875rem">
+        ${detailsHtml}
+      </div>
+      <div style="background:rgba(129,140,248,0.08);border:1px solid rgba(129,140,248,0.2);border-radius:12px;padding:16px;margin-bottom:24px">
+        <div style="font-size:0.8rem;font-weight:700;color:#818cf8;margin-bottom:10px;letter-spacing:0.04em">WHAT HAPPENS NEXT</div>
+        <div style="font-size:0.85rem;color:#a1a1aa;line-height:1.7">
+          ${(function(){
+            var today = new Date().toISOString().slice(0,10);
+            var bDate = b.rentalDate || b.eventDate || '';
+            if (bDate === today) {
+              return 'Same-day booking — your provider will respond on <strong style="color:#fff">WhatsApp within 30 minutes</strong> and confirm within 60 minutes.';
+            }
+            return 'Your provider will confirm your booking on <strong style="color:#fff">WhatsApp within 24 hours</strong>.';
+          })()}<br><br>
+          Keep an eye out for a message from <strong style="color:#fff">(760) 891-4152</strong> — save that number.
+        </div>
+      </div>
+      <button onclick="this.closest('div[style]').remove()" style="width:100%;padding:14px;background:#818cf8;color:#09090b;border:none;border-radius:10px;font-weight:700;font-size:0.9rem;cursor:pointer">Done</button>
+    </div>`;
+  document.body.appendChild(overlay);
 })();
 </script>
 
@@ -1600,11 +1664,12 @@ async function submitBooking(e) {
           <input type="number" id="bk-rental-bikes" placeholder="1" min="1">
         </div>
         <div class="booking-field">
-          <label class="input-label">Pickup preference</label>
-          <select id="bk-rental-pickup">
-            <option value="shop">Pick up at shop</option>
-            <option value="hotel">Hotel delivery</option>
-          </select>
+          <label class="input-label">Pickup preference <span style="color:#f87171;font-size:0.75rem">required</span></label>
+          <div style="display:flex;gap:8px;margin-top:4px">
+            <button type="button" class="pickup-opt selected" data-val="shop" onclick="selectPickup(this,'shop')" style="flex:1;padding:10px 8px;border-radius:10px;border:1px solid #818cf8;background:rgba(129,140,248,0.12);color:#fff;font-size:0.82rem;font-weight:600;cursor:pointer">🏪 Shop pickup</button>
+            <button type="button" class="pickup-opt" data-val="hotel" onclick="selectPickup(this,'hotel')" style="flex:1;padding:10px 8px;border-radius:10px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:#a1a1aa;font-size:0.82rem;font-weight:600;cursor:pointer">🏨 Hotel delivery</button>
+          </div>
+          <input type="hidden" id="bk-rental-pickup" value="shop">
         </div>
       </div>
       <button type="button" class="booking-submit" onclick="rentalNextStep()">Continue</button>

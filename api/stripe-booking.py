@@ -70,6 +70,10 @@ class handler(BaseHTTPRequestHandler):
         event_type     = body.get('eventType', '').strip()
         headcount      = str(body.get('headcount', '')).strip()
         event_location = body.get('eventLocation', '').strip()
+        rental_date    = body.get('rentalDate', '').strip()
+        rental_days    = str(body.get('rentalDays', '')).strip()
+        rental_bikes   = str(body.get('rentalBikes', '')).strip()
+        rental_pickup  = body.get('rentalPickup', '').strip()
 
         if not service_name or not customer_name or not customer_phone:
             return self._json(400, {'error': 'serviceName, customerName, and customerPhone are required'})
@@ -91,6 +95,10 @@ class handler(BaseHTTPRequestHandler):
             'event_type':     event_type,
             'headcount':      headcount,
             'event_location': event_location,
+            'rental_date':    rental_date,
+            'rental_days':    rental_days,
+            'rental_bikes':   rental_bikes,
+            'rental_pickup':  rental_pickup,
         }
 
         try:
