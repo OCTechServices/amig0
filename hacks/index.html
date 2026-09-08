@@ -1187,7 +1187,7 @@ function initGlobe() {
     (container);
 
   // Load country outlines — silently skipped if offline
-  fetch('https://raw.githubusercontent.com/vasturiano/globe.gl/master/example/country-polygons/ne_110m_countries.json')
+  fetch('https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_admin_0_countries.geojson')
     .then(function(r) { return r.json(); })
     .then(function(countries) { globe.polygonsData(countries.features); })
     .catch(function() {});
@@ -1598,7 +1598,7 @@ async function submitBooking(e) {
           </select>
         </div>
       </div>
-      <button class="booking-submit" onclick="rentalNextStep()">Continue</button>
+      <button type="button" class="booking-submit" onclick="rentalNextStep()">Continue</button>
     </div>
 
     <!-- Step 2: Your details -->
@@ -1621,16 +1621,16 @@ async function submitBooking(e) {
           <div class="booking-row">
             <div class="booking-field">
               <label class="input-label">Event date</label>
-              <input type="date" id="bk-date" required>
+              <input type="date" id="bk-date">
             </div>
             <div class="booking-field">
               <label class="input-label">Guests</label>
-              <input type="number" id="bk-headcount" placeholder="0" min="1" required>
+              <input type="number" id="bk-headcount" placeholder="0" min="1">
             </div>
           </div>
           <div class="booking-field">
             <label class="input-label">Event type</label>
-            <select id="bk-type" onchange="toggleOtherField()" required></select>
+            <select id="bk-type" onchange="toggleOtherField()"></select>
             <div id="bk-other-wrap" style="display:none;margin-top:8px">
               <input type="text" id="bk-other" placeholder="Tell us about your event">
             </div>
