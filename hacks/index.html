@@ -731,8 +731,8 @@ const SERVICES = [
     paymentPath: 1,
     cities:     ['san diego', 'temecula', 'riverside', 'orange county', 'los angeles', 'la', 'inland empire'],
     badge:      'Luxury Photo Booth',
-    name:       'Denise Adame — fotobloom · San Diego',
-    detail:     'Luxury photo booth for quinceañeras, corporate events, and private occasions. Serving San Diego, Temecula, Riverside, OC, LA, and IE.',
+    name:       'Luxury Photo Booth · San Diego',
+    detail:     'Full photo booth experience for quinceañeras, corporate events, and private occasions. Operated by vetted local professionals with full event production experience. Serving San Diego, Temecula, Riverside, OC, LA, and IE.',
     wa:         '14423171544',
     deposit:    3500,
     currency:   'usd',
@@ -749,8 +749,8 @@ const SERVICES = [
     paymentPath: 1,
     cities:     ['san diego', 'temecula'],
     badge:      'Mobile Bartenders',
-    name:       'Bianca Boni — Bartender Duo · San Diego',
-    detail:     'Private and corporate events, weddings, and Airbnb experiences. Serving San Diego and Temecula.',
+    name:       'Mobile Bar Service · San Diego',
+    detail:     'Private bar service for events, weddings, and Airbnb experiences. Experienced bartenders who handle full setup, service, and cleanup. Serving San Diego and Temecula.',
     wa:         null, // number pending
     deposit:    3500,
     currency:   'usd',
@@ -776,7 +776,7 @@ const SERVICES = [
     ],
     badge:   'E-Bike Rental',
     name:    'E-Bike Rental — Daily',
-    detail:  'Explore the city on your own schedule. Daily rental from a vetted local operator — no app, just ride.',
+    detail:  'Explore the city on your own schedule. Daily rental from a vetted local operator. Hotel delivery available with select vendors — no app, just ride.',
     deposit: 1000,  // $10 reservation fee — kept by amig0, balance paid at shop
     currency: 'usd',
   },
@@ -860,7 +860,7 @@ function onCityChange() {
   currentCity = sel === 'other'
     ? (other.value.trim() || currentCity)
     : sel;
-  renderTools();
+  if (typeof renderTools === 'function') renderTools();
 
   const picks = PICKS[sel] || [];
   const wrap  = document.getElementById('picksWrap');
@@ -952,7 +952,7 @@ function renderServices(destination) {
           <div class="driver-cta-name">${escHtml(s.name)}</div>
           <div class="driver-cta-detail">${escHtml(s.detail)}</div>
         </div>
-        <span class="driver-cta-btn">${s.wa ? 'Book Now — $35' : 'Coming soon'}</span>
+        <span class="driver-cta-btn">${s.bookingType === 'rental' ? 'Reserve — $10 Deposit' : s.wa ? 'Book Now — $35' : 'Coming soon'}</span>
       </div>`;
     }
     if (s.wa) {
