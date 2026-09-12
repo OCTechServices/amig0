@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>amig0 Deals — Local deals for smart travelers</title>
-  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  
   <link rel="canonical" href="https://amig0.com/deals">
   <meta name="description" content="Exclusive deals at verified cafes, bars, restaurants and more — for amig0 members.">
   <meta name="robots" content="index, follow">
@@ -14,51 +14,22 @@
   <meta property="og:url" content="https://amig0.com/deals">
   <meta property="og:type" content="website">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/tokens.css">
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <style>
-    :root {
-      --bg:      #09090b;
-      --surface: #18181b;
-      --border:  #27272a;
-      --text:    #fafafa;
-      --muted:   #a1a1aa;
-      --p1:      #818cf8;
-      --green:   #4ade80;
-      --amber:   #fbbf24;
-      --red:     #f87171;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-variant-numeric: slashed-zero; }
     .hidden { display: none !important; }
 
-    /* ── Nav ── */
-    .nav {
-      position: sticky; top: 0; z-index: 200;
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 14px 24px; background: rgba(9,9,11,0.95);
-      border-bottom: 1px solid var(--border);
-      backdrop-filter: blur(12px);
-    }
-    .nav-brand { font-size: 1.05rem; font-weight: 700; color: var(--text); text-decoration: none; letter-spacing: -0.02em; }
+    /* ── Nav overrides (z-index 200 for overlay stacking; 24px gutter) ── */
+    .nav { z-index: 200; padding: 14px 24px; }
     .brand-zero-svg {
       display: inline-block; width: 0.62em; height: 0.88em;
       vertical-align: -0.06em; color: var(--p1);
       cursor: pointer; transition: opacity 0.15s;
     }
     .brand-zero-svg:hover { opacity: 0.65; }
-    .nav-links { display: flex; align-items: center; gap: 8px; }
-    .btn-nav {
-      font-family: inherit; font-size: 0.8rem; font-weight: 600;
-      padding: 10px 16px; border-radius: 8px; cursor: pointer; text-decoration: none;
-      border: 1px solid var(--border); background: transparent; color: var(--muted);
-      transition: all 0.15s; display: inline-block;
-    }
-    .btn-nav:hover { background: var(--surface); color: var(--text); }
-    .btn-nav.primary { background: var(--p1); border-color: var(--p1); color: #fff; }
-    .btn-nav.primary:hover { background: #6366f1; }
     @media (max-width: 640px) {
-      .nav { padding: 12px 16px; }
       .btn-nav-hacks { display: none; }
     }
     .btn-sm {
@@ -181,6 +152,30 @@
     .deal-foot-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
     .deal-limit { font-size: 0.62rem; color: var(--muted); }
     .empty-state { color: var(--muted); font-size: 0.88rem; text-align: center; padding: 40px 0; }
+    .new-deal-badge {
+      font-size: 0.58rem; font-weight: 700; letter-spacing: 0.06em;
+      background: rgba(74,222,128,0.12); color: var(--green);
+      border: 1px solid rgba(74,222,128,0.28); border-radius: 4px;
+      padding: 3px 7px; white-space: nowrap;
+    }
+    .new-deals-banner {
+      display: flex; align-items: center; gap: 8px;
+      background: rgba(74,222,128,0.06); border: 1px solid rgba(74,222,128,0.18);
+      border-radius: 10px; padding: 10px 16px; margin-bottom: 14px;
+      font-size: 0.81rem; color: var(--green);
+    }
+    .new-deals-banner strong { color: var(--green); }
+    .deal-card-pending { opacity: 0.55; }
+    .deal-card-pending .deal-stripe { background: var(--border); }
+    .deal-card-pending:hover { border-color: rgba(255,255,255,0.07); }
+    .coming-soon-badge {
+      font-size: 0.58rem; font-weight: 700; letter-spacing: 0.06em;
+      background: rgba(161,161,170,0.08); color: var(--muted);
+      border: 1px solid rgba(161,161,170,0.2); border-radius: 4px;
+      padding: 3px 7px; white-space: nowrap; flex-shrink: 0;
+    }
+    .deal-card-pending .deal-offer { color: var(--muted); font-weight: 500; font-size: 0.84rem; }
+    .coming-soon-note { font-size: 0.72rem; color: var(--muted); }
 
     /* ── Savings strip ── */
     .savings-strip {
@@ -208,6 +203,46 @@
       transition: background 0.15s;
     }
     .btn-spotlight:hover { background: #6366f1; }
+
+    /* ── Venue page (public, ?v= signed-out view) ── */
+    .venue-page { max-width: 680px; margin: 0 auto; padding: 32px 24px 80px; }
+    .vpage-badge {
+      display: inline-block; font-size: 0.65rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.12em;
+      color: var(--p1); background: rgba(129,140,248,0.08);
+      border: 1px solid rgba(129,140,248,0.2); border-radius: 20px;
+      padding: 4px 12px; margin-bottom: 16px;
+    }
+    .vpage-name {
+      font-size: clamp(2rem, 7vw, 3.2rem); font-weight: 800; line-height: 1.06;
+      letter-spacing: -0.04em; margin-bottom: 8px;
+    }
+    .vpage-meta { font-size: 0.82rem; color: var(--muted); margin-bottom: 14px; }
+    .vpage-offer { font-size: 1.05rem; font-weight: 700; color: var(--green); margin-bottom: 28px; }
+    .vpage-map { border-radius: 12px; overflow: hidden; height: 200px; margin-bottom: 28px; border: 1px solid var(--border); }
+    .vpage-hacks-label {
+      font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.14em; color: var(--p1); margin-bottom: 12px;
+    }
+    .vpage-hack {
+      background: #141414; border: 1px solid rgba(255,255,255,0.07);
+      border-top: 3px solid var(--p1); border-radius: 12px;
+      padding: 14px 16px; margin-bottom: 10px;
+    }
+    .vpage-hack-type {
+      font-size: 0.58rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.1em; color: var(--muted); margin-bottom: 4px;
+    }
+    .vpage-hack-headline { font-size: 0.88rem; font-weight: 700; margin-bottom: 5px; }
+    .vpage-hack-tip { font-size: 0.81rem; color: var(--muted); line-height: 1.6; }
+    .vpage-cta { margin-top: 28px; }
+    .btn-vpage-join {
+      width: 100%; font-family: inherit; font-size: 0.95rem; font-weight: 700;
+      padding: 14px; border-radius: 10px; background: var(--p1);
+      border: none; color: #fff; cursor: pointer; transition: background 0.15s;
+    }
+    .btn-vpage-join:hover { background: #6366f1; }
+    .vpage-cta-note { font-size: 0.72rem; color: var(--muted); text-align: center; margin-top: 8px; }
 
     /* ── Modals ── */
     .overlay {
@@ -378,12 +413,13 @@
     .footer-links a:hover { color: var(--text); }
     .footer-copy { font-size: 0.72rem; color: var(--muted); width: 100%; }
   </style>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 </head>
 <body>
 
   <!-- Nav -->
   <nav class="nav">
-    <a href="/" class="nav-brand">amig<svg id="brand-zero" class="brand-zero-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 26" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" d="M10,1.5 C14.97,1.5 19,6.65 19,13 C19,19.35 14.97,24.5 10,24.5 C5.03,24.5 1,19.35 1,13 C1,6.65 5.03,1.5 10,1.5 Z M10,7 C7.51,7 5.5,9.69 5.5,13 C5.5,16.31 7.51,19 10,19 C12.49,19 14.5,16.31 14.5,13 C14.5,9.69 12.49,7 10,7 Z"/><line id="brand-zero-line" x1="6.5" y1="21" x2="13.5" y2="5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/></svg></a>
+    <a href="/" class="nav-brand">amig<svg id="brand-zero" class="brand-zero-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 26" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" d="M10,1.5 C14.97,1.5 19,6.65 19,13 C19,19.35 14.97,24.5 10,24.5 C5.03,24.5 1,19.35 1,13 C1,6.65 5.03,1.5 10,1.5 Z M10,7 C7.51,7 5.5,9.69 5.5,13 C5.5,16.31 7.51,19 10,19 C12.49,19 14.5,16.31 14.5,13 C14.5,9.69 12.49,7 10,7 Z"/><line id="brand-zero-line" x1="6.5" y1="21" x2="13.5" y2="5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity="1"/></svg></a>
     <div class="nav-links" id="header-right">
       <a href="/hacks/" class="btn-nav btn-nav-hacks">Traveler Hacks</a>
       <button class="btn-sm primary" id="hdr-join-btn">Join free</button>
@@ -396,7 +432,7 @@
       <button class="modal-x" id="auth-close">&times;</button>
       <div id="auth-form-view">
         <h2>Join amig0</h2>
-        <p>Start your free 14-day trial. Get exclusive deals at verified local spots — no credit card needed.</p>
+        <p>Start your free 7-day trial. Get exclusive deals at verified local spots — no credit card needed.</p>
         <label class="field-lbl" for="auth-email">Email address</label>
         <input class="field-inp" type="email" id="auth-email" placeholder="you@example.com" autocomplete="email">
         <p id="auth-err" class="field-err hidden"></p>
@@ -416,15 +452,16 @@
     <div class="modal">
       <button class="modal-x" id="paywall-close">&times;</button>
       <h2>Unlock your deals</h2>
-      <p>Your 14-day free trial has ended. Subscribe to keep accessing exclusive amig0 deals.</p>
+      <p>Your free trial has ended. Subscribe to keep accessing exclusive amig0 deals.</p>
       <ul class="feature-list">
         <li>Deals at all verified amig0 affiliates</li>
         <li>New venues added every month</li>
         <li>Redemption history and savings tracker</li>
         <li>AI-powered city intel via Traveler Hacks</li>
       </ul>
-      <button class="btn-block" id="subscribe-btn">Subscribe — Coming Soon</button>
+      <button class="btn-block" id="subscribe-btn">Subscribe — $3.99 / month</button>
       <button class="btn-ghost" id="paywall-later-btn">Maybe later</button>
+      <p class="form-note" style="margin-top:10px">Secure checkout via Stripe · Cancel anytime</p>
     </div>
   </div>
 
@@ -471,20 +508,39 @@
     </div>
   </div>
 
-  <!-- Hero (not signed in) -->
+  <!-- Hero (not signed in, no ?v=) -->
   <section id="hero" class="hero hidden">
     <div class="hero-label">Deals</div>
     <h1>Local perks.<br><span>Places worth going anyway.</span></h1>
     <p>Every venue is manually reviewed. The perk is a bonus — not the reason to go.</p>
-    <button class="btn-cta" id="hero-join-btn">Start free — 14 days</button>
+    <button class="btn-cta" id="hero-join-btn">Start free — 7 days</button>
     <div class="hero-perks">
       <span class="hero-perk">No credit card required</span>
-      <span class="hero-perk">14 days free access</span>
+      <span class="hero-perk">7 days free access</span>
       <span class="hero-perk">Cancel anytime</span>
     </div>
   </section>
 
-  <!-- Main app (signed in) -->
+  <!-- Venue page (public, signed-out, ?v=id) -->
+  <div id="venue-page" class="hidden">
+    <div class="venue-page">
+      <span class="vpage-badge">amig0 verified</span>
+      <div class="vpage-name" id="vpage-name"></div>
+      <div class="vpage-meta" id="vpage-meta"></div>
+      <div class="vpage-offer" id="vpage-offer"></div>
+      <div class="vpage-map" id="vpage-map"></div>
+      <div id="vpage-hacks" class="hidden">
+        <div class="vpage-hacks-label">Insider hacks</div>
+        <div id="vpage-hacks-list"></div>
+      </div>
+      <div class="vpage-cta">
+        <button class="btn-vpage-join" id="vpage-join-btn">Sign in to redeem your deal →</button>
+        <div class="vpage-cta-note">7 days free · No credit card needed</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main app -->
   <div id="app" class="hidden">
     <div id="trial-banner"></div>
     <!-- Venue spotlight — visible when arriving via venue QR code -->
@@ -541,8 +597,12 @@
     var mapInstance       = null;
     var pendingRedeem     = null; // { affiliateId, name, offer }
     var EMAIL_LS_KEY      = 'amig0_signin_email';
-    var venueParam        = new URLSearchParams(window.location.search).get('v');
+    var LAST_VISITED_KEY  = 'amig0_deals_lastVisited';
+    var _qs               = new URLSearchParams(window.location.search);
+    var venueParam        = _qs.get('v');
+    var subscribedReturn  = _qs.get('subscribed') === '1';
     var venueData         = null;
+    var vpageMapInstance  = null;
     var allDeals          = [];
     var activeCategory    = '';
     var redeemState   = 'show'; // 'show' | 'pin'
@@ -641,20 +701,52 @@
           if (!snap.exists) return;
           venueData = snap.data();
           venueData._id = venueParam;
-          if (!currentUser) updateVenueHero();
+          if (!currentUser) showVenuePage();
           else showVenueSpotlight();
         })
         .catch(function (err) { console.error('[deals] venue load:', err.message); });
     }
 
-    function updateVenueHero() {
+    function showVenuePage() {
       if (!venueData) return;
-      var h1 = document.querySelector('#hero h1');
-      var p  = document.querySelector('#hero p');
-      if (h1) h1.innerHTML = 'Your deal at<br><span>' + esc(venueData.name || '') + '</span>';
-      if (p)  p.innerHTML  =
-        '<strong style="color:var(--green)">' + esc(venueData.offer || '') + '</strong><br>' +
-        'Join amig0 free — your 14-day trial starts instantly.';
+      document.getElementById('hero').classList.add('hidden');
+      document.getElementById('venue-page').classList.remove('hidden');
+
+      document.getElementById('vpage-name').textContent = venueData.name || '';
+      var parts = [venueData.category, venueData.city, venueData.address].filter(Boolean);
+      document.getElementById('vpage-meta').textContent = parts.join(' · ');
+
+      var isActive = venueData.status === 'active';
+      document.getElementById('vpage-offer').textContent = isActive
+        ? (venueData.offer || '')
+        : 'Coming soon — this venue is joining the amig0 network.';
+      document.getElementById('vpage-join-btn').style.display = isActive ? '' : 'none';
+      document.getElementById('vpage-join-btn').onclick = openAuthModal;
+
+      // Map (guard against double-init on re-entry)
+      if (venueData.lat && venueData.lng && !vpageMapInstance) {
+        vpageMapInstance = L.map('vpage-map', { zoomControl: false, scrollWheelZoom: false })
+          .setView([venueData.lat, venueData.lng], 15);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '© OpenStreetMap', crossOrigin: 'anonymous'
+        }).addTo(vpageMapInstance);
+        L.circleMarker([venueData.lat, venueData.lng], {
+          radius: 9, fillColor: '#818cf8', fillOpacity: 1, color: '#fff', weight: 2
+        }).addTo(vpageMapInstance);
+      }
+
+      // Hacks
+      if (venueData.hacks && venueData.hacks.length) {
+        var hackHtml = venueData.hacks.map(function (h) {
+          return '<div class="vpage-hack">' +
+            '<div class="vpage-hack-type">' + esc(h.type || '') + '</div>' +
+            (h.headline ? '<div class="vpage-hack-headline">' + esc(h.headline) + '</div>' : '') +
+            '<div class="vpage-hack-tip">' + esc(h.tip || '') + '</div>' +
+            '</div>';
+        }).join('');
+        document.getElementById('vpage-hacks-list').innerHTML = hackHtml;
+        document.getElementById('vpage-hacks').classList.remove('hidden');
+      }
     }
 
     function showVenueSpotlight() {
@@ -700,18 +792,39 @@
 
     // ── Auth UI ───────────────────────────────────────────────────────────────
     function renderSignedOut() {
-      document.getElementById('hero').classList.remove('hidden');
-      document.getElementById('app').classList.add('hidden');
+      // Venue QR arrival — show venue page (or hero as placeholder while loading)
+      if (venueParam) {
+        if (venueData) { showVenuePage(); }
+        else { document.getElementById('hero').classList.remove('hidden'); }
+        document.getElementById('header-right').innerHTML =
+          '<button class="btn-nav primary" id="hdr-join-btn">Sign in</button>';
+        document.getElementById('hdr-join-btn').addEventListener('click', openAuthModal);
+        return;
+      }
+      // Normal signed-out: show deals publicly, gate only redemption
+      document.getElementById('hero').classList.add('hidden');
+      document.getElementById('app').classList.remove('hidden');
       document.getElementById('header-right').innerHTML =
-        '<a href="/" class="btn-sm" style="text-decoration:none">Home</a>' +
-        '<button class="btn-sm primary" id="hdr-join-btn">Join free</button>';
+        '<a href="/hacks/" class="btn-nav btn-nav-hacks">Traveler Hacks</a>' +
+        '<button class="btn-nav primary" id="hdr-join-btn">Sign in</button>';
       document.getElementById('hdr-join-btn').addEventListener('click', openAuthModal);
-      if (venueData) updateVenueHero();
+      buildCityDropdown();
+      loadDeals('');
     }
 
     function renderSignedIn(user) {
       document.getElementById('hero').classList.add('hidden');
+      document.getElementById('venue-page').classList.add('hidden');
       document.getElementById('app').classList.remove('hidden');
+      if (subscribedReturn) {
+        subscribedReturn = false;
+        window.history.replaceState({}, document.title, '/deals');
+        var toast = document.createElement('div');
+        toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#4ade80;color:#09090b;font-weight:700;font-size:0.85rem;padding:12px 24px;border-radius:10px;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,0.4)';
+        toast.textContent = 'You\'re subscribed — enjoy your deals!';
+        document.body.appendChild(toast);
+        setTimeout(function () { toast.remove(); }, 4000);
+      }
       document.getElementById('header-right').innerHTML =
         '<span class="user-email">' + esc(user.email) + '</span>' +
         '<button class="sign-out-btn" id="signout-btn">Sign out</button>';
@@ -804,7 +917,7 @@
             applyZeroVariant(memberDoc.zeroVariant || 'amiga');
             renderTrialBanner();
           } else {
-            var trialEnd = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
+            var trialEnd = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
             var payload = {
               email: user.email,
               trialStartedAt: firebase.firestore.FieldValue.serverTimestamp(),
@@ -847,7 +960,11 @@
           el.className = 'trial-banner';
           el.innerHTML =
             '<span>Free trial — <strong>' + days + ' day' + (days === 1 ? '' : 's') + ' remaining</strong>. Redeem deals at any verified amig0 affiliate.</span>' +
-            '<span style="font-size:0.72rem;color:var(--muted)">Subscription required after trial</span>';
+            '<button class="btn-sm primary" id="banner-sub-btn" style="padding:5px 12px;font-size:0.76rem">Subscribe — $3.99/mo</button>';
+          setTimeout(function () {
+            var b = document.getElementById('banner-sub-btn');
+            if (b) b.addEventListener('click', showPaywall);
+          }, 0);
         } else {
           el.className = 'trial-banner expired';
           el.innerHTML =
@@ -862,7 +979,10 @@
     }
 
     // ── Cities dropdown ───────────────────────────────────────────────────────
+    var cityDropdownBuilt = false;
     function buildCityDropdown() {
+      if (cityDropdownBuilt) return;
+      cityDropdownBuilt = true;
       db.collection('affiliates').where('active', '==', true).get()
         .then(function (snap) {
           var cities = {};
@@ -945,14 +1065,16 @@
       mapInstance.fitBounds(bounds, { padding: [40, 40] });
 
       pins.forEach(function(a) {
+        var isPending = a.status !== 'active';
+        var pinColor  = isPending ? '#52525b' : '#818cf8';
         L.marker([a.lat, a.lng], {
           icon: L.divIcon({
             className: '',
-            html: '<div style="width:13px;height:13px;background:#818cf8;border-radius:50%;border:2px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,0.5)"></div>',
+            html: '<div style="width:13px;height:13px;background:' + pinColor + ';border-radius:50%;border:2px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,0.5)"></div>',
             iconSize: [13, 13], iconAnchor: [6, 6]
           })
         }).addTo(mapInstance)
-          .bindPopup('<strong>' + esc(a.name) + '</strong><br><span style="color:#4ade80;font-size:0.8rem">' + esc(a.offer || '') + '</span>');
+          .bindPopup('<strong>' + esc(a.name) + '</strong><br><span style="color:' + (isPending ? '#71717a' : '#4ade80') + ';font-size:0.8rem">' + esc(isPending ? 'Coming soon' : (a.offer || '')) + '</span>');
       });
     }
 
@@ -998,14 +1120,38 @@
       var city = document.getElementById('city-select').value;
       var lbl  = document.getElementById('deals-label');
       if (lbl) {
-        var n = affiliates.length;
+        var n = affiliates.filter(function(a) { return a.status === 'active'; }).length;
         lbl.textContent = n + ' deal' + (n === 1 ? '' : 's') + (city ? ' in ' + city : '');
       }
 
+      // New deal detection — compare each affiliate's createdAt against lastVisited
+      var lastVisited = parseInt(localStorage.getItem(LAST_VISITED_KEY) || '0', 10);
+      var newIds = {};
+      if (lastVisited > 0) {
+        affiliates.forEach(function (a) {
+          var createdMs = a.createdAt && a.createdAt.toMillis ? a.createdAt.toMillis() : 0;
+          if (createdMs > lastVisited) newIds[a._id] = true;
+        });
+      }
+      var newCount = Object.keys(newIds).length;
+
+      // Remove any existing banner then re-insert if needed
+      var existingBanner = document.getElementById('new-deals-banner');
+      if (existingBanner) existingBanner.remove();
+      if (newCount > 0) {
+        var banner = document.createElement('div');
+        banner.id = 'new-deals-banner';
+        banner.className = 'new-deals-banner';
+        banner.innerHTML = '✦ <strong>' + newCount + ' new deal' + (newCount === 1 ? '' : 's') + '</strong>&nbsp;added since your last visit';
+        grid.parentNode.insertBefore(banner, grid);
+      }
+
       affiliates.forEach(function (a) {
-        var used = redeemed[a._id];
-        var card = document.createElement('div');
-        card.className = 'deal-card';
+        var isPending = a.status !== 'active';
+        var used  = !isPending && redeemed[a._id];
+        var isNew = !isPending && !!newIds[a._id];
+        var card  = document.createElement('div');
+        card.className = 'deal-card' + (isPending ? ' deal-card-pending' : '');
         card.innerHTML =
           '<div class="deal-stripe"></div>' +
           '<div class="deal-card-body">' +
@@ -1014,9 +1160,14 @@
                 '<div class="deal-name">' + esc(a.name) + '</div>' +
                 '<div class="deal-cat">' + esc(a.category || '') + (a.city ? ' · ' + esc(a.city) : '') + '</div>' +
               '</div>' +
-              '<span class="affiliate-badge" title="amig0 verified — manually reviewed venue">amig0 verified</span>' +
+              '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">' +
+                (isNew ? '<span class="new-deal-badge">New</span>' : '') +
+                (isPending
+                  ? '<span class="coming-soon-badge">Coming soon</span>'
+                  : '<span class="affiliate-badge" title="amig0 verified — manually reviewed venue">amig0 verified</span>') +
+              '</div>' +
             '</div>' +
-            '<div class="deal-offer">' + esc(a.offer || 'Exclusive deal for members') + '</div>' +
+            '<div class="deal-offer">' + esc(isPending ? 'Deal coming soon — this venue is joining the amig0 network.' : (a.offer || 'Exclusive deal for members')) + '</div>' +
             (a.address ? '<div class="deal-address">' + esc(a.address) + '</div>' : '') +
             (a._distMeters !== undefined && a._distMeters !== Infinity
               ? '<div class="deal-distance">' + fmtDist(a._distMeters) + ' · ' + Math.ceil(a._distMeters / 80) + ' min walk</div>'
@@ -1026,18 +1177,26 @@
             (a.website
               ? '<a href="' + esc(/^https?:\/\//.test(a.website) ? a.website : 'https://' + a.website) + '" target="_blank" rel="noopener" class="deal-website">' + esc(a.website.replace(/^https?:\/\//, '')) + '</a>'
               : '<span></span>') +
-            (used
-              ? '<div class="redeemed-note">Redeemed this month</div>'
-              : '<div class="deal-foot-right"><button class="btn-redeem">Redeem deal</button><div class="deal-limit">1 per 30 days</div></div>') +
+            (isPending
+              ? '<div class="deal-foot-right"><span class="coming-soon-note">Activating soon</span></div>'
+              : used
+                ? '<div class="redeemed-note">Redeemed this month</div>'
+                : currentUser
+                  ? '<div class="deal-foot-right"><button class="btn-redeem">Redeem deal</button><div class="deal-limit">1 per 30 days</div></div>'
+                  : '<div class="deal-foot-right"><button class="btn-redeem">Sign in to redeem</button></div>') +
           '</div>';
 
-        if (!used) {
+        if (!isPending && !used) {
           card.querySelector('.btn-redeem').addEventListener('click', function () {
+            if (!currentUser) { openAuthModal(); return; }
             handleRedeem({ affiliateId: a._id, name: a.name, offer: a.offer || '' });
           });
         }
         grid.appendChild(card);
       });
+
+      // Stamp lastVisited after render so next visit can compare
+      localStorage.setItem(LAST_VISITED_KEY, String(Date.now()));
     }
 
     // ── Redemption flow ───────────────────────────────────────────────────────
@@ -1255,7 +1414,30 @@
     document.getElementById('paywall-close').addEventListener('click', function () { document.getElementById('paywall-overlay').classList.add('hidden'); });
     document.getElementById('paywall-later-btn').addEventListener('click', function () { document.getElementById('paywall-overlay').classList.add('hidden'); });
     document.getElementById('subscribe-btn').addEventListener('click', function () {
-      alert('Subscription coming soon! Stay tuned.');
+      if (!currentUser) return;
+      var btn = this;
+      btn.disabled = true;
+      btn.textContent = 'Redirecting to checkout…';
+      fetch('/api/stripe-checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ uid: currentUser.uid, email: currentUser.email || '' })
+      })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (data.url) {
+          window.location.href = data.url;
+        } else {
+          btn.disabled = false;
+          btn.textContent = 'Subscribe — $3.99 / month';
+          alert('Checkout unavailable. Please try again or contact contact@opcoretech.com');
+        }
+      })
+      .catch(function () {
+        btn.disabled = false;
+        btn.textContent = 'Subscribe — $3.99 / month';
+        alert('Checkout unavailable. Please try again.');
+      });
     });
     document.getElementById('redeem-close').addEventListener('click', closeRedeem);
     document.getElementById('redeem-cancel-btn').addEventListener('click', closeRedeem);
@@ -1273,7 +1455,7 @@
 
 <footer class="footer-outer">
   <div class="footer">
-    <div class="footer-brand">amig<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 26" aria-hidden="true" style="display:inline-block;width:0.55em;height:0.8em;vertical-align:-0.05em;color:var(--p1)"><path fill="currentColor" fill-rule="evenodd" d="M10,1.5 C14.97,1.5 19,6.65 19,13 C19,19.35 14.97,24.5 10,24.5 C5.03,24.5 1,19.35 1,13 C1,6.65 5.03,1.5 10,1.5 Z M10,7 C7.51,7 5.5,9.69 5.5,13 C5.5,16.31 7.51,19 10,19 C12.49,19 14.5,16.31 14.5,13 C14.5,9.69 12.49,7 10,7 Z"/><line x1="6.5" y1="21" x2="13.5" y2="5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/></svg></div>
+    <div class="footer-brand">amig<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 26" aria-hidden="true" style="display:inline-block;width:0.55em;height:0.8em;vertical-align:-0.05em;color:var(--p1)"><path fill="currentColor" fill-rule="evenodd" d="M10,1.5 C14.97,1.5 19,6.65 19,13 C19,19.35 14.97,24.5 10,24.5 C5.03,24.5 1,19.35 1,13 C1,6.65 5.03,1.5 10,1.5 Z M10,7 C7.51,7 5.5,9.69 5.5,13 C5.5,16.31 7.51,19 10,19 C12.49,19 14.5,16.31 14.5,13 C14.5,9.69 12.49,7 10,7 Z"/><line x1="6.5" y1="21" x2="13.5" y2="5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity="1"/></svg></div>
     <div class="footer-links">
       <a href="/deals">Deals</a>
       <a href="/hacks/">Traveler Hacks</a>

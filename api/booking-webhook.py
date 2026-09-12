@@ -9,6 +9,7 @@ Required Vercel env vars:
   FIREBASE_SERVICE_ACCOUNT       — base64-encoded service account JSON
   WA_TOKEN                       — WhatsApp Cloud API system user token (pending)
   WA_PHONE_NUMBER_ID             — WhatsApp phone number ID: 1259977410535761 (pending verification)
+  WA_OPERATOR_NUMBER             — operator's WhatsApp number for booking alerts (e.g. 17605551234)
 """
 import os
 import json
@@ -24,6 +25,7 @@ stripe.api_key        = os.environ.get('STRIPE_SECRET_KEY', '')
 WEBHOOK_SECRET        = os.environ.get('STRIPE_BOOKING_WEBHOOK_SECRET', '')
 WA_TOKEN              = os.environ.get('WA_TOKEN', '')
 WA_PHONE_NUMBER_ID    = os.environ.get('WA_PHONE_NUMBER_ID', '')
+WA_OPERATOR_NUMBER    = os.environ.get('WA_OPERATOR_NUMBER', '')
 
 _db = None
 
@@ -169,6 +171,21 @@ class handler(BaseHTTPRequestHandler):
                 f'{details}\n\n'
                 f'{sla_msg}\n'
                 f'Booking ref: {ref}'
+            )
+        )
+
+        # Operator alert
+        sla_urgency = 'SAME-DAY — respond within 30 min' if same_day else '24-hour window'
+        send_wa(
+            WA_OPERATOR_NUMBER,
+            (
+                f'New booking — amig0\n'
+                f'Ref: {ref} | {sla_urgency}\n\n'
+                f'{details}\n\n'
+                f'Customer: {customer_name}\n'
+                f'WA: {customer_phone}\n\n'
+                f'1. Confirm availability with partner\n'
+                f'2. Reply to customer on WA'
             )
         )
 

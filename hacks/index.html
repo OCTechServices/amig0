@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Traveler Hacks — amig0</title>
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  
   <link rel="canonical" href="https://amig0.com/hacks/">
   <meta name="description" content="AI-powered insider intel for every city — real spots, insider hacks, and travel tools from people who actually know the city.">
   <meta name="robots" content="index, follow">
@@ -429,6 +429,70 @@
     }
     .bk-selected-name { font-size: 0.95rem; font-weight: 700; margin-bottom: 3px; }
     .bk-selected-note { font-size: 0.7rem; color: var(--muted); }
+    /* ── Step indicator ── */
+    .bk-steps { display: flex; align-items: center; margin-bottom: 24px; }
+    .bk-step-circle {
+      width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+      border: 1.5px solid rgba(255,255,255,0.12);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.72rem; font-weight: 700; color: var(--muted);
+      transition: border-color 0.2s, background 0.2s, color 0.2s;
+    }
+    .bk-step-circle.active { border-color: var(--p1); color: var(--p1); background: rgba(129,140,248,0.1); }
+    .bk-step-circle.done   { border-color: var(--p1); background: var(--p1); color: #09090b; }
+    .bk-step-line {
+      flex: 1; height: 1.5px; margin: 0 8px;
+      background: rgba(255,255,255,0.08);
+      transition: background 0.25s;
+    }
+    .bk-step-line.done { background: var(--p1); }
+
+    /* ── Booking modal inputs ── */
+    .booking-modal input[type=text],
+    .booking-modal input[type=tel],
+    .booking-modal input[type=date],
+    .booking-modal input[type=number],
+    .booking-modal select {
+      width: 100%; box-sizing: border-box;
+      background: #0d0d0f;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      color: var(--text);
+      font-family: inherit; font-size: 0.88rem;
+      padding: 12px 14px; outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      appearance: none; -webkit-appearance: none;
+    }
+    .booking-modal input[type=text]:focus,
+    .booking-modal input[type=tel]:focus,
+    .booking-modal input[type=date]:focus,
+    .booking-modal input[type=number]:focus,
+    .booking-modal select:focus {
+      border-color: var(--p1);
+      box-shadow: 0 0 0 3px rgba(129,140,248,0.12);
+    }
+    .booking-modal input[type=text]:hover:not(:focus),
+    .booking-modal input[type=tel]:hover:not(:focus),
+    .booking-modal input[type=date]:hover:not(:focus),
+    .booking-modal input[type=number]:hover:not(:focus),
+    .booking-modal select:hover:not(:focus) {
+      border-color: rgba(255,255,255,0.2);
+    }
+    .booking-modal select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7' viewBox='0 0 12 7'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23a1a1aa' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      padding-right: 36px;
+      cursor: pointer;
+    }
+    .booking-modal input[type=number]::-webkit-inner-spin-button,
+    .booking-modal input[type=number]::-webkit-outer-spin-button {
+      opacity: 0.35; cursor: pointer;
+    }
+    .booking-modal input[type=date]::-webkit-calendar-picker-indicator {
+      filter: invert(0.5); cursor: pointer; opacity: 0.6;
+    }
+    .booking-modal input::placeholder { color: rgba(161,161,170,0.55); }
 
     /* ── Deals nudge ── */
     .deals-nudge { margin-top: 20px; padding: 14px 18px; border: 1px solid var(--border); border-radius: 10px; background: rgba(129,140,248,0.04); }
@@ -558,11 +622,12 @@
     }
 
   </style>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 </head>
 <body>
 
 <nav class="nav">
-  <a href="/" class="nav-brand">amig<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 26" aria-hidden="true" style="display:inline-block;width:0.62em;height:0.88em;vertical-align:-0.06em;color:var(--p1)"><path fill="currentColor" fill-rule="evenodd" d="M10,1.5 C14.97,1.5 19,6.65 19,13 C19,19.35 14.97,24.5 10,24.5 C5.03,24.5 1,19.35 1,13 C1,6.65 5.03,1.5 10,1.5 Z M10,7 C7.51,7 5.5,9.69 5.5,13 C5.5,16.31 7.51,19 10,19 C12.49,19 14.5,16.31 14.5,13 C14.5,9.69 12.49,7 10,7 Z"/><line x1="6.5" y1="21" x2="13.5" y2="5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/></svg></a>
+  <a href="/" class="nav-brand">amig<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 26" aria-hidden="true" style="display:inline-block;width:0.62em;height:0.88em;vertical-align:-0.06em;color:var(--p1)"><path fill="currentColor" fill-rule="evenodd" d="M10,1.5 C14.97,1.5 19,6.65 19,13 C19,19.35 14.97,24.5 10,24.5 C5.03,24.5 1,19.35 1,13 C1,6.65 5.03,1.5 10,1.5 Z M10,7 C7.51,7 5.5,9.69 5.5,13 C5.5,16.31 7.51,19 10,19 C12.49,19 14.5,16.31 14.5,13 C14.5,9.69 12.49,7 10,7 Z"/><line x1="6.5" y1="21" x2="13.5" y2="5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity="1"/></svg></a>
   <div class="nav-links">
     <a href="/business" class="btn-nav btn-nav-venue">For venues</a>
     <a href="/deals" class="btn-nav primary">Get deals</a>
@@ -1403,6 +1468,7 @@ function openBookingModal(idx) {
     document.getElementById('bk-event-fields').style.display = '';
   }
 
+  updateStepIndicator(1);
   document.getElementById('booking-overlay').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
@@ -1433,6 +1499,7 @@ function bookingNextStep() {
   document.getElementById('bk-booking-note').textContent    = '$35 booking fee due now · Balance due at event · Non-refundable once confirmed.';
   document.getElementById('bk-step1').style.display = 'none';
   document.getElementById('bk-step2').style.display = '';
+  updateStepIndicator(2);
 }
 
 function rentalNextStep() {
@@ -1467,10 +1534,12 @@ function rentalNextStep() {
   document.getElementById('bk-booking-note').textContent    = '$10 reservation fee due now · Kept by amig0 · Balance due at the shop.';
   document.getElementById('bk-step1-rental').style.display = 'none';
   document.getElementById('bk-step2').style.display = '';
+  updateStepIndicator(2);
 }
 
 function bookingPrevStep() {
   document.getElementById('bk-step2').style.display = 'none';
+  updateStepIndicator(1);
   if (activeBookingService.bookingType === 'rental') {
     document.getElementById('bk-step1-rental').style.display = '';
   } else {
@@ -1489,6 +1558,21 @@ function selectPickup(btn, val) {
   btn.style.background = 'rgba(129,140,248,0.12)';
   btn.style.color = '#fff';
   document.getElementById('bk-rental-pickup').value = val;
+}
+
+function updateStepIndicator(step) {
+  var d1   = document.getElementById('bk-dot-1');
+  var d2   = document.getElementById('bk-dot-2');
+  var line = document.getElementById('bk-step-line');
+  if (step === 1) {
+    d1.className   = 'bk-step-circle active';
+    d2.className   = 'bk-step-circle';
+    line.className = 'bk-step-line';
+  } else {
+    d1.className   = 'bk-step-circle done';
+    d2.className   = 'bk-step-circle active';
+    line.className = 'bk-step-line done';
+  }
 }
 
 function closeBookingModal() {
@@ -1597,6 +1681,7 @@ async function submitBooking(e) {
   }
 
   const overlay = document.createElement('div');
+  overlay.setAttribute('data-conf', '1');
   overlay.style.cssText = 'position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,0.82);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:20px';
   overlay.innerHTML = `
     <div style="background:#141414;border:1px solid rgba(255,255,255,0.08);border-radius:20px;padding:32px;max-width:440px;width:100%;font-family:inherit">
@@ -1622,7 +1707,7 @@ async function submitBooking(e) {
           Keep an eye out for a message from <strong style="color:#fff">(760) 891-4152</strong> — save that number.
         </div>
       </div>
-      <button onclick="this.closest('div[style]').remove()" style="width:100%;padding:14px;background:#818cf8;color:#09090b;border:none;border-radius:10px;font-weight:700;font-size:0.9rem;cursor:pointer">Done</button>
+      <button onclick="this.closest('[data-conf]').remove();document.getElementById('booking-overlay').classList.remove('open');document.body.style.overflow='';" style="width:100%;padding:14px;background:#818cf8;color:#09090b;border:none;border-radius:10px;font-weight:700;font-size:0.9rem;cursor:pointer">Done</button>
     </div>`;
   document.body.appendChild(overlay);
 })();
@@ -1636,6 +1721,12 @@ async function submitBooking(e) {
         <div id="bk-service-name" class="booking-service-name"></div>
       </div>
       <button class="booking-close" onclick="closeBookingModal()">✕</button>
+    </div>
+
+    <div class="bk-steps">
+      <div class="bk-step-circle active" id="bk-dot-1">1</div>
+      <div class="bk-step-line" id="bk-step-line"></div>
+      <div class="bk-step-circle" id="bk-dot-2">2</div>
     </div>
 
     <!-- Step 1: Pick a package -->
@@ -1666,8 +1757,8 @@ async function submitBooking(e) {
         <div class="booking-field">
           <label class="input-label">Pickup preference <span style="color:#f87171;font-size:0.75rem">required</span></label>
           <div style="display:flex;gap:8px;margin-top:4px">
-            <button type="button" class="pickup-opt selected" data-val="shop" onclick="selectPickup(this,'shop')" style="flex:1;padding:10px 8px;border-radius:10px;border:1px solid #818cf8;background:rgba(129,140,248,0.12);color:#fff;font-size:0.82rem;font-weight:600;cursor:pointer">🏪 Shop pickup</button>
-            <button type="button" class="pickup-opt" data-val="hotel" onclick="selectPickup(this,'hotel')" style="flex:1;padding:10px 8px;border-radius:10px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:#a1a1aa;font-size:0.82rem;font-weight:600;cursor:pointer">🏨 Hotel delivery</button>
+            <button type="button" class="pickup-opt selected" data-val="shop" onclick="selectPickup(this,'shop')" style="flex:1;padding:10px 8px;border-radius:10px;border:1px solid #818cf8;background:rgba(129,140,248,0.12);color:#fff;font-size:0.82rem;font-weight:600;cursor:pointer">Shop pickup</button>
+            <button type="button" class="pickup-opt" data-val="hotel" onclick="selectPickup(this,'hotel')" style="flex:1;padding:10px 8px;border-radius:10px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:#a1a1aa;font-size:0.82rem;font-weight:600;cursor:pointer">Hotel delivery</button>
           </div>
           <input type="hidden" id="bk-rental-pickup" value="shop">
         </div>
@@ -1724,7 +1815,7 @@ async function submitBooking(e) {
 
 <footer class="footer-outer">
   <div class="footer">
-    <div class="footer-brand">amig<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 26" aria-hidden="true" style="display:inline-block;width:0.55em;height:0.8em;vertical-align:-0.05em;color:var(--p1)"><path fill="currentColor" fill-rule="evenodd" d="M10,1.5 C14.97,1.5 19,6.65 19,13 C19,19.35 14.97,24.5 10,24.5 C5.03,24.5 1,19.35 1,13 C1,6.65 5.03,1.5 10,1.5 Z M10,7 C7.51,7 5.5,9.69 5.5,13 C5.5,16.31 7.51,19 10,19 C12.49,19 14.5,16.31 14.5,13 C14.5,9.69 12.49,7 10,7 Z"/><line x1="6.5" y1="21" x2="13.5" y2="5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/></svg></div>
+    <div class="footer-brand">amig<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 26" aria-hidden="true" style="display:inline-block;width:0.55em;height:0.8em;vertical-align:-0.05em;color:var(--p1)"><path fill="currentColor" fill-rule="evenodd" d="M10,1.5 C14.97,1.5 19,6.65 19,13 C19,19.35 14.97,24.5 10,24.5 C5.03,24.5 1,19.35 1,13 C1,6.65 5.03,1.5 10,1.5 Z M10,7 C7.51,7 5.5,9.69 5.5,13 C5.5,16.31 7.51,19 10,19 C12.49,19 14.5,16.31 14.5,13 C14.5,9.69 12.49,7 10,7 Z"/><line x1="6.5" y1="21" x2="13.5" y2="5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity="1"/></svg></div>
     <div class="footer-links">
       <a href="/deals">Deals</a>
       <a href="/hacks/">Traveler Hacks</a>
