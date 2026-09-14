@@ -29,12 +29,21 @@ if [ -n "$STAGED_ENV" ]; then
 fi
 
 # ── 2. Scan staged files for hardcoded secret patterns ──────
-STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(js|ts|tsx|jsx|py|sh|env|json|yaml|yml)$' | grep -v '\.example$' | grep -v '\.sample$' | grep -v '^\.claude/' | grep -v '^firebase-config\.js$')
+# Reads content from the git index (not working tree) so secrets
+# are caught even when the file has been deleted from disk after
+# staging. This closes the working-tree-absent bypass (F01 vNext).
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(js|ts|tsx|jsx|py|sh|env|json|yaml|yml)$' | grep -v '\.example$' | grep -v '\.sample$' | grep -v '^\.claude/')
 
 if [ -n "$STAGED_FILES" ]; then
-  SECRET_HITS=$(echo "$STAGED_FILES" | xargs grep -lE \
-    "(sk_live_|sk_test_|rk_live_|pk_live_|AAAA[0-9A-Za-z_-]{100,}|AIza[0-9A-Za-z_-]{35}|ghp_[0-9A-Za-z]{36}|xox[baprs]-[0-9A-Za-z]{10,}|eyJhbGciOiJIUzI1NiJ9\.|-----BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY)" \
-    2>/dev/null)
+  SECRET_HITS=""
+  while IFS= read -r f; do
+    [ -z "$f" ] && continue
+    if git show ":$f" 2>/dev/null | grep -qE \
+      "(sk_live_|sk_test_|rk_live_|pk_live_|AAAA[0-9A-Za-z_-]{100,}|AIza[0-9A-Za-z_-]{35}|ghp_[0-9A-Za-z]{36}|xox[baprs]-[0-9A-Za-z]{10,}|eyJhbGciOiJIUzI1NiJ9\.|-----BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY)"; then
+      SECRET_HITS="${SECRET_HITS}"$'\n'"${f}"
+    fi
+  done <<< "$STAGED_FILES"
+  SECRET_HITS=$(printf '%s' "$SECRET_HITS" | sed '/^[[:space:]]*$/d')
 
   if [ -n "$SECRET_HITS" ]; then
     echo -e "${RED}✗ BLOCKED: Potential secrets detected in staged files:${NC}"
@@ -57,6 +66,26 @@ if [ -f "package.json" ] && grep -q '"lint"' package.json 2>/dev/null; then
     FAILED=1
   fi
 fi
+
+# ── 4. Governance freshness check (warn only — never blocks) ─
+STALE_DAYS=14
+
+for DOC in "CLAUDE.md" "RAID.md"; do
+  if [ -f "$DOC" ]; then
+    LAST_UPDATED=$(grep -m1 "Last Updated" "$DOC" 2>/dev/null | grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}' | head -1)
+    if [ -n "$LAST_UPDATED" ]; then
+      DOC_TS=$(date -j -f "%Y-%m-%d" "$LAST_UPDATED" "+%s" 2>/dev/null)
+      NOW_TS=$(date "+%s")
+      if [ -n "$DOC_TS" ]; then
+        AGE=$(( (NOW_TS - DOC_TS) / 86400 ))
+        if [ "$AGE" -gt "$STALE_DAYS" ]; then
+          echo -e "${YELLOW}⚠ Governance drift: $DOC last updated $LAST_UPDATED (${AGE}d ago)${NC}"
+          echo -e "  Update 'Last Updated' date if this session changed project context."
+        fi
+      fi
+    fi
+  fi
+done
 
 # ── Result ──────────────────────────────────────────────────
 if [ $FAILED -eq 0 ]; then

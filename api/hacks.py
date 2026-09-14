@@ -154,7 +154,7 @@ class handler(BaseHTTPRequestHandler):
             f"are certain about. This is a factual platform — accuracy is non-negotiable.\n\n"
             "Respond with valid JSON only — no markdown, no code fences, no extra text.\n"
             "Schema:\n"
-            '{"destination":"...","locations":[{"name":"...","category":"Shopping|Dining|Entertainment|Bar|Music|Art|Nature|Market|Other","lat":0.0,"lng":0.0,"website":"","instagram":"","hacks":[{"type":"app|timing|local_alternative|pro_tip","tip":"..."}]}]}'
+            '{"destination":"...","locations":[{"name":"...","category":"Shopping|Dining|Coffee|Entertainment|Bar|Music|Art|Nature|Market|Other","lat":0.0,"lng":0.0,"website":"","instagram":"","hacks":[{"type":"app|timing|local_alternative|pro_tip","tip":"..."}]}]}'
         )
 
     def _fetch_website(self, url):
@@ -199,10 +199,16 @@ class handler(BaseHTTPRequestHandler):
             "Rules:\n"
             "- Exactly 5 hacks — no more, no fewer.\n"
             "- Vary hack types — use all 3 types across the 5 hacks (app, timing, pro_tip).\n"
+            "- headline: 2-6 words per hack — editorial micro-headline that captures the action, not the category. "
+            "Write it like editorial copy, not a label. "
+            "Good: 'Skip the Saturday rush' / 'Ask for the off-menu one' / 'Download before you arrive'. "
+            "Bad: 'Timing tip' / 'Pro tip' / 'App hack'.\n"
             "- Product focus: prioritize hacks that highlight the venue's actual offerings. "
             "Name specific products, drinks, dishes, or experiences by name whenever possible. "
             "A hack that references a named beer, a signature dish, a recurring event, or a specific menu item "
             "is far more valuable than generic advice. If website content is provided, pull product names directly from it.\n"
+            "- Hours/pricing: Do not state specific opening hours or prices unless they appear verbatim in the "
+            "website content above. If uncertain, omit.\n"
             "- Be specific to this venue. No generic advice.\n"
             "- Tip quality: every tip must contain a concrete action — what to ORDER, ASK FOR, TIME, or AVOID. "
             "Maximum 2 sentences. Never open with a description of the venue or its atmosphere.\n"
@@ -216,12 +222,12 @@ class handler(BaseHTTPRequestHandler):
             f"and name it accurately.\n\n"
             "Respond with valid JSON only — no markdown, no code fences, no extra text.\n"
             "Schema (exactly one location in the array, exactly 5 hacks):\n"
-            '{"destination":"...","locations":[{"name":"...","category":"Shopping|Dining|Entertainment|Bar|Music|Art|Nature|Market|Other","lat":0.0,"lng":0.0,"website":"","instagram":"","hacks":['
-            '{"type":"app|timing|pro_tip","tip":"..."},'
-            '{"type":"app|timing|pro_tip","tip":"..."},'
-            '{"type":"app|timing|pro_tip","tip":"..."},'
-            '{"type":"app|timing|pro_tip","tip":"..."},'
-            '{"type":"app|timing|pro_tip","tip":"..."}'
+            '{"destination":"...","locations":[{"name":"...","category":"Shopping|Dining|Coffee|Entertainment|Bar|Music|Art|Nature|Market|Other","lat":0.0,"lng":0.0,"website":"","instagram":"","hacks":['
+            '{"type":"app|timing|pro_tip","headline":"...","tip":"..."},'
+            '{"type":"app|timing|pro_tip","headline":"...","tip":"..."},'
+            '{"type":"app|timing|pro_tip","headline":"...","tip":"..."},'
+            '{"type":"app|timing|pro_tip","headline":"...","tip":"..."},'
+            '{"type":"app|timing|pro_tip","headline":"...","tip":"..."}'
             ']}]}'
         )
 
@@ -244,7 +250,7 @@ class handler(BaseHTTPRequestHandler):
             "- instagram: Instagram handle (without @) if you are confident it is correct — omit or leave empty string if unsure.\n\n"
             "Respond with valid JSON only — no markdown, no code fences, no extra text.\n"
             "Schema:\n"
-            '{"destination":"...","locations":[{"name":"...","category":"Shopping|Dining|Entertainment|Bar|Music|Art|Nature|Market|Other","website":"","instagram":"","hacks":[{"type":"app|timing|local_alternative|pro_tip","tip":"..."}]}]}'
+            '{"destination":"...","locations":[{"name":"...","category":"Shopping|Dining|Coffee|Entertainment|Bar|Music|Art|Nature|Market|Other","website":"","instagram":"","hacks":[{"type":"app|timing|local_alternative|pro_tip","tip":"..."}]}]}'
         )
 
     def _json(self, status, data):

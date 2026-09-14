@@ -43,7 +43,7 @@ IG_TOKEN       = os.environ.get('IG_ACCESS_TOKEN', '')
 IMGBB_KEY      = os.environ.get('IMGBB_API_KEY', '')
 PUBLISH_SECRET = os.environ.get('PUBLISH_SECRET', '')
 
-GRAPH = 'https://graph.instagram.com/v21.0'
+GRAPH = 'https://graph.instagram.com/v22.0'
 
 # ── IG error classification ────────────────────────────────────────────────────
 

@@ -1,6 +1,6 @@
 # RAID Log: amig0
 # Tier 1 — Enterprise Grade | OCTech Services
-# Last Updated: 2026-08-30 (Session 19)
+# Last Updated: 2026-09-13 (Session 21)
 
 ---
 
@@ -86,10 +86,12 @@ Features confirmed for future build — not yet in active sprint.
 | P10 | Dual-currency display on quotes, invoices, and portal | Medium | **Shipped Session 9.** exchangeRate field on quotes/invoices. formatSecondary() helper: MXN÷rate=USD or USD×rate=MXN. Shown in table TD, portal rows, and PDF totals block (muted secondary line). |
 
 | I21 | WhatsApp business number registration pending | Session 20 | Closed — Twilio (760) 891-4152 registered + verified. WABA: 1378242627790626, Phone Number ID: 1407135942475680. WA_TOKEN + WA_PHONE_NUMBER_ID added to Vercel. Messaging confirmed working. Display name "amig0" pending Meta approval (1-3 days). |
-| I22 | WA_TOKEN is short-lived user token from Graph API Explorer — expires ~60 days | Session 20 | Open — Permanent system user token needed. amig0-api system user created but token gen had permission issues. Workaround: re-generate via Graph API Explorer when expired. Owner: Daniel. |
+| I22 | WA_TOKEN is short-lived — permanent system user token failed (permissions) | Session 20 | Open — Fell back to 60-day fb_exchange_token. **Expires Nov 10, 2026.** Re-generate via Graph API Explorer when expired. Owner: Daniel. |
 | I23 | Stripe booking flow untested end-to-end | Session 20 | Open — swap STRIPE_SECRET_KEY to sk_test_ in Vercel, book via amig0.com/hacks with card 4242 4242 4242 4242, confirm Firestore write in service_bookings. Owner: Daniel. |
 | I24 | All 3 affiliates still status:pending — deals page shows no active deals | Session 20 | Open — Booze Bros: finalize hub model conversation. Vigilante Coffee: IG DM @vigilantecoffee. Revo Roasters: IG DM @revolutionroasters. First activation unlocks the deals page for members. Owner: Daniel. |
 | I25 | San Diego e-bike partner not yet identified | Session 20 | Open — Find Google Maps 4.5+ local shop, vet, update SERVICES ebike_local entry with partner name. Owner: Daniel. |
+| I26 | Phase 0 audit pending review — implementation blocked | Session 21 | Open — `docs/phase-0-audit.md` completed. Daniel must review and approve before Phase 1 begins. Covers: 10 surfaces, hosting map, 18 Firestore collections, 6 security gaps, 14-item debt register, autonomy model, lifecycle. Owner: Daniel. |
+| I27 | content/index.html has no auth gate — internal tool is publicly accessible | Session 21 | Open — Add basic protection (password or Firebase Auth) before content engine is used regularly. Low urgency while URL is unlisted. Owner: Daniel. |
 
 ## Dependencies
 | ID | Dependency | Type | Notes |

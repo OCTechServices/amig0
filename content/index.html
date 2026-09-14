@@ -40,13 +40,13 @@
     }
 
     /* ── Layout ── */
-    .container { max-width: 860px; margin: 0 auto; padding: 32px 24px; }
-    .workspace { display: grid; grid-template-columns: 340px 1fr; gap: 24px; align-items: start; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 24px 32px; }
+    .workspace { display: grid; grid-template-columns: 300px 1fr; gap: 24px; align-items: start; }
 
     /* ── Left panel — Generator ── */
     .gen-panel {
       background: var(--surface); border: 1px solid var(--border);
-      border-radius: 16px; padding: 22px; position: sticky; top: 24px;
+      border-radius: 12px; padding: 18px; position: sticky; top: 24px;
     }
     .panel-label {
       font-size: 0.62rem; font-weight: 700; text-transform: uppercase;
@@ -147,7 +147,7 @@
     .generate-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
     /* ── Right panel — Output ── */
-    .output-panel { min-height: 200px; }
+    .output-panel { min-height: 200px; min-width: 0; overflow: hidden; }
 
     /* State */
     .state { text-align: center; padding: 48px 16px; color: var(--muted); font-size: 0.88rem; line-height: 1.8; }
@@ -187,14 +187,14 @@
       font-size: 0.55rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;
       padding: 2px 8px; border-radius: 16px; white-space: nowrap; flex-shrink: 0; margin-top: 3px;
     }
-    .hack-tip { font-size: 0.84rem; line-height: 1.55; color: rgba(250,250,250,0.85); }
+    .hack-tip { font-size: 0.84rem; line-height: 1.55; color: rgba(250,250,250,0.85); overflow-wrap: break-word; word-break: break-word; }
 
     /* ── IG Export panel ── */
     .ig-section {
-      margin-top: 20px;
+      margin-top: 14px;
       background: var(--surface);
       border: 1px solid rgba(129,140,248,0.3);
-      border-radius: 16px; padding: 22px;
+      border-radius: 12px; padding: 16px;
     }
     .ig-section-header {
       display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;
@@ -710,6 +710,27 @@ function buildHashtags(cityTag, interests) {
   return [...base, ...[...extra].slice(0, 4)].join(' ');
 }
 
+// ─── Spotlight hashtag builder ─────────────────────────────────────────────────
+function spotlightHashtags(venue, destination) {
+  const toCamel = s => s.toLowerCase()
+    .split(/[^a-z0-9]+/)
+    .filter(Boolean)
+    .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+    .join('');
+  const city  = toCamel(destination);
+  const cat   = toCamel(venue.category);
+  const vname = toCamel(venue.name);
+  const CAT_GENERIC = {
+    'Bar':           'CraftBeer',   'Dining':        'FoodieFinds',
+    'Coffee':        'CoffeeCulture','Music':         'LiveMusic',
+    'Art':           'ArtScene',    'Nature':        'OutdoorLife',
+    'Market':        'LocalMarket', 'Shopping':      'LocalShops',
+    'Entertainment': 'NightOut',    'Other':         'LocalPicks',
+  };
+  const generic = CAT_GENERIC[venue.category] || 'LocalPicks';
+  return `#${city} #${city}${cat} #${vname} #${generic} #LocalInsider #amig0trips`;
+}
+
 // ─── IG Panel ─────────────────────────────────────────────────────────────────
 function buildIGPanel(data) {
   const { destination, locations } = data;
@@ -720,36 +741,77 @@ function buildIGPanel(data) {
 
   // ── Venue Spotlight ─────────────────────────────────────────────────────────
   if (postType === 'venue-spotlight') {
-    const venue = locations[0];
-    const hacks = venue.hacks.slice(0, 5);
+    const venue  = locations[0];
+    const hacks  = venue.hacks.slice(0, 5);
+
+    const tagHandle = document.getElementById('spotlightTagToggle')?.checked;
+    const handle    = (tagHandle && venue.instagram) ? `@${venue.instagram}` : venue.name;
+    const CAT_EMOJI = { 'Bar':'🍺','Dining':'🍽️','Coffee':'☕','Music':'🎵',
+                        'Art':'🎨','Nature':'🌿','Market':'🛒','Shopping':'🛍️',
+                        'Entertainment':'🎭','Other':'📍' };
+    const vEmoji    = CAT_EMOJI[venue.category] || '📍';
+    const hookIdx   = JSON.parse(localStorage.getItem(LOG_KEY) || '[]').length % 3;
+
+    // Controlled hook library by category — editorial voice, no lockup repeat (header has it)
+    const HOOKS_BY_CAT = {
+      'Bar': [
+        `5 things only the regulars at ${handle} actually know. 🔑`,
+        `We went inside ${handle}. Here's the intel they don't post online. 🔑`,
+        `The moves that don't make it online — straight from ${handle}. 🔑`,
+      ],
+      'Dining': [
+        `Order like a regular, not a tourist. Here's how at ${handle}. 🔑`,
+        `We partnered with ${handle} to surface the 5 things worth knowing. 🔑`,
+        `Here's how locals actually eat at ${handle}. 🔑`,
+      ],
+      'Coffee': [
+        `5 moves the baristas at ${handle} make for themselves. 🔑`,
+        `We went behind the counter at ${handle}. Here's the real order. 🔑`,
+        `How to get the most out of every visit to ${handle}. 🔑`,
+      ],
+      'Music': [
+        `5 things to know before you show up to ${handle}. 🔑`,
+        `We got the inside track at ${handle}. Here's how to do it right. 🔑`,
+        `How the regulars actually experience ${handle}. 🔑`,
+      ],
+      'Art': [
+        `5 things worth knowing before you visit ${handle}. 🔑`,
+        `We partnered with ${handle} to show you how to actually see this place. 🔑`,
+        `What the serious visitors at ${handle} do differently. 🔑`,
+      ],
+      'Shopping': [
+        `5 things worth knowing before you shop at ${handle}. 🔑`,
+        `We went inside ${handle}. Here's how the regulars do it. 🔑`,
+        `Shop smarter, not harder — the ${handle} guide. 🔑`,
+      ],
+    };
+    const hooks = HOOKS_BY_CAT[venue.category] || [
+      `5 things only the regulars at ${handle} actually know. 🔑`,
+      `We partnered with ${handle} to bring you 5 hacks you won't find online. 🔑`,
+      `Here's what the regulars at ${handle} actually know. 🔑`,
+    ];
+
+    // Slides
     igSlides.push(`LOCAL PICK\n📍 ${venue.name.toUpperCase()}\n${destination.toUpperCase()} · ${venue.category.toUpperCase()}`);
     hacks.forEach((h, i) => {
-      const t = TYPES[h.type] || TYPES.pro_tip;
-      igSlides.push(`${i + 1}/5  ${t.emoji} ${t.label.toUpperCase()}\n\n${h.tip}`);
+      const t  = TYPES[h.type] || TYPES.pro_tip;
+      const hl = h.headline ? h.headline.toUpperCase() : t.label.toUpperCase();
+      igSlides.push(`${i + 1}/5  ${t.emoji} ${t.label.toUpperCase()}\n\n${hl}\n\n${h.tip}`);
     });
     igSlides.push('__VENMAP__');
     igSlides.push(`Your city next?\n\nGet personalized hacks → amig0.com/hacks\n\n@amig0trips`);
-    const cityTag  = destination.toLowerCase().replace(/[^a-z0-9]/g, '');
-    const catTag   = venue.category.toLowerCase().replace(/\s+/g, '');
-    const tags     = `#${cityTag} #${cityTag}${catTag} #localinsider #insidertips #travelhacks #amig0trips`;
-    const hackLines  = hacks.map((h, i) => {
-      const t = TYPES[h.type] || TYPES.pro_tip;
-      return `${i + 1}. ${t.emoji} ${h.tip}`;
-    }).join('\n');
-    const tagHandle  = document.getElementById('spotlightTagToggle')?.checked;
-    const handle     = (tagHandle && venue.instagram) ? `@${venue.instagram}` : venue.name;
-    const hookIdx    = JSON.parse(localStorage.getItem(LOG_KEY) || '[]').length % 3;
-    const CAT_EMOJI  = { 'Bar':'🍺', 'Dining':'🍽️', 'Coffee':'☕', 'Music':'🎵',
-                         'Art':'🎨', 'Nature':'🌿', 'Market':'🛒', 'Shopping':'🛍️',
-                         'Entertainment':'🎭', 'Other':'📍' };
-    const vEmoji     = CAT_EMOJI[venue.category] || '📍';
-    const collabHooks = [
-      `We teamed up with ${handle} to bring you 5 hacks you won't find online. 🔑`,
-      `${handle} × amig0 ${vEmoji} — here's what the regulars actually know. 🔑`,
-      `Our latest collab with ${handle}. 5 insider tips, straight from the source. 🔑`,
-    ];
-    const websiteLine = venue.website ? `\n🌐 ${venue.website}` : '';
-    igCaption = `${collabHooks[hookIdx]}\n\n${hackLines}${websiteLine}\n\nGet personalized city hacks → amig0.com/hacks\n\n🔗 Recommended tools → link in bio\n\n💬 Visited ${venue.name}? What would you add?\n\n${tags}`;
+
+    // Caption — micro-headline format (01 — headline\nexplanation)
+    const hackLines = hacks.map((h, i) => {
+      const num = String(i + 1).padStart(2, '0');
+      const hl  = h.headline || (TYPES[h.type] || TYPES.pro_tip).label;
+      return `${num} — ${hl}\n${h.tip}`;
+    }).join('\n\n');
+    const headerLine  = `${handle} × amig0 ${vEmoji}`;
+    const websiteLine = venue.website ? `\n\n🌐 ${venue.website}` : '';
+    const tags        = spotlightHashtags(venue, destination);
+    igCaption = `${headerLine}\n\n${hooks[hookIdx]}\n\n${hackLines}\n\nBeen here? Drop the move we missed ↓${websiteLine}\n\n${tags}`;
+
     return buildIGPanelHTML(data, dupes);
   }
 
@@ -1148,7 +1210,7 @@ async function drawFinaleMapSlide(ctx) {
   // amig0 wordmark
   ctx.font = '700 34px "Inter",system-ui,sans-serif';
   ctx.fillStyle = 'rgba(129,140,248,0.55)';
-  ctx.fillText('amig0', W/2, H - 52);
+  drawWordmark(ctx, W/2, H - 52);
 }
 
 async function drawVenueMapSlide(ctx) {
@@ -1267,7 +1329,7 @@ async function drawVenueMapSlide(ctx) {
   ctx.textAlign = 'right';
   ctx.font = '700 28px "Inter",system-ui,sans-serif';
   ctx.fillStyle = 'rgba(129,140,248,0.55)';
-  ctx.fillText('amig0', W - PAD, H - PAD);
+  drawWordmark(ctx, W - PAD, H - PAD);
   ctx.textAlign = 'left';
 }
 
@@ -1276,7 +1338,12 @@ async function makeSlide(idx) {
   canvas.width  = SLIDE_W;
   canvas.height = SLIDE_H;
   const ctx = canvas.getContext('2d');
-  ctx.fillStyle = '#100c08';
+  // Spotlight: warm cream foundation (light editorial) — City Guide stays dark
+  if (postType === 'venue-spotlight') {
+    ctx.fillStyle = '#faf6f0';
+  } else {
+    ctx.fillStyle = '#100c08';
+  }
   ctx.fillRect(0, 0, SLIDE_W, SLIDE_H);
   if (idx === 0 && postType === 'finale')            await drawFinaleMapSlide(ctx);
   else if (idx === 0 && postType === 'venue-spotlight') drawVenueSpotlightCover(ctx);
@@ -1321,12 +1388,56 @@ function drawArchMotif(ctx, cx, cy, size) {
   ctx.restore();
 }
 
-function drawBrandZero(ctx, x, y, size, opacity, align) {
+function drawWordmark(ctx, x, y) {
+  // Draw 'amig0' wordmark with the brand slash through the zero.
+  // Caller sets font, fillStyle, textAlign, globalAlpha before calling.
+  ctx.fillText('amig0', x, y);
+  const totalW = ctx.measureText('amig0').width;
+  const amigW  = ctx.measureText('amig').width;
+  const zW     = ctx.measureText('0').width;
+  const align  = ctx.textAlign || 'left';
+  let zLeft;
+  if      (align === 'center') zLeft = x - totalW / 2 + amigW;
+  else if (align === 'right')  zLeft = x - zW;
+  else                          zLeft = x + amigW;
+  const zCx = zLeft + zW * 0.5;
+  const sizeMatch = ctx.font.match(/(\d+(?:\.\d+)?)px/);
+  const sz  = sizeMatch ? parseFloat(sizeMatch[1]) : 28;
+  const zH  = sz * 0.72;
+  ctx.save();
+  ctx.strokeStyle = ctx.fillStyle;
+  ctx.lineWidth   = Math.max(1, sz * 0.075);
+  ctx.lineCap     = 'round';
+  ctx.beginPath();
+  ctx.moveTo(zCx - zW * 0.22, y - zH * 0.08);
+  ctx.lineTo(zCx + zW * 0.22, y - zH * 0.88);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawBrandZero(ctx, x, y, size, opacity, align, rgb) {
+  const c = rgb || '250,245,240';   // default off-white; pass '18,16,14' for dark/light-bg
   ctx.save();
   ctx.font = `700 ${size}px "Cormorant Garamond",serif`;
-  ctx.fillStyle = `rgba(250,245,240,${opacity})`;
   ctx.textAlign = align || 'center';
+  ctx.fillStyle = `rgba(${c},${opacity})`;
   ctx.fillText('0', x, y);
+  // Brand slash — amig0 signature diagonal through the zero
+  const m  = ctx.measureText('0');
+  const zW = m.width;
+  const zH = size * 0.70;  // approximate cap height in this font
+  const cx = (align || 'center') === 'right' ? x - zW * 0.5
+           : (align || 'center') === 'left'  ? x + zW * 0.5
+           : x;
+  // Slash is the brand signature — intentionally more visible than the zero body
+  const slashOpacity = Math.min(0.55, opacity * 4);
+  ctx.strokeStyle = `rgba(${c},${slashOpacity})`;
+  ctx.lineWidth   = Math.max(2, size * 0.068);
+  ctx.lineCap     = 'round';
+  ctx.beginPath();
+  ctx.moveTo(cx - zW * 0.22, y - zH * 0.08);   // lower-left
+  ctx.lineTo(cx + zW * 0.22, y - zH * 0.92);   // upper-right
+  ctx.stroke();
   ctx.restore();
 }
 
@@ -1347,7 +1458,7 @@ function drawCoverSlide(ctx) {
   ctx.textAlign = 'left';
   ctx.font = '600 28px system-ui,sans-serif';
   ctx.fillStyle = '#818cf8';
-  ctx.fillText('amig0', PAD, PAD + 28);
+  drawWordmark(ctx, PAD, PAD + 28);
   // Top rule
   ctx.fillStyle = 'rgba(194,113,79,0.30)';
   ctx.fillRect(PAD, PAD + 48, W - PAD*2, 1.5);
@@ -1392,33 +1503,124 @@ function drawCoverSlide(ctx) {
   ctx.fillText('amig0.com/hacks  ·  @amig0trips', PAD, H - PAD);
 }
 
-function drawVenueSpotlightCover(ctx) {
+// ─── Venue Spotlight helpers ───────────────────────────────────────────────────
+function getCategoryAccent(category) {
+  const A = {
+    'Bar':'#b07820', 'Dining':'#c2714f', 'Coffee':'#6b3a1f',
+    'Music':'#6b48bb', 'Art':'#94a3b8', 'Nature':'#3a6b3a',
+    'Market':'#9b7b4d', 'Shopping':'#7b8a9b', 'Entertainment':'#5b3a8b',
+  };
+  return A[category] || '#c2714f';
+}
+
+function drawSpotlightTexture(ctx, category, opacity) {
   const W = SLIDE_W, H = SLIDE_H;
-  const venue = lastData.locations[0];
-  // Warm glow — lower right
-  const glow = ctx.createRadialGradient(W*0.8, H*0.75, 0, W*0.8, H*0.75, W*0.6);
-  glow.addColorStop(0, 'rgba(194,113,79,0.09)'); glow.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.save();
+  ctx.globalAlpha = opacity;
+  ctx.strokeStyle = '#c2714f';
+  ctx.fillStyle   = '#c2714f';
+  ctx.lineWidth   = 1;
+  if (category === 'Bar' || category === 'Entertainment') {
+    // Vertical tap-lines — brewery/bar signature
+    for (let x = 60; x < W; x += 60) {
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+    }
+  } else if (category === 'Coffee') {
+    // Cup-ring concentric circles — centered
+    for (let r = 80; r <= 320; r += 55) {
+      ctx.beginPath(); ctx.arc(W * 0.5, H * 0.54, r, 0, Math.PI * 2); ctx.stroke();
+    }
+  } else if (category === 'Music') {
+    // Rhythm marks — horizontal dashes, syncopated spacing
+    const pattern = [20, 38, 20, 54, 20, 30, 46];
+    for (let row = 0; row < 13; row++) {
+      let x = 30;
+      for (let j = 0; j < pattern.length; j++) {
+        ctx.fillRect(x, 50 + row * 88, pattern[j], 1.5);
+        x += pattern[j] + 10;
+        if (x > W) break;
+      }
+    }
+  } else if (category === 'Art') {
+    // Off-axis geometric grid
+    ctx.save(); ctx.translate(W * 0.5, H * 0.5); ctx.rotate(Math.PI / 12);
+    for (let i = -8; i <= 8; i++) {
+      ctx.beginPath(); ctx.moveTo(i * 100, -H); ctx.lineTo(i * 100, H); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(-W, i * 100); ctx.lineTo(W, i * 100); ctx.stroke();
+    }
+    ctx.restore();
+  } else if (category === 'Nature') {
+    // Radial topographic arcs — bottom anchored
+    for (let r = 130; r <= 560; r += 95) {
+      ctx.beginPath(); ctx.arc(W * 0.5, H, r, Math.PI, 2 * Math.PI); ctx.stroke();
+    }
+  } else if (category === 'Dining') {
+    // Concentric plate ellipses — centered
+    for (let i = 0; i < 4; i++) {
+      ctx.beginPath();
+      ctx.ellipse(W * 0.5, H * 0.5, 180 + i * 65, 16 + i * 5, 0, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+  } else {
+    // Default: subtle dot grid
+    for (let x = 80; x < W; x += 92) {
+      for (let y = 80; y < H; y += 92) {
+        ctx.beginPath(); ctx.arc(x, y, 1.5, 0, Math.PI * 2); ctx.fill();
+      }
+    }
+  }
+  ctx.restore();
+}
+
+function drawVenueSpotlightCover(ctx) {
+  const W      = SLIDE_W, H = SLIDE_H;
+  const venue  = lastData.locations[0];
+  const accent = getCategoryAccent(venue.category);
+
+  // Category micro-texture — copper strokes on cream (warm editorial feel)
+  drawSpotlightTexture(ctx, venue.category, 0.065);
+
+  // Subtle warm bloom — upper-left corner
+  const glow = ctx.createRadialGradient(W*0.12, H*0.16, 0, W*0.12, H*0.16, W*0.60);
+  glow.addColorStop(0, 'rgba(194,113,79,0.05)'); glow.addColorStop(1, 'rgba(0,0,0,0)');
   ctx.fillStyle = glow; ctx.fillRect(0, 0, W, H);
-  drawBrandZero(ctx, W*0.74, H*0.62, 560, 0.042);
-  drawArchMotif(ctx, W*0.74, H*0.47, 390);
+
+  // amig0 brand mark — dark ghost on light bg
+  drawBrandZero(ctx, W*0.82, H*0.44, 500, 0.06, 'center', '18,16,14');
+  drawArchMotif(ctx, W*0.82, H*0.30, 360);
+
+  // Category accent — left-edge band (4px, full height — more punch on light bg)
+  ctx.globalAlpha = 0.80;
+  ctx.fillStyle = accent;
+  ctx.fillRect(0, 0, 4, H);
+  ctx.globalAlpha = 1;
+
   // Left editorial rule
-  ctx.fillStyle = 'rgba(194,113,79,0.16)';
+  ctx.fillStyle = 'rgba(194,113,79,0.18)';
   ctx.fillRect(PAD - 28, PAD + 48, 1, H - (PAD + 48) - PAD);
-  // amig0 wordmark
+
+  // amig0 wordmark — top left (indigo holds on light bg)
   ctx.textAlign = 'left';
   ctx.font = '600 28px system-ui,sans-serif';
   ctx.fillStyle = '#818cf8';
-  ctx.fillText('amig0', PAD, PAD + 28);
+  drawWordmark(ctx, PAD, PAD + 28);
+
+  // "VENUE SPOTLIGHT" micro-label — top right
+  ctx.textAlign = 'right';
+  ctx.font = '500 17px system-ui,sans-serif';
+  ctx.globalAlpha = 0.65;
+  ctx.fillStyle = accent;
+  ctx.fillText('VENUE SPOTLIGHT', W - PAD, PAD + 26);
+  ctx.globalAlpha = 1;
+  ctx.textAlign = 'left';
+
   // Top rule
-  ctx.fillStyle = 'rgba(194,113,79,0.30)';
-  ctx.fillRect(PAD, PAD + 48, W - PAD*2, 1.5);
-  // "LOCAL PICK" label
-  ctx.font = '500 22px system-ui,sans-serif';
-  ctx.fillStyle = '#c2714f';
-  ctx.fillText('LOCAL PICK', PAD, PAD + 86);
-  // Venue name — adaptive, max 3 lines
-  const name = venue.name.toUpperCase();
-  const maxW = W - PAD * 2;
+  ctx.fillStyle = 'rgba(194,113,79,0.28)';
+  ctx.fillRect(PAD, PAD + 46, W - PAD*2, 1.5);
+
+  // Venue name — adaptive, max 3 lines — near-black on cream
+  const name  = venue.name.toUpperCase();
+  const maxW  = W - PAD * 2;
   let nameSize = 128, nameLines;
   for (let s = 128; s >= 48; s -= 4) {
     ctx.font = `700 ${s}px "Cormorant Garamond",serif`;
@@ -1428,86 +1630,147 @@ function drawVenueSpotlightCover(ctx) {
   if (!nameLines || nameLines.length > 3) nameLines = (nameLines || [name]).slice(0, 3);
   const lineH = Math.round(nameSize * 1.06);
   ctx.font = `700 ${nameSize}px "Cormorant Garamond",serif`;
-  ctx.fillStyle = '#faf7f4';
-  nameLines.forEach((l, i) => ctx.fillText(l, PAD, H*0.44 + i * lineH));
-  const afterName = H*0.44 + nameLines.length * lineH;
-  // Bottom rule — dynamic
-  const ruleY = Math.round(afterName + nameSize * 0.28);
-  ctx.fillStyle = 'rgba(194,113,79,0.30)';
+  ctx.fillStyle = '#12100e';
+  nameLines.forEach((l, i) => ctx.fillText(l, PAD, H*0.42 + i * lineH));
+  const afterName = H*0.42 + nameLines.length * lineH;
+
+  // Bottom rule
+  const ruleY = Math.round(afterName + nameSize * 0.26);
+  ctx.fillStyle = 'rgba(194,113,79,0.28)';
   ctx.fillRect(PAD, ruleY, W - PAD*2, 1.5);
+
   // Tagline — city · category
   const tagline = (lastData.destination + '  ·  ' + venue.category).toUpperCase();
   ctx.font = '400 24px system-ui,sans-serif';
-  ctx.fillStyle = 'rgba(250,245,240,0.40)';
+  ctx.fillStyle = 'rgba(18,16,14,0.42)';
   ctx.fillText(tagline, PAD, ruleY + 44);
-  // URL bottom
+
+  // Coordinates micro-copy — above footer (surprise touch)
+  const hasCoords = venue.lat && venue.lng &&
+    (Math.abs(venue.lat) > 0.01 || Math.abs(venue.lng) > 0.01);
+  if (hasCoords) {
+    const latStr = `${Math.abs(venue.lat).toFixed(1)}° ${venue.lat >= 0 ? 'N' : 'S'}`;
+    const lngStr = `${Math.abs(venue.lng).toFixed(1)}° ${venue.lng >= 0 ? 'E' : 'W'}`;
+    ctx.font = '400 16px system-ui,sans-serif';
+    ctx.fillStyle = 'rgba(18,16,14,0.22)';
+    ctx.fillText(`${latStr}  ·  ${lngStr}`, PAD, H - PAD - 28);
+  }
+
+  // URL footer
   ctx.font = '400 22px system-ui,sans-serif';
-  ctx.fillStyle = 'rgba(194,113,79,0.55)';
+  ctx.fillStyle = 'rgba(194,113,79,0.70)';
   ctx.fillText('amig0.com/hacks  ·  @amig0trips', PAD, H - PAD);
 }
 
 function drawSpotlightHackSlide(ctx, hackIdx) {
-  const W = SLIDE_W, H = SLIDE_H;
-  const venue = lastData.locations[0];
-  const hack  = venue.hacks[hackIdx];
+  const W      = SLIDE_W, H = SLIDE_H;
+  const venue  = lastData.locations[0];
+  const hack   = venue.hacks[hackIdx];
   if (!hack) return;
-  const T = TYPES[hack.type] || TYPES.pro_tip;
-  // Warm glow — alternates corner per slide
+  const T      = TYPES[hack.type] || TYPES.pro_tip;
+  const accent = getCategoryAccent(venue.category);
+
+  // Category micro-texture — copper on cream (warm, subtle)
+  drawSpotlightTexture(ctx, venue.category, 0.055);
+
+  // Subtle warm bloom alternates corner per slide
   const glowX = hackIdx % 2 === 0 ? W*0.12 : W*0.88;
-  const glow  = ctx.createRadialGradient(glowX, H*0.20, 0, glowX, H*0.20, W*0.55);
-  glow.addColorStop(0, 'rgba(194,113,79,0.09)'); glow.addColorStop(1, 'rgba(0,0,0,0)');
+  const glow  = ctx.createRadialGradient(glowX, H*0.22, 0, glowX, H*0.22, W*0.55);
+  glow.addColorStop(0, 'rgba(194,113,79,0.04)'); glow.addColorStop(1, 'rgba(0,0,0,0)');
   ctx.fillStyle = glow; ctx.fillRect(0, 0, W, H);
-  drawBrandZero(ctx, W + 30, H*0.70, 300, 0.032, 'right');
-  drawArchMotif(ctx, W*0.84, H*0.70, 220);
+
+  // Category accent — left-edge band (mirrors cover)
+  ctx.globalAlpha = 0.75;
+  ctx.fillStyle = accent;
+  ctx.fillRect(0, 0, 4, H);
+  ctx.globalAlpha = 1;
+
+  // Brand zero — dark ghost on cream
+  drawBrandZero(ctx, W + 30, H*0.72, 300, 0.05, 'right', '18,16,14');
+  drawArchMotif(ctx, W*0.84, H*0.72, 220);
+
   // Left editorial rule
-  ctx.fillStyle = 'rgba(194,113,79,0.15)';
+  ctx.fillStyle = 'rgba(194,113,79,0.16)';
   ctx.fillRect(PAD - 28, PAD + 46, 1, H - (PAD + 46) - PAD - 38);
-  // amig0 wordmark — top left
+
+  // amig0 wordmark — top left (indigo holds on light bg)
   ctx.textAlign = 'left';
   ctx.font = '600 28px system-ui,sans-serif';
   ctx.fillStyle = '#818cf8';
-  ctx.fillText('amig0', PAD, PAD + 28);
-  // Hack progress — top right
+  drawWordmark(ctx, PAD, PAD + 28);
+
+  // Editorial progress counter — near-black on cream
   ctx.textAlign = 'right';
-  ctx.font = '600 22px system-ui,sans-serif';
-  ctx.fillStyle = '#c2714f';
-  ctx.fillText(`${hackIdx + 1} / 5`, W - PAD, PAD + 26);
+  ctx.font = `700 52px "Cormorant Garamond",Georgia,serif`;
+  ctx.fillStyle = 'rgba(18,16,14,0.80)';
+  ctx.fillText(String(hackIdx + 1).padStart(2, '0'), W - PAD, PAD + 54);
+  ctx.font = '400 18px system-ui,sans-serif';
+  ctx.fillStyle = 'rgba(18,16,14,0.28)';
+  ctx.fillText('of  05', W - PAD, PAD + 76);
+  ctx.textAlign = 'left';
+
   // Top rule
   ctx.fillStyle = 'rgba(194,113,79,0.22)';
-  ctx.fillRect(PAD, PAD + 46, W - PAD*2, 1.5);
-  // Venue name — small persistent header
-  ctx.textAlign = 'left';
-  ctx.font = '500 26px system-ui,sans-serif';
-  ctx.fillStyle = '#c2714f';
-  ctx.fillText(venue.name.toUpperCase(), PAD, PAD + 90);
-  // Hack type label
-  ctx.font = `600 22px system-ui,sans-serif`;
+  ctx.fillRect(PAD, PAD + 88, W - PAD*2, 1.5);
+
+  // Venue name — persistent micro-label, dark muted
+  ctx.font = '500 19px system-ui,sans-serif';
+  ctx.fillStyle = 'rgba(18,16,14,0.48)';
+  ctx.fillText(venue.name.toUpperCase(), PAD, PAD + 120);
+
+  // Hack type — colored dot + small caps label (type colors work on both modes)
+  const dotY = PAD + 148;
+  ctx.beginPath();
+  ctx.arc(PAD + 5, dotY - 6, 4, 0, Math.PI * 2);
   ctx.fillStyle = T.color;
-  ctx.fillText(`${T.emoji}  ${T.label}`, PAD, PAD + 130);
+  ctx.fill();
+  ctx.font = '500 17px system-ui,sans-serif';
+  ctx.fillStyle = T.color;
+  ctx.fillText(T.label.toUpperCase(), PAD + 18, dotY);
+
   // Mid rule
   ctx.fillStyle = 'rgba(194,113,79,0.18)';
-  ctx.fillRect(PAD, PAD + 150, W - PAD*2, 1.5);
-  // Hack text — hero, adaptive size
-  const maxW = W - PAD * 2;
-  let tipSize = 52, tipLines;
-  for (let s = 52; s >= 32; s -= 4) {
-    ctx.font = `400 ${s}px system-ui,sans-serif`;
-    tipLines = canvasWrap(ctx, hack.tip, maxW);
-    if (tipLines.length <= 5) { tipSize = s; break; }
+  ctx.fillRect(PAD, PAD + 164, W - PAD*2, 1.5);
+
+  // Headline — Cormorant Garamond italic 800, near-black on cream
+  const maxW     = W - PAD * 2;
+  const headline = hack.headline || T.label;
+  let hlSize = 88, hlLines;
+  for (let s = 88; s >= 52; s -= 8) {
+    ctx.font = `italic 800 ${s}px "Cormorant Garamond",Georgia,serif`;
+    hlLines = canvasWrap(ctx, headline, maxW);
+    if (hlLines.length <= 3) { hlSize = s; break; }
   }
-  ctx.font = `400 ${tipSize}px system-ui,sans-serif`;
-  ctx.fillStyle = 'rgba(250,245,240,0.85)';
-  const tipLineH = Math.round(tipSize * 1.45);
-  tipLines.slice(0, 5).forEach((l, i) => {
-    ctx.fillText(l, PAD, PAD + 150 + 70 + i * tipLineH);
-  });
-  // Bottom rule
+  ctx.font = `italic 800 ${hlSize}px "Cormorant Garamond",Georgia,serif`;
+  ctx.fillStyle = '#12100e';
+  const hlLineH  = Math.round(hlSize * 1.28);
+  const HL_Y     = PAD + 238;
+  const usedHL   = Math.min(hlLines.length, 3);
+  hlLines.slice(0, usedHL).forEach((l, i) => ctx.fillText(l, PAD, HL_Y + i * hlLineH));
+
+  // Sub-rule separating headline from tip
+  const sepY = HL_Y + usedHL * hlLineH + 24;
   ctx.fillStyle = 'rgba(194,113,79,0.18)';
+  ctx.fillRect(PAD, sepY, W - PAD*2, 1.5);
+
+  // Tip — body text, dark muted on cream
+  const TIP_Y   = sepY + 38;
+  const tipSize = 34;
+  ctx.font = `300 ${tipSize}px system-ui,sans-serif`;
+  ctx.fillStyle = 'rgba(18,16,14,0.62)';
+  const tipLines = canvasWrap(ctx, hack.tip, maxW);
+  if (tipLines.length > 4) truncatedVenues.push(`${venue.name} hack ${hackIdx + 1}`);
+  const tipLineH = Math.round(tipSize * 1.52);
+  tipLines.slice(0, 4).forEach((l, i) => ctx.fillText(l, PAD, TIP_Y + i * tipLineH));
+
+  // Bottom rule
+  ctx.fillStyle = 'rgba(194,113,79,0.20)';
   ctx.fillRect(PAD, H - PAD - 38, W - PAD*2, 1.5);
-  // Footer URL — right
+
+  // Footer URL — right, muted
   ctx.textAlign = 'right';
   ctx.font = '400 22px system-ui,sans-serif';
-  ctx.fillStyle = 'rgba(250,245,240,0.20)';
+  ctx.fillStyle = 'rgba(18,16,14,0.18)';
   ctx.fillText('amig0.com/hacks', W - PAD, H - PAD);
   ctx.textAlign = 'left';
 }
@@ -1611,7 +1874,7 @@ function drawInterestSelectorSlide(ctx) {
   ctx.textAlign = 'left';
   ctx.font = '600 28px system-ui,sans-serif';
   ctx.fillStyle = '#818cf8';
-  ctx.fillText('amig0', PAD, PAD + 28);
+  drawWordmark(ctx, PAD, PAD + 28);
 
   // Top rule
   ctx.fillStyle = 'rgba(194,113,79,0.30)';
@@ -1696,7 +1959,8 @@ function drawCTASlide(ctx) {
   g.addColorStop(0, 'rgba(194,113,79,0.07)'); g.addColorStop(1, 'rgba(0,0,0,0)');
   ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
   // "0" brand watermark — large, centered, behind headline
-  drawBrandZero(ctx, W/2, H*0.56, 500, 0.038);
+  const isSpot = postType === 'venue-spotlight';
+  drawBrandZero(ctx, W/2, H*0.56, 500, 0.038, 'center', isSpot ? '18,16,14' : null);
   // Left editorial rule
   ctx.fillStyle = 'rgba(194,113,79,0.15)';
   ctx.fillRect(PAD - 28, PAD + 48, 1, H - (PAD + 48) - PAD - 38);
@@ -1704,14 +1968,14 @@ function drawCTASlide(ctx) {
   ctx.textAlign = 'left';
   ctx.font = '600 28px system-ui,sans-serif';
   ctx.fillStyle = '#818cf8';
-  ctx.fillText('amig0', PAD, PAD + 28);
+  drawWordmark(ctx, PAD, PAD + 28);
   // Top rule
   ctx.fillStyle = 'rgba(194,113,79,0.28)';
   ctx.fillRect(PAD, PAD + 48, W - PAD*2, 1.5);
   // "Your city next?" — Cormorant, centered, over the "0"
   ctx.textAlign = 'center';
   ctx.font = '700 112px "Cormorant Garamond",serif';
-  ctx.fillStyle = '#faf7f4';
+  ctx.fillStyle = isSpot ? '#12100e' : '#faf7f4';
   ctx.fillText('Your city', W/2, H*0.36);
   ctx.fillText('next?', W/2, H*0.36 + 118);
   // Terracotta underline under "Your city"
@@ -1722,7 +1986,7 @@ function drawCTASlide(ctx) {
   ctx.fillRect(W/2 - 60, H*0.56, 120, 1.5);
   // Submit copy
   ctx.font = '400 32px system-ui,sans-serif';
-  ctx.fillStyle = 'rgba(250,245,240,0.48)';
+  ctx.fillStyle = isSpot ? 'rgba(18,16,14,0.55)' : 'rgba(250,245,240,0.48)';
   ctx.fillText('Submit your spots at', W/2, H*0.60);
   // URL
   ctx.font = '600 40px system-ui,sans-serif';
@@ -1730,7 +1994,7 @@ function drawCTASlide(ctx) {
   ctx.fillText('amig0.com/hacks', W/2, H*0.60 + 54);
   // Link in bio line
   ctx.font = '400 26px system-ui,sans-serif';
-  ctx.fillStyle = 'rgba(250,245,240,0.30)';
+  ctx.fillStyle = isSpot ? 'rgba(18,16,14,0.38)' : 'rgba(250,245,240,0.30)';
   ctx.fillText('Recommended tools → link in bio', W/2, H*0.60 + 108);
   // Bottom rule
   ctx.fillStyle = 'rgba(194,113,79,0.28)';

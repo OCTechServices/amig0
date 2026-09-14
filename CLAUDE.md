@@ -15,7 +15,7 @@ The platform consists of five apps in one codebase:
 **Target Users:** Tour operators, travel agents, clients, tour guides
 **Tier:** 1 — Enterprise Grade
 **Status:** Active
-**Last Updated:** 2026-09-07 (Session 20)
+**Last Updated:** 2026-09-13 (Session 21)
 **Brand:** `amig0` — brand name, always lowercase. `@amig0trips` — exclusive social handle (Instagram + Facebook). These are distinct: amig0 is the product, @amig0trips is the channel.
 
 ## 2. Architecture Overview
@@ -48,6 +48,18 @@ The platform consists of five apps in one codebase:
 
 **Session history:** see docs/changelog.md
 
+**Session 21 additions (2026-09-13):**
+- Booking modal UX — step indicator (numbered dots + connector line CSS, `updateStepIndicator()`), scoped input styles (focus glow, custom SVG chevron on select), emoji removal from pickup buttons
+- `api/booking-webhook.py` — operator WA alert added (`WA_OPERATOR_NUMBER` env var, SLA urgency flag). `WA_OPERATOR_NUMBER=17605396606` set in Vercel.
+- WA 60-day token — permanent system user token failed (permissions). Fell back to `fb_exchange_token` exchange. Expires Nov 10, 2026 (RAID I22).
+- Revolut referral link — URL added to hacks tools.
+- Brand asset refresh — `og.png` replaced; `brand/` folder committed (`facebook-cover.png`, `story.png`, 8 IG highlight covers); `favicon.svg` (slashed-0 mark); `.gitignore !brand/*.png` exception; SVG slash `opacity="1"` across all consumer pages.
+- Phase 0 forensic audit — `docs/phase-0-audit.md`: 10 surfaces, two-hosting map, 18 Firestore collections, 6 security gaps, 14-item debt register, GREEN/YELLOW/RED autonomy model, lifecycle (Phase 0–4). **Pending Daniel review before Phase 1 begins.**
+- Content engine venue spotlight redesign — cream palette (`#faf5f0`), Cormorant Garamond italic headlines, category accent left-edge band, `spotlightHashtags()`, `drawSpotlightTexture()`, `getCategoryAccent()`, `drawWordmark()` helper in `content/index.html`.
+- `api/hacks.py` — Coffee category added to schema; `headline` field added to venue spotlight hacks (editorial micro-headline, 2–6 words); hours/pricing guardrail (omit unless from website content).
+- `api/ig-post.py` — Graph API v21.0 → v22.0.
+- Hook improvements — `pre-commit.sh`: git index scanning (`git show :$f`), governance freshness check. `session-end.sh`: activity heuristic gate (F13), master-prompt staleness (F03), line count (F04), completed item accumulation (F06), pre-commit hook integrity (B5).
+
 **Session 20 additions (2026-09-07):**
 - Bookable services layer in `hacks/index.html` — SERVICES array with `cities[]` filter. Three services: Luxury Photo Booth (SD, $35), Mobile Bar Service (SD, $35, WA pending), E-Bike Rental (16 cities, $10 deposit, Path 1 always). Service copy is generic — no individual provider names.
 - Rental booking modal — `bookingType: 'rental'` branch skips package selection; step 1 collects date/days/bikes/pickup pref; `bk-event-fields` hidden for rentals. `submitBooking()` branches on isRental.
@@ -62,89 +74,7 @@ The platform consists of five apps in one codebase:
 - hacks submit form — cross-link to /business ("Apply to be an amig0 partner →") below form.
 - Bug fix: `renderTools` guard in `onCityChange` (`typeof` check) — two script blocks, block 2 not yet parsed when block 1 init runs.
 
-**Session 19 additions (2026-08-30):**
-- `tokens.css` — canonical design token file at repo root (`:root`, nav, footer). Linked from all consumer pages. Nav/footer CSS removed from inline styles on home, hacks, deals; business.html fully aligned.
-- `deals.html` — pending affiliates now visible as inactive cards (opacity 0.55, grey stripe, "Coming soon" badge, no redeem button) instead of filtered out. Firestore query reverts to `active == true` only (no status filter). Map markers grey for pending, indigo for active.
-- `business.html` — traveler world map + cycling ticker added between hero and props. OSM tiles + CSS filter on tilePane (dark style, no API key). 24 placeholder travelers cycling every 2.8s with active dot highlight. Leaflet CSS/JS added to head.
-- Stripe integration — full $3.99/mo subscription flow live:
-  - `requirements.txt` — `stripe` + `firebase-admin` installed on Vercel
-  - `api/stripe-checkout.py` — creates Checkout Session, returns redirect URL
-  - `api/stripe-webhook.py` — verifies signature, updates `subscriptionStatus` in Firestore via Admin SDK
-  - `deals.html` — Subscribe button wired to checkout, `?subscribed=1` green toast on return
-  - Trial banner shows "Subscribe — $3.99/mo" button during active trial
-  - Vercel env vars: STRIPE_SECRET_KEY, STRIPE_PRICE_ID, STRIPE_WEBHOOK_SECRET, FIREBASE_SERVICE_ACCOUNT
-
-**Session 18 additions (2026-08-27):**
-- og.png (globe design, Atlantic-center, city dots): approved, committed, live at amig0.com/og.png
-- Google Search Console: verified (google3bac279bc2f9d80b.html), sitemap.xml submitted (4 pages)
-- deals.html: PIN brute-force rate limiting — 5 attempts / 15-min localStorage lockout per user per venue
-- Affiliate infrastructure (all 3 active, status:pending in Firestore):
-  - Booze Bros (Jqn3sAmlK7qgqcXgd1u4) — model:hub, PIN:2847, test redemptions cleared
-  - Vigilante Coffee (vigilante_vista) — model:discovery, offer: free drip, PIN:6565, trial until 2026-10-25
-  - Revo Roasters (revo_oceanside) — model:discovery, offer: free pastry, PIN:9246, trial until 2026-10-25
-- Content Engine Phase 1 (production hardening):
-  - CORS restricted: `*` → `https://amig0.com` on both api/hacks.py and api/ig-post.py
-  - X-Publish-Token auth gate on api/ig-post.py (PUBLISH_SECRET in Vercel env)
-  - PUBLISH_TOKEN constant + header injected into publishCarousel() fetch
-  - #iztapalapa removed from finale caption
-  - 9× amig0.vercel.app/hacks → amig0.com/hacks across canvas footers + captions
-- Content Engine Phase 2 (quality guardrails):
-  - Duplicate venue detection — checkDuplicates() warns if venue was featured before in same city; logEntry() now stores venues[]
-  - Tip overflow protection — drawVenueSlide() tracks truncated tips; doPublish() blocks + warns operator
-  - Promise.all → Promise.allSettled — per-slide render failures surfaced individually
-  - Pre-publish confirm modal — city / type / slide count shown; Cancel / Publish gate before any upload
-
-**Session 17 additions (2026-08-24):**
-- Ecosystem QA — 43-section review across home.html, hacks/index.html, deals.html as one product. P0→P2 findings executed and deployed.
-- SEO foundation: robots.txt + sitemap.xml created. Canonical tags (`https://amig0.com/` paths), `og:image`, `og:url`, `og:type`, `meta name="description"` added to all consumer pages (home, hacks, deals).
-- og.png: 1200×630 brand social image generated via Canvas (`/tmp/amig0-og.html`). Wordmark "amig" + offscreen-canvas brand mark (ring+slash via `fill('evenodd')`), tagline, `@amig0trips` handle with composited brand mark. `.gitignore` `!og.png` exception added.
-- Nav unification: deals.html `.header` replaced with `.nav` pattern (sticky, `rgba(9,9,11,0.95)`, `backdrop-filter:blur(12px)`, `border-bottom`) matching home/hacks. Traveler Hacks link added to deals nav.
-- Footer: shared footer component added to hacks/index.html and deals.html (matching home.html).
-- Token fix: `--muted` in deals.html corrected from `#71717a` → `#a1a1aa` to match home/hacks.
-- Mobile breakpoint standardized to `640px` across hacks.
-- home.html: `target="_blank"` removed from all 5 hacks links (same-window navigation).
-- hacks/index.html: OG image fixed (`/health/og.png` → `https://amig0.com/og.png`).
-- Trust / voice: deals.html hero → "Local perks. Places worth going anyway." Affiliate badge → "amig0 verified" with title attribute.
-- Cross-navigation: deals nudge added to hacks results — "Check if any of these spots have an amig0 deal ↗"
-- JSON-LD: Organization + WebSite structured data added to home.html.
-
-**Session 16 additions (2026-08-24):**
-- home.html: Mobile nav fix — `btn-nav-venue` class added to "For venues" link, hidden at <640px. "Traveler Hacks" stays visible on mobile.
-- hacks/index.html: Major QA overhaul — Plus Jakarta Sans, amig0 nav (sticky, blurred, SVG zero wordmark), globe continent outlines via GeoJSON polygons (vasturiano/globe.gl ne_110m_countries.json, indigo strokes rgba(129,140,248,0.32)), card 3px indigo top stripe, editorial numbering (01/05), chip invite animation (breathing glow until first selection, re-adds if all chips deselected), shake + amber hint on failed generate attempt, "23 cities and counting" globe sub, city-aware tool ordering (cityRegion() + toolRelevance() functions, renderTools() re-sorts on every city change).
-- hacks/index.html: Maps URL accuracy — hybrid format `VenueName/@lat,lng,17z` when coordinates available, name+city fallback. copyAsText() includes website and instagram below maps URL. Card footer: "Get directions ↗" + globe icon (website) + instagram handle — all in one row. Watermarks tried and removed.
-- deals.html: "Near me" geolocation button — haversine distance sort, distance badge on cards ("0.4 km · 5 min walk"), user "you are here" indigo circleMarker on map included in fitBounds.
-- api/hacks.py: `website` and `instagram` optional fields added to discover and custom prompt schemas. Instructions: include only if confident, omit or empty string if unsure.
-
-**Session 15 additions (2026-08-22):**
-- home.html: Rotating hero — 3 scenes (Mexico City skyline / San Diego coast / Oaxaca mountains), 3s cycle, CSS opacity fade. Option A: city chip above h1. Option D: rotating word in h1 ("city"→"coast"→"valley"). Both active simultaneously. localStorage not used — stateless JS interval.
-- deals.html: Full consumer deal flow built for launch. Category filter chips (All/Bars/Coffee/Food/Breweries/Nightlife/Culture) — client-side filter on `allDeals` cache, no extra Firestore reads. Deal count label dynamic ("N deals in City"). Plus Jakarta Sans throughout. Hero redesigned: section label + clamp(2.6→4rem) weight-800 h1.
-- deals.html: Card redesign — tool-pass aesthetic (hacks page): #141414 bg, rgba(255,255,255,0.07) border, 3px indigo top stripe, border-radius 16px, address line, website in card footer.
-- deals.html: Full-screen redemption display — replaces small modal. Pulsing green glow, offer text clamp(2.4→4rem), 2-hour countdown timer (localStorage-persisted, survives refresh). Amber at <30min, red at <5min, expired state with close-only footer.
-- deals.html: Full-screen success state — green check + pulsing glow, venue name in green, "Come back in 30 days." Matches redemption screen weight.
-- deals.html: localRedeemed session cache — fixes Firestore server-timestamp timing gap where card showed "Redeem deal" immediately after confirmation. localRedeemed merged with Firestore results on re-render.
-- deals.html: Map z-index fix — overlay z-index 1000 (Leaflet panes top out at 700). Map container gets `isolation: isolate`.
-- business.html: Plus Jakarta Sans, h1 clamp(2.2→3.2rem) weight 800, category options aligned to deal chip values (bar/brewery/coffee/food/nightlife/culture), emoji → Lucide check-circle-2.
-- Booze Bros Brewing Co: added to `affiliates` Firestore collection (doc: Jqn3sAmlK7qgqcXgd1u4). Vista CA, lat: 33.1482, lng: -117.2181 (Nominatim geocoded), offer: "Free Half Pint", category: brewery. Added via gcloud token + Python urllib Firestore REST API.
-- Firestore write pattern: `gcloud auth print-access-token` → Python urllib POST/PATCH to Firestore REST API. No Admin SDK or service account needed.
-- Typography: Plus Jakarta Sans now the standard for all consumer-facing pages (home.html, deals.html, business.html). DM Sans / Playfair Display remain in CRM/portal only.
-
-**Session 14 additions (2026-08-19):**
-- content/index.html: Venue map slide (`__VENMAP__`) added to all 3 post types — OSM tiles zoom 13, Nominatim geocoding → Claude lat/lng fallback → city center fallback. Bottom gradient strip (175px) keeps legend below pins. Top-left gradient locks header contrast. No inline pin labels — numbered circles + legend only.
-- content/index.html: `drawInterestSelectorSlide()` added to finale carousel. Iztapalapa shoutout removed from all finale captions.
-- api/hacks.py: Authenticity HARD RULE added to discover prompt. `lat`/`lng` added to discover schema. Session-based focus angle rotation (10 angles, 1–20 random session ID).
-- api/ig-post.py: `_ig_post` retries once on 403 (4s wait). `_ig_publish` wraps 400/403 as soft success — returns 200 with warning instead of 502. Client displays amber warning when present.
-- hacks/index.html: Globe + Submit sections updated to match Tools section visual treatment (border-top, #141414 bg, rgba(255,255,255,0.07) border). Lucide icons throughout tools section.
-- hacks/index.html: Referral links added — Uber, Uber Eats, Wise, Rakuten. Remaining: DiDi, Bolt, Revolut, Rappi.
-- cities.json: Expanded to 23 cities (Mexico 6, USA 10, Europe 7).
-- Oaxaca city series: Posts 1, 2, 3 complete and live on @amig0trips.
-
-**Session 13 additions (2026-08-16):**
-- content/index.html: Internal IG carousel content engine — Canvas 1080×1080 slide rendering, imgbb upload, Instagram Graph API carousel publish. 3-carousel city series format: Post 1 (standalone), Post 2 (continuation, interests-filtered), Post 3 (finale — OSM map cover slide, country flag tri-color bar at top, amig0 pin at city coords, city name large bottom-third). Series finale checkbox toggles map cover + closing caption.
-- api/ig-post.py: Vercel Python serverless — imgbb upload → IG child containers → carousel container → publish → permalink. GET handler for token identity check. maxDuration: 60s.
-- @amig0trips: Instagram Business account linked to Meta Business Suite. IG_USER_ID=28153112260984867. IGAAX token stored as IG_ACCESS_TOKEN in Vercel env vars. IMGBB_API_KEY stored in Vercel env vars.
-- Brand enforced: `amig0` (all lowercase) across all HTML files — titles, meta tags, canvas slides, body copy.
-- Social asset kit: Facebook Page cover (820×360), 8 Story Highlight covers, Facebook/IG Story vertical (1080×1920) — Canvas-rendered, /tmp/amig0-ig-covers.html + /tmp/amig0-story.html.
-- hacks/index.html page heading: "Traveler Hacks" (not "Insider Hacks").
+**Sessions 13–19 (2026-08-16 → 2026-08-30):** see docs/changelog.md
 
 **Key Modules:**
 Auth · Dashboard · CRM · Clients · Tours · Passengers · Quotes · Invoicing · Email · PDF · Providers · Briefings · Data · Guide App · Client Portal
@@ -156,7 +86,7 @@ Auth · Dashboard · CRM · Clients · Tours · Passengers · Quotes · Invoicin
 - Firebase Hosting (CRM/Portal/Guide) + Vercel (Habit Tracker + Traveler Hacks)
 - Anthropic API — claude-haiku-4-5-20251001 (recipe generator + hacks generator, server-side only)
 - Formspree (Traveler Hacks submit form)
-- Instagram Graph API v21.0 (graph.instagram.com) — @amig0trips carousel publishing
+- Instagram Graph API v22.0 (graph.instagram.com) — @amig0trips carousel publishing
 - imgbb.com — public image hosting for IG slide URLs (IMGBB_API_KEY in Vercel env)
 - OpenStreetMap tiles — map backdrop for content engine finale slide (no API key, crossOrigin anonymous)
 
@@ -192,8 +122,6 @@ npx vercel --prod                                        # Deploy to Vercel
 - jsPDF: never embed raw Firestore documents directly into PDF metadata
 
 ## 6. Security / Data Handling
-<!-- Scaffold instruction: trim lines marked [STRIPE ONLY] or [SUPABASE ONLY] if this project does not use those services. -->
-
 ### Credentials & Secrets
 - All credentials via environment variables — never hardcoded, never committed
 - `.env` files must be in `.gitignore` before first commit
@@ -208,8 +136,6 @@ npx vercel --prod                                        # Deploy to Vercel
 
 ### Database & Access Controls
 - Apply least-privilege — no table or bucket should be more permissive than it needs to be
-- [SUPABASE ONLY] Row Level Security (RLS) must be enabled on every table holding user data
-- [SUPABASE ONLY] Public and private storage buckets must be explicitly separated — never bundle them
 - Review and resolve all security warnings from the database provider before shipping
 
 ### API & Middleware
@@ -263,27 +189,11 @@ and confirm all three are accurate before we sign off.
 **Non-negotiable:** No session closes with an uncommitted or unresolved artifact. Every change made in a session must be either committed, intentionally discarded, or logged as a RAID item with owner and next action.
 
 ## 10. Open Items
-- [x] Confirm Firebase config object is not committed with live keys — .gitignore created 2026-04-11
-- [x] Firebase project creation — live project confirmed, config active
-- [x] CRM fully scaffolded and tested (Sessions 2–3)
-- [x] Client Portal built and working (My Trip, Itinerary, Quotes, Invoices)
-- [x] Firestore Security Rules deployed — role-based (operators + user_profiles). Privilege escalation fix deployed 2026-05-02.
-- [x] Guide App (guide.html) — mobile-first PWA — complete
-- [x] PDF generation — jsPDF for quotes and invoices — complete
-- [x] Guide UID linking — Firebase Auth UID field + App Access column in guides.js (Session 5)
-- [x] Client portal provisioning — Firebase Auth UID field + Portal Access column in clients.js (Session 5)
-- [x] Email delivery — mailto: deep links on quotes and invoices (Session 5)
-- [x] Service worker cache versioning documented — bump CACHE_NAME on every guide deploy (RAID I03)
-- [x] Fellow Travellers — works with current auth rules, graceful fallback retained (RAID I06)
-- [x] SVG logo/wordmark for "Amig0" brand mark — inline SVG "0" approved (Session 5)
-- [x] Operator role hardening — Firebase Auth custom claims via Cloud Functions. CRM gated on operator claim. (RAID I02, Session 5)
-- [x] Firebase Hosting migration — firebase.json hosting block configured, deployed (RAID I04, Session 5)
-- [x] Partner Network — partners.js CRM module with lat/lng + portal Perks + Map tabs (P07–P09, Session 6–9)
-- [x] Marketplace — marketplace.js CRM + portal-marketplace.js invite-gated portal tab (P02–P03, Session 6–9)
-- [x] Invite codes — invites.js CRM module + portal redemption flow (P03, Session 6–9)
-- [x] QR check-in — checkin.html deep-link + portal-perks.js history (P08, Session 6–9)
-- [x] Dual-currency display — MXN/USD on quotes, invoices, portal, PDF (P10, Session 6–9)
-- [x] Group chat link — tours.js field + portal-overview.js card (I05, Session 9)
-- [x] Firebase Storage rules — storage.rules created for vetting paths (Session 9)
-- [x] Contact email — contact@opcoretech.com across all surfaces (I11, Session 6–9)
-- [x] Mobile portal nav — 8-tab scrollable strip, all tabs reachable on mobile (Session 6–9)
+- [ ] Phase 0 audit review — Daniel must review `docs/phase-0-audit.md` before Phase 1 begins (RAID I26)
+- [ ] WA permanent system user token — current 60-day token expires Nov 10, 2026 (RAID I22)
+- [ ] Stripe booking end-to-end test — use sk_test_ key, card 4242... (RAID I23)
+- [ ] Activate first affiliate — Booze Bros / Vigilante Coffee / Revo Roasters all status:pending (RAID I24)
+- [ ] San Diego e-bike partner — find Google Maps 4.5+ shop (RAID I25)
+- [ ] DiDi / Bolt / Rappi referral links — deferred until in-market (Mexico)
+- [ ] landing.html decision — redirect to home or archive
+- [ ] content/index.html auth gate — currently open, add basic protection
