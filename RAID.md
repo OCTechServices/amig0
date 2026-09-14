@@ -12,7 +12,7 @@
 | R03 | Service worker caches stale data — guides in field receive outdated tour info | Medium | High | Version service worker cache on every deploy; force refresh strategy |
 | R04 | Rule change in shared Firebase project breaks one of three apps silently | Medium | High | Test all three apps after any Firestore rule change |
 | R05 | CLAUDE.md becomes stale across 18,600-line codebase | Medium | High | Update at session end; session-end hook enforces this |
-| R06 | WA_TOKEN (WhatsApp Cloud API) expires Nov 10, 2026 — no automated refresh | High | High | Permanent system user token required before expiry. Workaround: manual re-issue via Graph API Explorer. Owner: Daniel. |
+| R06 | WA_TOKEN (WhatsApp Cloud API) expires Nov 10, 2026 — no automated refresh | High | High | Phase 1 P02: Credential type = 60-day fb_exchange_token. Renewal: Graph API Explorer → re-issue token → update WA_TOKEN in Vercel env (RED). Permanent alternative: Meta Business Suite → System Users → generate never-expiring token (requires correct app permissions — previously blocked). Calendar reminder: set for Nov 1, 2026 (9 days before expiry). Owner: Daniel. |
 
 ## Assumptions
 | ID | Assumption |

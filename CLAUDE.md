@@ -194,12 +194,14 @@ and confirm all three are accurate before we sign off.
 
 ## 10. Phase 1 Open Items
 - [x] Phase 0 audit reviewed and accepted — 2026-09-13 (RAID I26 closed)
-- [ ] S01: Content Engine authorization remediation — PUBLISH_SECRET browser-visible (RAID I27, RED)
-- [ ] S02: Deals subscription gate — assess client-side vs server-side enforcement (RAID I28, RED if rules change)
-- [ ] Stripe booking end-to-end validation (RAID I23)
-- [ ] WA credential lifecycle planning — token expires Nov 10, 2026 (RAID R06)
-- [ ] Firebase Hosting domain documentation (TD07)
-- [ ] landing.html disposition — redirect or archive (TD04)
-- [ ] health/ disposition/separation from brand domain
-- [ ] Legacy URL redirect — amig0.vercel.app → amig0.com (TD06)
-- [ ] Repo artifact cleanup — angel.MOV, DisciplineLog (TD08)
+- [x] S01: Content Engine auth — Firebase ID token + operator claim (RAID I27 closed, pending RED deployment)
+- [x] S02: Deals subscription gate — assessed, server-side enforcement already in Firestore rules (RAID I28 closed)
+- [x] P04: landing.html — 301 redirect to amig0.com/ added to vercel.json (pending RED deployment)
+- [x] P07: Repo artifacts removed — DisciplineLog.xlsx untracked, personal files deleted, .gitignore updated
+- [ ] P01: Stripe booking end-to-end validation (RAID I23) — test procedure defined, awaiting Daniel
+- [ ] P02: WA credential — calendar reminder Nov 1. Renewal: Graph API Explorer → update WA_TOKEN (RED). Pursue permanent token. (RAID R06)
+- [ ] P03: Firebase Hosting domain — `amig0-travel-company-52fb1.web.app` (confirmed from .firebaserc, RED to verify/document custom domain)
+- [ ] P05: health/ disposition — personal app on brand domain, decision pending Daniel
+- [ ] P06: amig0.vercel.app legacy redirect — Vercel dashboard action (RED)
+- [ ] P08: Regression/security validation — pending production deployment
+- [ ] **RED GATE: `npx vercel --prod`** — deploys S01 auth, P04 landing redirect
