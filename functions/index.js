@@ -4,7 +4,8 @@
 // addOperator(uid, name, email)  — grants operator claim + creates operators/ record (superAdmin only)
 // removeOperator(uid)            — revokes operator claim + deletes operators/ record (superAdmin only)
 // setSuperAdmin(uid)             — grants superAdmin claim (superAdmin only)
-// bootstrapSuperAdmin            — HTTP, one-time: elevates uid to superAdmin if none exist yet
+// provisionClient(uid, clientId) — creates user_profiles/{uid} role=client (operator only)
+// provisionGuide(uid, guideId)   — creates user_profiles/{uid} role=guide (operator only)
 //
 // Deploy: firebase deploy --only functions
 
