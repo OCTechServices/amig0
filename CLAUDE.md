@@ -194,14 +194,14 @@ and confirm all three are accurate before we sign off.
 
 ## 10. Phase 1 Open Items
 - [x] Phase 0 audit reviewed and accepted — 2026-09-13 (RAID I26 closed)
-- [x] S01: Content Engine auth — Firebase ID token + operator claim (RAID I27 closed, pending RED deployment)
+- [x] S01: Content Engine auth — DEPLOYED + VALIDATED in production 2026-09-14. Firebase ID token + operator claim enforced server-side. PUBLISH_SECRET no longer consumed by application. Legacy secret still present in Vercel (removal is next RED cleanup action). (RAID I27)
 - [x] S02: Deals subscription gate — assessed, server-side enforcement already in Firestore rules (RAID I28 closed)
-- [x] P04: landing.html — 301 redirect to amig0.com/ added to vercel.json (pending RED deployment)
+- [x] P04: landing.html — 301 → amig0.com/ DEPLOYED + VALIDATED in production 2026-09-14. (RAID I27 deployment event)
 - [x] P07: Repo artifacts removed — DisciplineLog.xlsx untracked, personal files deleted, .gitignore updated
+- [x] P08: Regression/security validation — S01/P04 smoke tests passed 2026-09-14 (home, hacks, deals, business all 200; unauthenticated API 403; operator auth passes; invalid token 403)
 - [ ] P01: Stripe booking end-to-end validation (RAID I23) — test procedure defined, awaiting Daniel
 - [ ] P02: WA credential — calendar reminder Nov 1. Renewal: Graph API Explorer → update WA_TOKEN (RED). Pursue permanent token. (RAID R06)
 - [ ] P03: Firebase Hosting domain — `amig0-travel-company-52fb1.web.app` (confirmed from .firebaserc, RED to verify/document custom domain)
 - [ ] P05: health/ disposition — personal app on brand domain, decision pending Daniel
 - [ ] P06: amig0.vercel.app legacy redirect — Vercel dashboard action (RED)
-- [ ] P08: Regression/security validation — pending production deployment
-- [ ] **RED GATE: `npx vercel --prod`** — deploys S01 auth, P04 landing redirect
+- [ ] **RED CLEANUP: `npx vercel env rm PUBLISH_SECRET production`** — after S01 production validation confirmed by Daniel
