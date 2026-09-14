@@ -54,3 +54,4 @@ Thumbs.db
 *.heic
 *.HEIC
 .vercel
+.env*.local
