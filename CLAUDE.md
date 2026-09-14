@@ -15,7 +15,8 @@ The platform consists of five apps in one codebase:
 **Target Users:** Tour operators, travel agents, clients, tour guides
 **Tier:** 1 — Enterprise Grade
 **Status:** Active
-**Last Updated:** 2026-09-13 (Session 21)
+**Last Updated:** 2026-09-13 (Phase 0 Reconciliation)
+**Delivery Phase:** Phase 1 — Security, Reliability & Platform Rationalization | Lifecycle: Phase 0 ✅ → **Phase 1** → Phase 2 → Phase 3 → Phase 4 → Phase 5
 **Brand:** `amig0` — brand name, always lowercase. `@amig0trips` — exclusive social handle (Instagram + Facebook). These are distinct: amig0 is the product, @amig0trips is the channel.
 
 ## 2. Architecture Overview
@@ -54,7 +55,7 @@ The platform consists of five apps in one codebase:
 - WA 60-day token — permanent system user token failed (permissions). Fell back to `fb_exchange_token` exchange. Expires Nov 10, 2026 (RAID I22).
 - Revolut referral link — URL added to hacks tools.
 - Brand asset refresh — `og.png` replaced; `brand/` folder committed (`facebook-cover.png`, `story.png`, 8 IG highlight covers); `favicon.svg` (slashed-0 mark); `.gitignore !brand/*.png` exception; SVG slash `opacity="1"` across all consumer pages.
-- Phase 0 forensic audit — `docs/phase-0-audit.md`: 10 surfaces, two-hosting map, 18 Firestore collections, 6 security gaps, 14-item debt register, GREEN/YELLOW/RED autonomy model, lifecycle (Phase 0–4). **Pending Daniel review before Phase 1 begins.**
+- Phase 0 forensic audit — `docs/phase-0-audit.md` complete. Reviewed and accepted 2026-09-13. Phase 1 authorized (RAID I26 closed).
 - Content engine venue spotlight redesign — cream palette (`#faf5f0`), Cormorant Garamond italic headlines, category accent left-edge band, `spotlightHashtags()`, `drawSpotlightTexture()`, `getCategoryAccent()`, `drawWordmark()` helper in `content/index.html`.
 - `api/hacks.py` — Coffee category added to schema; `headline` field added to venue spotlight hacks (editorial micro-headline, 2–6 words); hours/pricing guardrail (omit unless from website content).
 - `api/ig-post.py` — Graph API v21.0 → v22.0.
@@ -90,13 +91,15 @@ Auth · Dashboard · CRM · Clients · Tours · Passengers · Quotes · Invoicin
 - imgbb.com — public image hosting for IG slide URLs (IMGBB_API_KEY in Vercel env)
 - OpenStreetMap tiles — map backdrop for content engine finale slide (no API key, crossOrigin anonymous)
 
-## 3. Working Rules
-- No build step — never introduce a bundler, npm, or package.json
-- No new frameworks — Vanilla JS is the deliberate choice, not a limitation
-- Small, reviewable changes only — 18,600 lines makes large diffs dangerous
-- Never modify production Firestore data directly
-- Check existing module pattern before creating new ones
-- Test on both mobile and desktop before marking any change done
+## 3. Autonomy Model
+
+**GREEN** — Proceed without repeated approval: read/inspect/search, edit files within approved phase scope, documentation, tests, local validation, bounded refactoring, commits, routine non-production asset work, RAID/CLAUDE/governance maintenance.
+
+**YELLOW** — Proceed when authorized by active phase; rollback preserved: new API routes, new Firestore collections/schema additions, routing/configuration changes, larger refactors, new UI features within approved requirements, integration code that does not alter live billing/credentials/production security boundaries.
+
+**RED** — Explicit human approval required: production deployment (Vercel + Firebase Hosting), DNS/domain changes, secrets/credential changes, Firestore security-rule changes, auth/authorization boundary changes, Stripe live billing configuration, destructive production data operations, production page removal, external communications/publications, irreversible third-party actions, git history rewriting.
+
+**Working rules:** No build step or bundler. No new frameworks. Small reviewable changes only. Never modify production Firestore data directly. Follow existing module patterns.
 
 ## 4. Commands
 ```bash
@@ -163,6 +166,7 @@ npx vercel --prod                                        # Deploy to Vercel
 - Skills: simplify, commit, security-review, architecture-review, dependency-scan, test-generation
 - Agents: reviewer, pm-analyst, security-analyst, architect, qa-engineer
 - Hooks: pre-commit (git), session-end (Claude Code)
+- **Multi-agent:** One source of truth. One implementation owner per workstream. No silent reconciliation of conflicting recommendations. Git state, RAID, and governed docs are the handoff mechanisms.
 
 ## 9. Session Protocol
 
@@ -188,12 +192,14 @@ and confirm all three are accurate before we sign off.
 
 **Non-negotiable:** No session closes with an uncommitted or unresolved artifact. Every change made in a session must be either committed, intentionally discarded, or logged as a RAID item with owner and next action.
 
-## 10. Open Items
-- [ ] Phase 0 audit review — Daniel must review `docs/phase-0-audit.md` before Phase 1 begins (RAID I26)
-- [ ] WA permanent system user token — current 60-day token expires Nov 10, 2026 (RAID I22)
-- [ ] Stripe booking end-to-end test — use sk_test_ key, card 4242... (RAID I23)
-- [ ] Activate first affiliate — Booze Bros / Vigilante Coffee / Revo Roasters all status:pending (RAID I24)
-- [ ] San Diego e-bike partner — find Google Maps 4.5+ shop (RAID I25)
-- [ ] DiDi / Bolt / Rappi referral links — deferred until in-market (Mexico)
-- [ ] landing.html decision — redirect to home or archive
-- [ ] content/index.html auth gate — currently open, add basic protection
+## 10. Phase 1 Open Items
+- [x] Phase 0 audit reviewed and accepted — 2026-09-13 (RAID I26 closed)
+- [ ] S01: Content Engine authorization remediation — PUBLISH_SECRET browser-visible (RAID I27, RED)
+- [ ] S02: Deals subscription gate — assess client-side vs server-side enforcement (RAID I28, RED if rules change)
+- [ ] Stripe booking end-to-end validation (RAID I23)
+- [ ] WA credential lifecycle planning — token expires Nov 10, 2026 (RAID R06)
+- [ ] Firebase Hosting domain documentation (TD07)
+- [ ] landing.html disposition — redirect or archive (TD04)
+- [ ] health/ disposition/separation from brand domain
+- [ ] Legacy URL redirect — amig0.vercel.app → amig0.com (TD06)
+- [ ] Repo artifact cleanup — angel.MOV, DisciplineLog (TD08)

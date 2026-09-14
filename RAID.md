@@ -1,6 +1,6 @@
 # RAID Log: amig0
 # Tier 1 — Enterprise Grade | OCTech Services
-# Last Updated: 2026-09-13 (Session 21)
+# Last Updated: 2026-09-13 (Phase 0 Reconciliation)
 
 ---
 
@@ -12,6 +12,7 @@
 | R03 | Service worker caches stale data — guides in field receive outdated tour info | Medium | High | Version service worker cache on every deploy; force refresh strategy |
 | R04 | Rule change in shared Firebase project breaks one of three apps silently | Medium | High | Test all three apps after any Firestore rule change |
 | R05 | CLAUDE.md becomes stale across 18,600-line codebase | Medium | High | Update at session end; session-end hook enforces this |
+| R06 | WA_TOKEN (WhatsApp Cloud API) expires Nov 10, 2026 — no automated refresh | High | High | Permanent system user token required before expiry. Workaround: manual re-issue via Graph API Explorer. Owner: Daniel. |
 
 ## Assumptions
 | ID | Assumption |
@@ -86,12 +87,21 @@ Features confirmed for future build — not yet in active sprint.
 | P10 | Dual-currency display on quotes, invoices, and portal | Medium | **Shipped Session 9.** exchangeRate field on quotes/invoices. formatSecondary() helper: MXN÷rate=USD or USD×rate=MXN. Shown in table TD, portal rows, and PDF totals block (muted secondary line). |
 
 | I21 | WhatsApp business number registration pending | Session 20 | Closed — Twilio (760) 891-4152 registered + verified. WABA: 1378242627790626, Phone Number ID: 1407135942475680. WA_TOKEN + WA_PHONE_NUMBER_ID added to Vercel. Messaging confirmed working. Display name "amig0" pending Meta approval (1-3 days). |
-| I22 | WA_TOKEN is short-lived — permanent system user token failed (permissions) | Session 20 | Open — Fell back to 60-day fb_exchange_token. **Expires Nov 10, 2026.** Re-generate via Graph API Explorer when expired. Owner: Daniel. |
-| I23 | Stripe booking flow untested end-to-end | Session 20 | Open — swap STRIPE_SECRET_KEY to sk_test_ in Vercel, book via amig0.com/hacks with card 4242 4242 4242 4242, confirm Firestore write in service_bookings. Owner: Daniel. |
-| I24 | All 3 affiliates still status:pending — deals page shows no active deals | Session 20 | Open — Booze Bros: finalize hub model conversation. Vigilante Coffee: IG DM @vigilantecoffee. Revo Roasters: IG DM @revolutionroasters. First activation unlocks the deals page for members. Owner: Daniel. |
-| I25 | San Diego e-bike partner not yet identified | Session 20 | Open — Find Google Maps 4.5+ local shop, vet, update SERVICES ebike_local entry with partner name. Owner: Daniel. |
-| I26 | Phase 0 audit pending review — implementation blocked | Session 21 | Open — `docs/phase-0-audit.md` completed. Daniel must review and approve before Phase 1 begins. Covers: 10 surfaces, hosting map, 18 Firestore collections, 6 security gaps, 14-item debt register, autonomy model, lifecycle. Owner: Daniel. |
-| I27 | content/index.html has no auth gate — internal tool is publicly accessible | Session 21 | Open — Add basic protection (password or Firebase Auth) before content engine is used regularly. Low urgency while URL is unlisted. Owner: Daniel. |
+| I22 | WA_TOKEN short-lived — permanent system user token failed | Session 20 | Open — Elevated to R06. Fell back to 60-day fb_exchange_token. **Expires Nov 10, 2026.** Re-generate via Graph API Explorer when expired. Owner: Daniel. |
+| I23 | Stripe booking flow untested end-to-end | Session 20 | Open — Phase 1 validation item. Swap STRIPE_SECRET_KEY to sk_test_ in Vercel, book via amig0.com/hacks with card 4242 4242 4242 4242, confirm Firestore write in service_bookings. Owner: Daniel. |
+| I24 | Affiliates status:pending | Session 20 | Closed — Reclassified. Not engineering work. Moved to Revenue Backlog RB01. Business development action required. Owner: Daniel. |
+| I25 | San Diego e-bike partner not yet identified | Session 20 | Closed — Reclassified. Not engineering work. Moved to Revenue Backlog RB02. Business development action required. Owner: Daniel. |
+| I26 | Phase 0 audit pending review | Session 21 | Closed — Phase 0 forensic audit reviewed and accepted 2026-09-13. Phase 1 authorized. |
+| I27 | Content Engine authorization gap — PUBLISH_SECRET transmitted by client-side JS | Session 21 / S01 | Open — **Elevated security finding.** /content/ is publicly accessible. PUBLISH_SECRET sent as fetch request header from client JS; visible in browser DevTools Network tab. Client-side secret is not an adequate authorization boundary. Phase 1: investigate authorized-user model and implement server-side authorization. Any auth-boundary change = RED. |
+| I28 | Deals subscription gate is client-side only — server-side enforcement gap | Phase 0 Reconciliation / S02 | Open — subscriptionStatus check in deals.html is client-side Firestore read. Concerns to assess: (1) UI/presentation gating, (2) membership entitlement verification, (3) redemption authorization, (4) server-side Firestore rule enforcement. Phase 1: assess gap severity and implement appropriate hardening. Any Firestore rules change = RED. |
+
+## Revenue Backlog
+Business development and partnership activities. Not engineering work. Not Phase 1 exit criteria.
+
+| ID | Item | Owner | Notes |
+|---|---|---|---|
+| RB01 | Affiliate activation — Booze Bros / Vigilante Coffee / Revo Roasters (all status:pending) | Daniel | First activation unlocks the deals page for members. Booze Bros: hub model conversation. Vigilante Coffee: IG DM @vigilantecoffee. Revo Roasters: IG DM @revolutionroasters. |
+| RB02 | San Diego e-bike partner acquisition | Daniel | Find Google Maps 4.5+ local shop, establish partnership, update SERVICES ebike_local entry with partner name. |
 
 ## Dependencies
 | ID | Dependency | Type | Notes |
