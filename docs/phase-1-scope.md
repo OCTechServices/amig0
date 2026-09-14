@@ -145,6 +145,22 @@ Document material changes rather than silently changing the lifecycle.
 
 ---
 
+## Rollback Strategy
+
+**Pre-push (commits exist locally only):**
+- `git revert <sha>` one or more commits, then discard or keep locally
+
+**Post-push, pre-production-deploy:**
+- `git revert <sha>` — create a normal revert commit, push to the branch
+- Do NOT use `git push --force` or `git reset --hard` on shared branches (main/phase-1)
+
+**Post-production-deploy:**
+- Preferred: Vercel dashboard → Deployments → select prior deployment → Promote to Production (instant, no new deploy needed)
+- Alternative: `git revert <sha>` → commit → `npx vercel --prod` (re-deploys the reverted state)
+- Do NOT rewrite shared history (no force-push to main)
+
+---
+
 ## Exit Criteria
 
 All Phase 1 items resolved, explicitly deferred with owner + date, or accepted as known risk.
