@@ -3,10 +3,15 @@ Vercel serverless function — POST /api/ig-post
 Accepts base64 slide images + caption, uploads to imgbb, publishes as IG carousel.
 
 Required env vars (set in Vercel project settings):
-  IG_USER_ID      — Instagram Business account numeric ID
-  IG_ACCESS_TOKEN — Long-lived user access token
-  IMGBB_API_KEY   — imgbb.com API key (free tier is fine)
-  PUBLISH_SECRET  — Shared token required in X-Publish-Token header
+  IG_USER_ID               — Instagram Business account numeric ID
+  IG_ACCESS_TOKEN          — Long-lived user access token
+  IMGBB_API_KEY            — imgbb.com API key (free tier is fine)
+  FIREBASE_SERVICE_ACCOUNT — base64-encoded service account JSON
+
+Authorization: Firebase ID token (Bearer) required in Authorization header.
+  Caller must be signed in with a Firebase Auth account that has the
+  {operator: true} custom claim. PUBLISH_SECRET removed — browser-visible
+  shared secrets are not an adequate authorization boundary (Phase 1 S01).
 
 Execution budget (60s Vercel limit):
   Normal path:       ~26s
@@ -32,16 +37,58 @@ import re
 import json
 import time
 import uuid
+import base64
 import urllib.request
 import urllib.parse
 import urllib.error
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from http.server import BaseHTTPRequestHandler
 
-IG_USER_ID     = os.environ.get('IG_USER_ID', '')
-IG_TOKEN       = os.environ.get('IG_ACCESS_TOKEN', '')
-IMGBB_KEY      = os.environ.get('IMGBB_API_KEY', '')
-PUBLISH_SECRET = os.environ.get('PUBLISH_SECRET', '')
+import firebase_admin
+from firebase_admin import credentials, auth as firebase_auth
+
+IG_USER_ID = os.environ.get('IG_USER_ID', '')
+IG_TOKEN   = os.environ.get('IG_ACCESS_TOKEN', '')
+IMGBB_KEY  = os.environ.get('IMGBB_API_KEY', '')
+
+# ── Firebase Admin — lazy init (reused across warm invocations) ───────────────
+_fb_initialized = False
+
+
+def _ensure_firebase():
+    global _fb_initialized
+    if _fb_initialized:
+        return
+    sa_b64 = os.environ.get('FIREBASE_SERVICE_ACCOUNT', '')
+    if not sa_b64:
+        raise RuntimeError('FIREBASE_SERVICE_ACCOUNT not set')
+    sa_json = json.loads(base64.b64decode(sa_b64))
+    if not firebase_admin._apps:
+        firebase_admin.initialize_app(credentials.Certificate(sa_json))
+    _fb_initialized = True
+
+
+def _verify_operator(auth_header):
+    """Verify Firebase ID token and confirm operator custom claim.
+    Returns (True, uid) on success or (False, error_message) on failure.
+    """
+    if not auth_header or not auth_header.startswith('Bearer '):
+        return False, 'Authorization header missing or not Bearer'
+    token = auth_header[7:].strip()
+    if not token:
+        return False, 'Bearer token is empty'
+    try:
+        _ensure_firebase()
+        decoded = firebase_auth.verify_id_token(token)
+        if not decoded.get('operator'):
+            return False, 'Operator claim required — sign in with an operator account'
+        return True, decoded.get('uid', '')
+    except firebase_auth.ExpiredIdTokenError:
+        return False, 'Token expired — please refresh the page and sign in again'
+    except firebase_auth.InvalidIdTokenError:
+        return False, 'Invalid token'
+    except Exception as e:
+        return False, f'Auth error: {e}'
 
 GRAPH = 'https://graph.instagram.com/v22.0'
 
@@ -118,9 +165,10 @@ class handler(BaseHTTPRequestHandler):
         self.end_headers()
 
     def do_POST(self):
-        if PUBLISH_SECRET and self.headers.get('X-Publish-Token') != PUBLISH_SECRET:
+        ok, auth_result = _verify_operator(self.headers.get('Authorization', ''))
+        if not ok:
             return self._json(403, {'success': False, 'stage': 'AUTH',
-                                    'retryable': False, 'message': 'Unauthorized'})
+                                    'retryable': False, 'message': auth_result})
         if not IG_USER_ID or not IG_TOKEN or not IMGBB_KEY:
             return self._json(503, {'success': False, 'stage': 'CONFIG', 'retryable': False,
                                     'message': 'Missing server credentials — check Vercel env vars'})
@@ -504,7 +552,7 @@ class handler(BaseHTTPRequestHandler):
     def _cors(self):
         self.send_header('Access-Control-Allow-Origin',  'https://amig0.com')
         self.send_header('Access-Control-Allow-Methods', 'POST, OPTIONS')
-        self.send_header('Access-Control-Allow-Headers', 'Content-Type, X-Publish-Token')
+        self.send_header('Access-Control-Allow-Headers', 'Content-Type, Authorization')
 
     def log_message(self, fmt, *args):
         pass  # suppress default BaseHTTPRequestHandler request logging

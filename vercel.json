@@ -7,6 +7,7 @@
     { "src": "^/business/?$", "dest": "/business.html" },
     { "src": "^/privacy/?$",  "dest": "/privacy.html" },
     { "src": "^/terms/?$",    "dest": "/terms.html" },
+    { "src": "^/landing\\.html$", "headers": { "Location": "https://amig0.com/" }, "status": 301 },
     { "src": "/(.*)", "dest": "/$1" }
   ],
   "functions": {

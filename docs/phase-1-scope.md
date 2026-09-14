@@ -1,7 +1,7 @@
 # amig0 — Phase 1: Security, Reliability & Platform Rationalization
 **OCTech Services | Tier 1 — Enterprise Grade**
-**Status:** Authorized — not started
-**Authorized:** 2026-09-13 (Phase 0 reconciliation complete)
+**Status:** In progress
+**Authorized:** 2026-09-13 (explicit authorization — Phase 1 entry message)
 **Baseline:** docs/phase-0-audit.md
 
 ---

@@ -19,6 +19,11 @@ storage.rules.bak
 # Firebase emulator data
 .firestore-data/
 
+# Personal / non-product files
+*.xlsx
+*.xls
+*.csv
+
 # macOS
 .DS_Store
 .AppleDouble

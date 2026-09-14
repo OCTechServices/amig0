@@ -9,6 +9,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <!-- Firebase Auth — operator identity gate (Phase 1 S01) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="/firebase-config.js"></script>
   <style>
     :root {
       --bg:      #09090b;
@@ -283,9 +287,56 @@
       .gen-panel { position: static; }
       .container { padding: 20px 14px; }
     }
+
+    /* ── Auth gate (Phase 1 S01) ── */
+    #auth-gate {
+      position: fixed; inset: 0; background: var(--bg);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 9999;
+    }
+    #auth-gate.hidden { display: none; }
+    .auth-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; padding: 36px 32px; width: 100%; max-width: 360px;
+    }
+    .auth-card h2 { font-size: 1.1rem; font-weight: 700; margin-bottom: 6px; }
+    .auth-card p  { font-size: 0.8rem; color: var(--muted); margin-bottom: 24px; }
+    .auth-field   { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+    .auth-field label { font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+    .auth-field input { background: #0d0d0f; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 10px 12px; color: var(--text); font-size: 0.9rem; outline: none; }
+    .auth-field input:focus { border-color: var(--p1); box-shadow: 0 0 0 3px rgba(129,140,248,0.12); }
+    .auth-btn { width: 100%; padding: 12px; background: var(--p1); color: #09090b; border: none; border-radius: 8px; font-size: 0.9rem; font-weight: 700; cursor: pointer; margin-top: 8px; }
+    .auth-btn:hover { opacity: 0.88; }
+    .auth-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+    #auth-err { font-size: 0.78rem; color: #f87171; margin-top: 10px; min-height: 18px; }
+    .auth-signout { font-size: 0.75rem; color: var(--muted); cursor: pointer; text-decoration: underline; }
+    .auth-signout:hover { color: var(--text); }
   </style>
 </head>
 <body>
+
+<!-- Auth gate — operator sign-in (Phase 1 S01) -->
+<div id="auth-gate">
+  <div class="auth-card">
+    <h2>Content Engine</h2>
+    <p>Sign in with your amig0 operator account to continue.</p>
+    <div class="auth-field">
+      <label for="auth-email">Email</label>
+      <input type="email" id="auth-email" autocomplete="email" placeholder="operator@opcoretech.com">
+    </div>
+    <div class="auth-field">
+      <label for="auth-password">Password</label>
+      <input type="password" id="auth-password" autocomplete="current-password" placeholder="••••••••">
+    </div>
+    <div id="auth-err"></div>
+    <button class="auth-btn" id="auth-submit-btn" onclick="authSignIn()">Sign in</button>
+  </div>
+</div>
+
+<div id="auth-signed-in-bar" class="hidden" style="background:var(--surface);border-bottom:1px solid var(--border);padding:8px 24px;display:flex;align-items:center;justify-content:space-between;font-size:0.78rem;color:var(--muted);">
+  <span id="auth-user-label"></span>
+  <span class="auth-signout" onclick="authSignOut()">Sign out</span>
+</div>
 
 <div class="page-header">
   <div class="page-title">Traveler <span>Hacks</span></div>
@@ -494,7 +545,64 @@ const COUNTRY_COLORS = {
   'Czech Republic': ['#D7141A', '#FFFFFF', '#11457E'],
 };
 
-const PUBLISH_TOKEN = 'e2f85abed64da8fa6577cdc77dbe000d877dd65dd28cdbb1683f2f027f928e89';
+// ── Auth gate (Phase 1 S01) ─────────────────────────────────────────────────
+// PUBLISH_TOKEN removed — browser-visible secrets are not an authorization boundary.
+// Auth is now: Firebase Auth sign-in → ID token → server-side operator claim verification.
+
+var _ceAuth = firebase.auth();
+
+_ceAuth.onAuthStateChanged(function(user) {
+  var gate   = document.getElementById('auth-gate');
+  var bar    = document.getElementById('auth-signed-in-bar');
+  var label  = document.getElementById('auth-user-label');
+  if (user) {
+    user.getIdTokenResult().then(function(result) {
+      if (!result.claims.operator) {
+        document.getElementById('auth-err').textContent =
+          'This account does not have operator access.';
+        _ceAuth.signOut();
+        return;
+      }
+      gate.classList.add('hidden');
+      bar.classList.remove('hidden');
+      bar.style.display = 'flex';
+      label.textContent = 'Signed in as ' + (user.email || user.uid);
+    });
+  } else {
+    gate.classList.remove('hidden');
+    bar.classList.add('hidden');
+    bar.style.display = 'none';
+  }
+});
+
+function authSignIn() {
+  var email = document.getElementById('auth-email').value.trim();
+  var pass  = document.getElementById('auth-password').value;
+  var err   = document.getElementById('auth-err');
+  var btn   = document.getElementById('auth-submit-btn');
+  err.textContent = '';
+  if (!email || !pass) { err.textContent = 'Email and password are required.'; return; }
+  btn.disabled = true;
+  _ceAuth.signInWithEmailAndPassword(email, pass)
+    .then(function() { btn.disabled = false; })
+    .catch(function(e) {
+      btn.disabled = false;
+      err.textContent = e.code === 'auth/wrong-password' || e.code === 'auth/user-not-found'
+        ? 'Invalid email or password.'
+        : e.message;
+    });
+}
+
+function authSignOut() {
+  _ceAuth.signOut();
+}
+
+async function _getAuthHeader() {
+  var user = _ceAuth.currentUser;
+  if (!user) throw new Error('Not signed in');
+  var token = await user.getIdToken();
+  return 'Bearer ' + token;
+}
 
 let lastData          = null;
 let currentMode       = 'discover';
@@ -1001,9 +1109,20 @@ async function doPublish() {
 
     let data;
     try {
+      let authHeader;
+      try {
+        authHeader = await _getAuthHeader();
+      } catch (authErr) {
+        publishInFlight = false;
+        btn.disabled    = false;
+        btn.textContent = 'Publish to Instagram';
+        resultEl.textContent = 'Session expired — please sign in again.';
+        resultEl.className   = 'publish-result err';
+        return;
+      }
       const res = await fetch('/api/ig-post', {
         method:  'POST',
-        headers: { 'Content-Type': 'application/json', 'X-Publish-Token': PUBLISH_TOKEN },
+        headers: { 'Content-Type': 'application/json', 'Authorization': authHeader },
         body:    JSON.stringify({ slides, caption: igCaption, attemptId }),
       });
       data = await res.json();
