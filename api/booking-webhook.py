@@ -3,13 +3,21 @@ Vercel serverless — POST /api/booking-webhook
 Handles checkout.session.completed for amig0 service bookings.
 Writes booking to Firestore. Sends WhatsApp notifications when credentials are set.
 
+Idempotency: session_id is used as the Firestore document key. A repeated
+checkout.session.completed event for the same session is a no-op — no duplicate
+write, no duplicate notification.
+
+Failure semantics:
+  Firestore write failure → 500 (Stripe will retry)
+  WA notification failure → 200 (booking already persisted; WA is best-effort)
+
 Required Vercel env vars:
   STRIPE_SECRET_KEY              — restricted key (Stripe Dashboard → API Keys)
   STRIPE_BOOKING_WEBHOOK_SECRET  — whsec_... (separate from subscription webhook)
   FIREBASE_SERVICE_ACCOUNT       — base64-encoded service account JSON
-  WA_TOKEN                       — WhatsApp Cloud API system user token (pending)
-  WA_PHONE_NUMBER_ID             — WhatsApp phone number ID: 1259977410535761 (pending verification)
-  WA_OPERATOR_NUMBER             — operator's WhatsApp number for booking alerts (e.g. 17605551234)
+  WA_TOKEN                       — WhatsApp Cloud API system user token
+  WA_PHONE_NUMBER_ID             — WhatsApp phone number ID: 1407135942475680
+  WA_OPERATOR_NUMBER             — operator's WhatsApp number for booking alerts (e.g. 17605396606)
 """
 import os
 import json
@@ -47,13 +55,13 @@ def get_db():
 def send_wa(to_number, message):
     """Send a WhatsApp text message via Cloud API. No-op if credentials not set."""
     if not WA_TOKEN or not WA_PHONE_NUMBER_ID or not to_number:
-        print(f'[booking-webhook] WA stub — to:{to_number}')
+        print('[booking-webhook] WA stub — credentials not set, message suppressed')
         return
     # Strip non-digits
     digits = ''.join(c for c in to_number if c.isdigit())
     if not digits:
         return
-    url     = f'https://graph.facebook.com/v21.0/{WA_PHONE_NUMBER_ID}/messages'
+    url     = f'https://graph.facebook.com/v22.0/{WA_PHONE_NUMBER_ID}/messages'
     payload = json.dumps({
         'messaging_product': 'whatsapp',
         'to': digits,
@@ -90,8 +98,9 @@ class handler(BaseHTTPRequestHandler):
         if event['type'] != 'checkout.session.completed':
             return self._respond(200, 'ignored')
 
-        session  = event['data']['object']
-        metadata = session.get('metadata', {})
+        session    = event['data']['object']
+        session_id = session.get('id', '')
+        metadata   = session.get('metadata', {})
 
         service_name   = metadata.get('service_name', 'amig0 Service')
         customer_name  = metadata.get('customer_name', '')
@@ -104,14 +113,28 @@ class handler(BaseHTTPRequestHandler):
         rental_days    = metadata.get('rental_days', '')
         rental_bikes   = metadata.get('rental_bikes', '')
         rental_pickup  = metadata.get('rental_pickup', '')
-        session_id     = session.get('id', '')
         ref            = session_id[-8:].upper() if session_id else 'N/A'
         is_rental      = bool(rental_date)
 
+        # ── Idempotency gate ────────────────────────────────────────────────
+        # session_id is the Firestore document key. If the document already
+        # exists, this is a Stripe replay — return 200 without re-writing or
+        # re-notifying. TOCTOU gap is accepted at current scale.
+        try:
+            db      = get_db()
+            doc_ref = db.collection('service_bookings').document(session_id)
+            snap    = doc_ref.get()
+        except Exception as e:
+            print(f'[booking-webhook] Firestore read failed: {e}')
+            return self._respond(500, 'Firestore read failed')
+
+        if snap.exists:
+            return self._respond(200, f'ok — booking {ref} already recorded')
+
         # SLA: same-day = 30 min response / 60 min confirm. Future = 24 hours.
-        today = datetime.now(timezone.utc).strftime('%Y-%m-%d')
+        today        = datetime.now(timezone.utc).strftime('%Y-%m-%d')
         booking_date = rental_date if is_rental else event_date
-        same_day = (booking_date == today)
+        same_day     = (booking_date == today)
         if same_day:
             sla_msg = 'Your provider will respond within 30 minutes and confirm within 60 minutes.'
         else:
@@ -119,6 +142,7 @@ class handler(BaseHTTPRequestHandler):
 
         booking = {
             'sessionId':     session_id,
+            'bookingRef':    ref,
             'serviceName':   service_name,
             'customerName':  customer_name,
             'customerPhone': customer_phone,
@@ -136,14 +160,14 @@ class handler(BaseHTTPRequestHandler):
             'createdAt':     datetime.now(timezone.utc).isoformat(),
         }
 
+        # ── Firestore write — failure returns 500 so Stripe retries ─────────
         try:
-            db = get_db()
-            db.collection('service_bookings').add(booking)
+            doc_ref.set(booking)
         except Exception as e:
             print(f'[booking-webhook] Firestore write failed: {e}')
             return self._respond(500, 'Firestore write failed')
 
-        # Customer confirmation via WhatsApp
+        # ── WhatsApp notifications — best-effort; booking already persisted ─
         if is_rental:
             pickup_label = 'Hotel delivery' if rental_pickup == 'hotel' else 'Shop pickup'
             details = (

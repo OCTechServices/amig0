@@ -2,8 +2,8 @@
 Vercel serverless — POST /api/stripe-booking
 Creates a Stripe Checkout Session for a service booking.
 
-Path 1 (default): charges $35 booking fee. Balance collected at event.
-Path 2 (Connect): charges full package price; $35 platform fee kept by amig0;
+Path 1 (default): charges deposit to amig0 directly. Balance collected at event/shop.
+Path 2 (Connect): charges full package price; platform fee kept by amig0;
                   remainder transferred to partner's Stripe Express account.
 
 Required Vercel env vars:
@@ -12,6 +12,11 @@ Required Vercel env vars:
 
 Note: ensure the restricted key has checkout.sessions:write permission.
 For Path 2 also needs connect_accounts:read + transfers:write.
+
+Trust boundary:
+  Client supplies: serviceId, booking metadata (name, phone, date, etc.)
+  Server resolves: deposit amount, payment path, currency, service name
+  Client-supplied deposit/paymentPath/stripeAccountId are IGNORED.
 """
 import os
 import json
@@ -36,8 +41,46 @@ def get_db():
         _db = firestore.client()
     return _db
 
+
 stripe.api_key = os.environ.get('STRIPE_SECRET_KEY', '')
 ORIGIN         = 'https://amig0.com'
+
+# ---------------------------------------------------------------------------
+# Service catalog — server-authoritative source for pricing and payment paths.
+# Client-supplied deposit/paymentPath values are IGNORED; Stripe charge amounts
+# derive exclusively from this catalog.
+#
+# depositCents       — amount charged at booking (Path 1, cents USD)
+# applicationFeeCents — platform fee retained by amig0 (Path 2, cents USD)
+# paymentPath        — 1 = direct charge; 2 = Connect destination charge
+# ---------------------------------------------------------------------------
+_SERVICE_CATALOG = {
+    'ebike_local': {
+        'name':         'E-Bike Rental — Daily',
+        'depositCents': 1000,    # $10 reservation fee; balance paid at shop
+        'paymentPath':  1,
+        'currency':     'usd',
+    },
+    'fotobloom_sd': {
+        'name':         'Luxury Photo Booth · San Diego',
+        'depositCents': 3500,    # $35 booking deposit
+        'paymentPath':  1,
+        'currency':     'usd',
+    },
+    'bartenderduo_sd': {
+        'name':         'Mobile Bar Service · San Diego',
+        'depositCents': 3500,    # $35 booking deposit
+        'paymentPath':  1,
+        'currency':     'usd',
+    },
+    # Path 2 template — add entry here when a connected partner is activated:
+    # 'partner_id': {
+    #     'name':              'Partner Service Name',
+    #     'applicationFeeCents': 3500,  # $35 platform fee retained by amig0
+    #     'paymentPath':       2,
+    #     'currency':          'usd',
+    # },
+}
 
 
 class handler(BaseHTTPRequestHandler):
@@ -57,15 +100,29 @@ class handler(BaseHTTPRequestHandler):
         except Exception:
             return self._json(400, {'error': 'Invalid JSON'})
 
-        service_id     = body.get('serviceId', '').strip()
-        payment_path   = int(body.get('paymentPath', 1))
-        service_name   = body.get('serviceName', '').strip()
-        package_name   = body.get('packageName', '').strip()
-        package_price  = body.get('packagePrice', '').strip()
-        currency       = body.get('currency', 'usd').lower()
-        deposit        = int(body.get('deposit', 3500))
+        service_id = body.get('serviceId', '').strip()
+
+        # Resolve service from authoritative catalog — reject unknown IDs
+        service_config = _SERVICE_CATALOG.get(service_id)
+        if not service_config:
+            return self._json(400, {'error': f'Unknown or unsupported service: {service_id}'})
+
+        # Server-authoritative pricing — client-supplied deposit/paymentPath ignored
+        payment_path     = service_config['paymentPath']
+        currency         = service_config['currency']
+        catalog_name     = service_config['name']
+        deposit_cents    = service_config.get('depositCents', 3500)
+        app_fee_cents    = service_config.get('applicationFeeCents', 3500)
+
+        # Booking metadata from client (not financial controls)
         customer_name  = body.get('customerName', '').strip()
         customer_phone = body.get('customerPhone', '').strip()
+
+        if not customer_name or not customer_phone:
+            return self._json(400, {'error': 'customerName and customerPhone are required'})
+
+        package_name   = body.get('packageName', '').strip()
+        package_price  = body.get('packagePrice', '').strip()
         event_date     = body.get('eventDate', '').strip()
         event_type     = body.get('eventType', '').strip()
         headcount      = str(body.get('headcount', '')).strip()
@@ -75,18 +132,16 @@ class handler(BaseHTTPRequestHandler):
         rental_bikes   = str(body.get('rentalBikes', '')).strip()
         rental_pickup  = body.get('rentalPickup', '').strip()
 
-        if not service_name or not customer_name or not customer_phone:
-            return self._json(400, {'error': 'serviceName, customerName, and customerPhone are required'})
-
         description = ' · '.join(filter(None, [
             package_name, package_price, event_type, event_date,
             f'{headcount} guests' if headcount else '',
         ]))
 
+        # Catalog name used in Stripe product + metadata so WA/receipts are accurate
         metadata = {
             'service_id':     service_id,
             'payment_path':   str(payment_path),
-            'service_name':   service_name,
+            'service_name':   catalog_name,
             'package_name':   package_name,
             'package_price':  package_price,
             'customer_name':  customer_name,
@@ -104,18 +159,28 @@ class handler(BaseHTTPRequestHandler):
         try:
             if payment_path == 2:
                 # ── Path 2: full charge via Connect ──────────────────────────
-                # Look up partner's Stripe Express account in Firestore
                 db  = get_db()
                 doc = db.collection('affiliates').document(service_id).get()
                 if not doc.exists:
                     return self._json(400, {'error': f'Partner not found: {service_id}'})
-                partner      = doc.to_dict()
-                account_id   = partner.get('stripeAccountId', '')
+                partner    = doc.to_dict()
+                account_id = partner.get('stripeAccountId', '')
                 if not account_id:
                     return self._json(400, {'error': 'Partner Stripe account not configured'})
 
-                # Parse full price from package_price string (e.g. "$650")
-                full_cents = int(float(package_price.replace('$', '').replace(',', '')) * 100)
+                # Full price is client-supplied for Path 2 (package-variable).
+                # application_fee_amount is catalog-authoritative ($35 kept by amig0).
+                # Known gap: full_cents is client-controlled — mitigated by requiring
+                # full_cents > app_fee_cents and by Stripe Connect constraints.
+                try:
+                    full_cents = int(float(
+                        package_price.replace('$', '').replace(',', '')
+                    ) * 100)
+                except (ValueError, AttributeError):
+                    return self._json(400, {'error': 'Invalid packagePrice for Path 2'})
+
+                if full_cents <= app_fee_cents:
+                    return self._json(400, {'error': 'Package price must exceed platform fee'})
 
                 session = stripe.checkout.Session.create(
                     mode='payment',
@@ -123,7 +188,7 @@ class handler(BaseHTTPRequestHandler):
                         'price_data': {
                             'currency': currency,
                             'product_data': {
-                                'name': f'amig0 — {service_name} · {package_name}',
+                                'name':        f'amig0 — {catalog_name} · {package_name}',
                                 'description': description or 'Service booking',
                             },
                             'unit_amount': full_cents,
@@ -133,32 +198,32 @@ class handler(BaseHTTPRequestHandler):
                     metadata=metadata,
                     payment_intent_data={
                         'statement_descriptor':   'AMIG0 BOOKING',
-                        'description':            f'amig0 — {service_name}',
-                        'application_fee_amount': deposit,          # $35 kept by amig0
+                        'description':            f'amig0 — {catalog_name}',
+                        'application_fee_amount': app_fee_cents,
                         'transfer_data':          {'destination': account_id},
                     },
                     success_url=ORIGIN + '/hacks?booked=1&session_id={CHECKOUT_SESSION_ID}',
                     cancel_url=ORIGIN + '/hacks',
                 )
             else:
-                # ── Path 1: $35 booking fee only ─────────────────────────────
+                # ── Path 1: catalog-authoritative deposit only ────────────────
                 session = stripe.checkout.Session.create(
                     mode='payment',
                     line_items=[{
                         'price_data': {
                             'currency': currency,
                             'product_data': {
-                                'name': f'amig0 — {service_name}',
+                                'name':        f'amig0 — {catalog_name}',
                                 'description': description or 'Service booking',
                             },
-                            'unit_amount': deposit,
+                            'unit_amount': deposit_cents,
                         },
                         'quantity': 1,
                     }],
                     metadata=metadata,
                     payment_intent_data={
                         'statement_descriptor': 'AMIG0 BOOKING',
-                        'description':          f'amig0 — {service_name} Booking Fee',
+                        'description':          f'amig0 — {catalog_name} Booking Fee',
                     },
                     success_url=ORIGIN + '/hacks?booked=1&session_id={CHECKOUT_SESSION_ID}',
                     cancel_url=ORIGIN + '/hacks',
