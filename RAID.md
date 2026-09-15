@@ -1,6 +1,6 @@
 # RAID Log: amig0
 # Tier 1 — Enterprise Grade | OCTech Services
-# Last Updated: 2026-09-15 (S02 COMPLETE — production deployed)
+# Last Updated: 2026-09-15 (P01 inspection complete — findings logged)
 
 ---
 
@@ -88,7 +88,10 @@ Features confirmed for future build — not yet in active sprint.
 
 | I21 | WhatsApp business number registration pending | Session 20 | Closed — Twilio (760) 891-4152 registered + verified. WABA: 1378242627790626, Phone Number ID: 1407135942475680. WA_TOKEN + WA_PHONE_NUMBER_ID added to Vercel. Messaging confirmed working. Display name "amig0" pending Meta approval (1-3 days). |
 | I22 | WA_TOKEN short-lived — permanent system user token failed | Session 20 | Open — Elevated to R06. Fell back to 60-day fb_exchange_token. **Expires Nov 10, 2026.** Re-generate via Graph API Explorer when expired. Owner: Daniel. |
-| I23 | Stripe booking flow untested end-to-end | Session 20 | Open — Phase 1 validation item. Swap STRIPE_SECRET_KEY to sk_test_ in Vercel, book via amig0.com/hacks with card 4242 4242 4242 4242, confirm Firestore write in service_bookings. Owner: Daniel. |
+| I23 | Stripe booking flow untested end-to-end | Session 20 / P01 | Open — P01 inspection complete 2026-09-15. Full architecture traced (see P01 report). Three security findings require remediation before Test mode E2E is authorized: P01-S01 HIGH (deposit amount client-controlled — must fix first), P01-S02 MEDIUM (non-idempotent booking webhook), P01-S03 MEDIUM (payment path client-controllable). Additional findings: P01-S04 LOW (phone# logged), P01-S05 LOW (client-generated booking ref, no server correlation), P01-S06 LOW (no refund path). LIVE E2E RECOMMENDED in Test mode after P01-S01 remediation authorized. Owner: Daniel (authorize remediation), then E2E. |
+| I29 | P01-S01: Deposit amount client-controlled — price manipulation vulnerability | P01 | HIGH — Open. api/stripe-booking.py reads `deposit = int(body.get('deposit', 3500))` from client request body and uses it directly as Stripe checkout unit_amount. Attacker can send `{"deposit": 1}` and create a $0.01 checkout session instead of $10/$35. Fix: hard-code deposit per serviceId server-side (lookup map or Firestore). Requires YELLOW authorization. |
+| I30 | P01-S02: service_bookings webhook not idempotent | P01 | MEDIUM — Open. booking-webhook.py uses `db.collection('service_bookings').add(booking)` which creates a new doc with a random ID on every delivery. Duplicate Stripe webhook deliveries produce duplicate booking records. Fix: use `set(merge=False)` keyed on `sessionId` (the Stripe checkout session ID, already in the booking dict). Requires YELLOW authorization. |
+| I31 | P01-S03: Payment path client-controllable | P01 | MEDIUM — Open (theoretical, no Path 2 live). Client sends `paymentPath` field; server uses it directly to choose Path 1 or Path 2. Attacker could force Path 1 for a Path 2 service. Currently no Path 2 connected accounts are active. Fix: resolve paymentPath from Firestore affiliates/{serviceId}.paymentPath server-side. Defer until Path 2 is activated. |
 | I24 | Affiliates status:pending | Session 20 | Closed — Reclassified. Not engineering work. Moved to Revenue Backlog RB01. Business development action required. Owner: Daniel. |
 | I25 | San Diego e-bike partner not yet identified | Session 20 | Closed — Reclassified. Not engineering work. Moved to Revenue Backlog RB02. Business development action required. Owner: Daniel. |
 | I26 | Phase 0 audit pending review | Session 21 | Closed — Phase 0 forensic audit reviewed and accepted 2026-09-13. Phase 1 authorized. |
