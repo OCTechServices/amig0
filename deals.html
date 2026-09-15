@@ -917,18 +917,21 @@
             applyZeroVariant(memberDoc.zeroVariant || 'amiga');
             renderTrialBanner();
           } else {
-            var trialEnd = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-            var payload = {
-              email: user.email,
-              trialStartedAt: firebase.firestore.FieldValue.serverTimestamp(),
-              trialEndsAt:    firebase.firestore.Timestamp.fromDate(trialEnd),
-              subscriptionStatus: 'trial',
-              createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            };
-            ref.set(payload)
-              .then(function () { return ref.get(); })
+            // Trial initialization is server-side — server chooses all
+            // entitlement timestamps. Client cannot influence them.
+            user.getIdToken()
+              .then(function (token) {
+                return fetch('/api/init-trial', {
+                  method: 'POST',
+                  headers: { 'Authorization': 'Bearer ' + token }
+                });
+              })
+              .then(function (res) {
+                if (!res.ok) { throw new Error('init-trial ' + res.status); }
+                return ref.get();
+              })
               .then(function (s) { memberDoc = s.data(); renderTrialBanner(); })
-              .catch(function (e) { console.error('[deals] member doc set:', e.message); });
+              .catch(function (e) { console.error('[deals] init-trial:', e.message); });
           }
         })
         .catch(function (err) { console.error('[deals] member doc get:', err.message); });

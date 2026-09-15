@@ -12,7 +12,9 @@
   ],
   "functions": {
     "api/ig-post.py":          { "maxDuration": 60 },
+    "api/init-trial.py":       { "maxDuration": 10 },
     "api/stripe-webhook.py":   { "maxDuration": 10 },
+    "api/stripe-checkout.py":  { "maxDuration": 10 },
     "api/stripe-booking.py":   { "maxDuration": 10 },
     "api/booking-webhook.py":  { "maxDuration": 10 },
     "api/stripe-connect.py":   { "maxDuration": 10 },

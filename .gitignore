@@ -10,6 +10,10 @@ firebase-config.*.js
 
 # Firebase Functions
 functions/node_modules/
+
+# Test dependencies
+tests/node_modules/
+tests/package-lock.json
 firebase-debug.log
 firestore-debug.log
 ui-debug.log

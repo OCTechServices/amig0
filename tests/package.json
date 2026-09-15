@@ -1,0 +1,15 @@
+{
+  "name": "amig0-rules-tests",
+  "version": "1.0.0",
+  "description": "Firestore Security Rules emulator tests — S02 remediation gate",
+  "private": true,
+  "scripts": {
+    "test": "mocha --timeout 15000 firestore-rules.test.js",
+    "test:emulator": "firebase emulators:exec --only firestore 'cd tests && npm test' --project amig0-travel-company-52fb1"
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "^3.0.3",
+    "firebase": "^10.12.0",
+    "mocha": "^10.4.0"
+  }
+}

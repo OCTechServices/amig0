@@ -232,18 +232,52 @@ service cloud.firestore {
 
     // -----------------------------------------------------------------------
     // amig0_members — consumer users (deals app, trial + subscription tracking)
+    //
+    // Entitlement fields (subscriptionStatus, trialStartedAt, trialEndsAt,
+    // stripeCustomerId, stripeSubscriptionId) are server-authoritative.
+    // Trusted writes arrive via Firebase Admin SDK (api/stripe-webhook.py,
+    // api/init-trial.py), which bypasses client Security Rules entirely.
+    //
+    // Client-writable: zeroVariant only (cosmetic preference toggle).
+    // Trial initialization is server-side via POST /api/init-trial.
+    // Delete blocked to prevent delete-and-recreate entitlement reset. (S02/V01)
     // -----------------------------------------------------------------------
     match /amig0_members/{uid} {
-      allow read, write: if isAuthenticated() && request.auth.uid == uid;
-      allow read:        if isOperator();
+      allow read:   if isAuthenticated() && request.auth.uid == uid;
+      allow read:   if isOperator();
+
+      // Client may only mutate cosmetic profile fields.
+      // diff() semantics confirm no entitlement field is touched. (S02/V01,V02)
+      allow update: if isAuthenticated() && request.auth.uid == uid
+        && request.resource.data.diff(resource.data).affectedKeys()
+                                                    .hasOnly(['zeroVariant']);
+
+      // No client create: trial initialization is server-side via /api/init-trial.
+      // No delete: prevents delete-and-recreate to obtain a fresh trial.
     }
 
-    // redemptions sentinel — one doc per affiliate, records last redeemedAt.
-    // Written by the client in a batch alongside deal_redemptions (C3).
-    // The deal_redemptions create rule reads this path via isNotRecentlyRedeemed().
+    // redemptions sentinel — one stable doc per (uid, affiliateId).
+    // Created on first redemption; updated (non-decreasing) on subsequent
+    // redemptions after the 30-day lockout expires.
+    // DELETE blocked: removing the sentinel bypasses isNotRecentlyRedeemed(). (S02/V03)
     match /amig0_members/{uid}/redemptions/{affiliateId} {
-      allow read, write: if isAuthenticated() && request.auth.uid == uid;
-      allow read:        if isOperator();
+      allow read: if isAuthenticated() && request.auth.uid == uid;
+      allow read: if isOperator();
+
+      // First-ever redemption at this affiliate — document does not yet exist.
+      // redeemedAt must be a fresh server timestamp (within 5 min of request.time).
+      allow create: if isAuthenticated() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['redeemedAt'])
+        && request.resource.data.redeemedAt >= request.time - duration.value(5, 'm');
+
+      // Re-redemption after the 30-day lockout has expired.
+      // redeemedAt must advance (cannot be backdated) and must be fresh.
+      allow update: if isAuthenticated() && request.auth.uid == uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['redeemedAt'])
+        && request.resource.data.redeemedAt >= resource.data.redeemedAt
+        && request.resource.data.redeemedAt >= request.time - duration.value(5, 'm');
+
+      // No delete: prevents lockout bypass via sentinel removal.
     }
 
     // -----------------------------------------------------------------------
