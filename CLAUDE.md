@@ -195,7 +195,7 @@ and confirm all three are accurate before we sign off.
 ## 10. Phase 1 Open Items
 - [x] Phase 0 audit reviewed and accepted — 2026-09-13 (RAID I26 closed)
 - [x] S01: Content Engine auth — COMPLETE 2026-09-14. Firebase ID token + operator claim. PUBLISH_SECRET removed from Vercel Production. Human browser validated. (RAID I27)
-- [ ] S02: Deals entitlement boundary — IMPLEMENTED LOCALLY, EMULATOR TESTED (2026-09-15). 3 vulnerabilities found + remediated (rules hardened, init-trial endpoint, deals.html updated). 26/26 emulator tests pass including T01/T02/T03 threat proofs. Production deployment NOT YET AUTHORIZED. (RAID I28 open)
+- [x] S02: Deals entitlement boundary — COMPLETE 2026-09-15. 5 findings (S02-V01–V06, V04 deferred). api/init-trial.py, deals.html, hardened rules. 34/34 emulator tests. Vercel dpl_BEprvPcMc4oBC1K4XuZnL9FmW2Rc + Firestore rules deployed to production. (RAID I28 closed)
 - [x] P04: landing.html — COMPLETE 2026-09-14. 301 → amig0.com/ validated in production.
 - [x] P07: Repo artifacts removed — DisciplineLog.xlsx untracked, personal files deleted, .gitignore updated
 - [x] P08: Regression/security validation — S01/P04 smoke tests passed 2026-09-14 (home, hacks, deals, business all 200; unauthenticated API 403; operator auth passes; invalid token 403)
