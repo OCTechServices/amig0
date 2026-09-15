@@ -7,8 +7,13 @@ Path 2 (Connect): charges full package price; platform fee kept by amig0;
                   remainder transferred to partner's Stripe Express account.
 
 Required Vercel env vars:
-  STRIPE_SECRET_KEY      — restricted key (Stripe Dashboard → API Keys)
+  STRIPE_SECRET_KEY        — restricted key (Stripe Dashboard → API Keys)
   FIREBASE_SERVICE_ACCOUNT — base64-encoded service account JSON (Path 2 only)
+  APP_ORIGIN               — optional; overrides success/cancel redirect base URL.
+                             Production default: https://amig0.com
+                             Set to Preview URL for isolated E2E testing.
+                             Must be https:// with a valid hostname. No path/query.
+                             Falls back to production default if absent or malformed.
 
 Note: ensure the restricted key has checkout.sessions:write permission.
 For Path 2 also needs connect_accounts:read + transfers:write.
@@ -19,6 +24,7 @@ Trust boundary:
   Client-supplied deposit/paymentPath/stripeAccountId are IGNORED.
 """
 import os
+import re
 import json
 import base64
 import stripe
@@ -43,7 +49,17 @@ def get_db():
 
 
 stripe.api_key = os.environ.get('STRIPE_SECRET_KEY', '')
-ORIGIN         = 'https://amig0.com'
+
+# APP_ORIGIN is a server-authoritative env var — never derived from client input.
+# Accepts only https:// origins with a valid hostname (no path, query, or fragment).
+# Falls back to the production default if absent, empty, or malformed.
+# Set APP_ORIGIN in Vercel Preview env to isolate success/cancel redirects to Preview.
+_APP_ORIGIN_RAW = os.environ.get('APP_ORIGIN', '').strip().rstrip('/')
+ORIGIN = (
+    _APP_ORIGIN_RAW
+    if _APP_ORIGIN_RAW and re.match(r'^https://[a-zA-Z0-9][a-zA-Z0-9._-]*(?::\d+)?$', _APP_ORIGIN_RAW)
+    else 'https://amig0.com'
+)
 
 # ---------------------------------------------------------------------------
 # Service catalog — server-authoritative source for pricing and payment paths.

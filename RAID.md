@@ -1,6 +1,6 @@
 # RAID Log: amig0
 # Tier 1 — Enterprise Grade | OCTech Services
-# Last Updated: 2026-09-15 (P01-S02 atomic idempotency closure — 32/32 tests pass)
+# Last Updated: 2026-09-15 (P01 E2E prep — APP_ORIGIN, deny-by-default rules plan — 47/47 tests pass)
 
 ---
 
@@ -88,7 +88,7 @@ Features confirmed for future build — not yet in active sprint.
 
 | I21 | WhatsApp business number registration pending | Session 20 | Closed — Twilio (760) 891-4152 registered + verified. WABA: 1378242627790626, Phone Number ID: 1407135942475680. WA_TOKEN + WA_PHONE_NUMBER_ID added to Vercel. Messaging confirmed working. Display name "amig0" pending Meta approval (1-3 days). |
 | I22 | WA_TOKEN short-lived — permanent system user token failed | Session 20 | Open — Elevated to R06. Fell back to 60-day fb_exchange_token. **Expires Nov 10, 2026.** Re-generate via Graph API Explorer when expired. Owner: Daniel. |
-| I23 | Stripe booking flow untested end-to-end | Session 20 / P01 | Open — P01 atomic idempotency closure complete 2026-09-15. S01/S02/S03/S04/S05 all closed. S02 upgraded: document.create() atomic claim (not read-then-write). 32/32 mocked unit tests pass (T01-T20). NOT YET DEPLOYED. E2E requires isolated Preview environment (see P01 report). Owner: Daniel (authorize E2E deployment, define safe Firestore target). |
+| I23 | Stripe booking flow untested end-to-end | Session 20 / P01 | Open — P01 E2E preparation in progress 2026-09-15. APP_ORIGIN env var implemented in stripe-booking.py (validated https:// hostname only, falls back to amig0.com). 47/47 tests pass (T01-T20 + APP_ORIGIN tests). E2E environment plan approved. Awaiting: Daniel to create amig0-e2e-test Firebase project + obtain Stripe TEST key + configure Vercel Preview env vars → then authorize first Preview deployment. |
 | I29 | P01-S01: Deposit amount client-controlled — price manipulation vulnerability | P01 | HIGH — Closed. _SERVICE_CATALOG dict in api/stripe-booking.py is now the single authoritative source for depositCents, paymentPath, currency, name. Client-supplied deposit/paymentPath values ignored. Unknown serviceId → 400. Tested T01/T02. |
 | I30 | P01-S02: service_bookings webhook not idempotent | P01 | MEDIUM — Closed. api/booking-webhook.py uses document.create() with session_id as key. create() enforces exists=False atomically at the Firestore server — eliminates the TOCTOU window of read-then-write. Only the winning invocation owns notification side effects. AlreadyExists (sequential replay or concurrent loser) → 200 "already recorded", zero notifications. customerWaStatus/operatorWaStatus ('sent'/'failed'/'skipped') recorded post-claim. Tested T09/T10/T14-T20 (32/32). |
 | I31 | P01-S03: Payment path client-controllable | P01 | MEDIUM — Closed. paymentPath resolved exclusively from _SERVICE_CATALOG. Client-supplied paymentPath is ignored. All active services are Path 1. Path 2 template in catalog comments for future activation. Tested T06b. |

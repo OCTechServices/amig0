@@ -183,5 +183,122 @@ class TestPaymentPathServerResolved(unittest.TestCase):
         self.assertNotIn('application_fee_amount', pi_data)
 
 
+# ── APP_ORIGIN: server-side origin configuration ─────────────────────────────
+class TestAppOrigin(unittest.TestCase):
+    """APP_ORIGIN env var controls success/cancel URL base with safe fallback.
+
+    Tests cover:
+      1. Production default (APP_ORIGIN absent)
+      2. Valid Preview origin accepted
+      3. Malformed/untrusted values fall back to production default
+      4. success_url and cancel_url use the configured origin
+    """
+
+    def _origin_for(self, app_origin_val):
+        """Reload stripe-booking with a specific APP_ORIGIN and return ORIGIN."""
+        os.environ.pop('APP_ORIGIN', None)
+        if app_origin_val is not None:
+            os.environ['APP_ORIGIN'] = app_origin_val
+        try:
+            path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'api', 'stripe-booking.py'))
+            spec = importlib.util.spec_from_file_location('_sb_origin_probe', path)
+            mod  = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(mod)
+            return mod.ORIGIN
+        finally:
+            os.environ.pop('APP_ORIGIN', None)
+
+    # ── 1. Production default ─────────────────────────────────────────────────
+
+    def test_absent_app_origin_defaults_to_production(self):
+        self.assertEqual(self._origin_for(None), 'https://amig0.com')
+
+    def test_empty_app_origin_defaults_to_production(self):
+        self.assertEqual(self._origin_for(''), 'https://amig0.com')
+
+    def test_whitespace_app_origin_defaults_to_production(self):
+        self.assertEqual(self._origin_for('   '), 'https://amig0.com')
+
+    # ── 2. Valid Preview origin accepted ─────────────────────────────────────
+
+    def test_valid_preview_origin_accepted(self):
+        preview = 'https://amig0-git-phase-1-abc.vercel.app'
+        self.assertEqual(self._origin_for(preview), preview)
+
+    def test_valid_preview_origin_with_trailing_slash_normalized(self):
+        """Trailing slash is stripped before validation."""
+        preview = 'https://amig0-git-phase-1-abc.vercel.app'
+        self.assertEqual(self._origin_for(preview + '/'), preview)
+
+    def test_production_origin_explicit_accepted(self):
+        self.assertEqual(self._origin_for('https://amig0.com'), 'https://amig0.com')
+
+    # ── 3. Malformed/untrusted values rejected ────────────────────────────────
+
+    def test_http_scheme_rejected(self):
+        """http:// (no TLS) falls back to production default."""
+        self.assertEqual(self._origin_for('http://amig0.com'), 'https://amig0.com')
+
+    def test_javascript_scheme_rejected(self):
+        """javascript: scheme cannot create an open redirect."""
+        self.assertEqual(self._origin_for('javascript:evil()'), 'https://amig0.com')
+
+    def test_data_scheme_rejected(self):
+        self.assertEqual(self._origin_for('data:text/html,<script>'), 'https://amig0.com')
+
+    def test_path_in_origin_rejected(self):
+        """Origin with path component is rejected — no path injection."""
+        self.assertEqual(self._origin_for('https://amig0.com/extra/path'), 'https://amig0.com')
+
+    def test_query_string_in_origin_rejected(self):
+        """Origin with query string is rejected."""
+        self.assertEqual(self._origin_for('https://amig0.com?evil=1'), 'https://amig0.com')
+
+    def test_fragment_in_origin_rejected(self):
+        """Origin with fragment is rejected."""
+        self.assertEqual(self._origin_for('https://amig0.com#evil'), 'https://amig0.com')
+
+    def test_no_host_rejected(self):
+        """https:// with no host is rejected."""
+        self.assertEqual(self._origin_for('https://'), 'https://amig0.com')
+
+    # ── 4. success_url and cancel_url use configured ORIGIN ───────────────────
+
+    @patch('stripe.checkout.Session.create')
+    def test_success_and_cancel_urls_use_configured_origin(self, mock_create):
+        """Both success_url and cancel_url derive from ORIGIN, not a literal."""
+        mock_create.return_value = MagicMock(url='https://checkout.stripe.com/cs_test')
+        preview = 'https://amig0-git-phase-1-abc.vercel.app'
+
+        original = stripe_booking.ORIGIN
+        stripe_booking.ORIGIN = preview
+        try:
+            h = make_handler({**_VALID_BASE, 'serviceId': 'fotobloom_sd'})
+            run_post(h)
+        finally:
+            stripe_booking.ORIGIN = original
+
+        call_kwargs = mock_create.call_args[1]
+        self.assertTrue(call_kwargs['success_url'].startswith(preview))
+        self.assertTrue(call_kwargs['cancel_url'].startswith(preview))
+
+    @patch('stripe.checkout.Session.create')
+    def test_production_origin_produces_amig0_urls(self, mock_create):
+        """Default ORIGIN yields amig0.com success/cancel URLs (no regression)."""
+        mock_create.return_value = MagicMock(url='https://checkout.stripe.com/cs_test')
+
+        original = stripe_booking.ORIGIN
+        stripe_booking.ORIGIN = 'https://amig0.com'
+        try:
+            h = make_handler({**_VALID_BASE, 'serviceId': 'fotobloom_sd'})
+            run_post(h)
+        finally:
+            stripe_booking.ORIGIN = original
+
+        call_kwargs = mock_create.call_args[1]
+        self.assertTrue(call_kwargs['success_url'].startswith('https://amig0.com'))
+        self.assertTrue(call_kwargs['cancel_url'].startswith('https://amig0.com'))
+
+
 if __name__ == '__main__':
     unittest.main()
