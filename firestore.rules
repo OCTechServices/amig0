@@ -66,11 +66,25 @@ service cloud.firestore {
 
     // Returns true when the user has NOT redeemed from this affiliate in the last 30 days.
     // Reads sentinel at amig0_members/{uid}/redemptions/{affiliateId}.
-    // Client batch-writes this sentinel on every successful redemption (C3).
+    // Client batch-writes this sentinel on every successful redemption.
     function isNotRecentlyRedeemed() {
       let path = /databases/$(database)/documents/amig0_members/$(request.auth.uid)/redemptions/$(request.resource.data.affiliateId);
       return !exists(path)
         || get(path).data.redeemedAt < request.time - duration.value(30, 'd');
+    }
+
+    // Coupling invariant: a deal_redemptions create must atomically advance
+    // the corresponding lockout sentinel in the same batch.
+    // Uses existsAfter() + getAfter() to read post-transaction sentinel state.
+    // Ensures a hostile client cannot write deal_redemptions and omit the
+    // sentinel write — which would bypass the 30-day cross-month lockout.
+    // Both the deal and the sentinel must carry the same server-committed
+    // timestamp (both use serverTimestamp(), both resolve to request.time).
+    // Note: existsAfter(path) is correct; exists(getAfter(path)) is unsupported.
+    function sentinelAdvanced(affiliateId, redeemedAt) {
+      let sentinelPath = /databases/$(database)/documents/amig0_members/$(request.auth.uid)/redemptions/$(affiliateId);
+      return existsAfter(sentinelPath)
+        && getAfter(sentinelPath).data.redeemedAt == redeemedAt;
     }
 
     // -----------------------------------------------------------------------
@@ -265,17 +279,23 @@ service cloud.firestore {
       allow read: if isOperator();
 
       // First-ever redemption at this affiliate — document does not yet exist.
-      // redeemedAt must be a fresh server timestamp (within 5 min of request.time).
+      // redeemedAt must be a fresh timestamp: within 5 min of request.time,
+      // and no more than 5 min in the future (prevents artificial lockout extension).
+      // Upper bound written as subtraction (a <= b+c ↔ b >= a-c) to avoid
+      // timestamp-addition evaluation errors in the emulator for serverTimestamp writes.
       allow create: if isAuthenticated() && request.auth.uid == uid
         && request.resource.data.keys().hasOnly(['redeemedAt'])
-        && request.resource.data.redeemedAt >= request.time - duration.value(5, 'm');
+        && request.resource.data.redeemedAt >= request.time - duration.value(5, 'm')
+        && request.time >= request.resource.data.redeemedAt - duration.value(5, 'm');
 
       // Re-redemption after the 30-day lockout has expired.
-      // redeemedAt must advance (cannot be backdated) and must be fresh.
+      // redeemedAt must advance (non-decreasing) and be fresh (±5 min of server time).
+      // Upper bound written as subtraction (see create rule note above).
       allow update: if isAuthenticated() && request.auth.uid == uid
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['redeemedAt'])
         && request.resource.data.redeemedAt >= resource.data.redeemedAt
-        && request.resource.data.redeemedAt >= request.time - duration.value(5, 'm');
+        && request.resource.data.redeemedAt >= request.time - duration.value(5, 'm')
+        && request.time >= request.resource.data.redeemedAt - duration.value(5, 'm');
 
       // No delete: prevents lockout bypass via sentinel removal.
     }
@@ -311,10 +331,12 @@ service cloud.firestore {
 
     // -----------------------------------------------------------------------
     // deal_redemptions — consumer redemption log
-    // Three server-side checks on create:
+    // Five server-side checks on create:
     //   1. userId matches signed-in uid (no impersonation)
     //   2. PIN matches affiliates/{id}/secrets/verify — verifyPin never leaves server
-    //   3. isMemberAllowed() — active subscription OR unexpired trial (C2)
+    //   3. isMemberAllowed() — active subscription OR unexpired trial
+    //   4. isNotRecentlyRedeemed() — 30-day lockout via sentinel
+    //   5. sentinelAdvanced() — coupling: sentinel must advance atomically (V05)
     // -----------------------------------------------------------------------
     match /deal_redemptions/{docId} {
       allow read, write: if isOperator();
@@ -323,7 +345,8 @@ service cloud.firestore {
         && request.resource.data.pin ==
              get(/databases/$(database)/documents/affiliates/$(request.resource.data.affiliateId)/secrets/verify).data.verifyPin
         && isMemberAllowed()
-        && isNotRecentlyRedeemed();
+        && isNotRecentlyRedeemed()
+        && sentinelAdvanced(request.resource.data.affiliateId, request.resource.data.redeemedAt);
       allow read:        if isAuthenticated()
         && resource.data.userId == request.auth.uid;
     }

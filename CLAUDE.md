@@ -203,5 +203,6 @@ and confirm all three are accurate before we sign off.
 - [ ] P02: WA credential — calendar reminder Nov 1. Renewal: Graph API Explorer → update WA_TOKEN (RED). Pursue permanent token. (RAID R06)
 - [ ] P03: Firebase Hosting domain — `amig0-travel-company-52fb1.web.app` (confirmed from .firebaserc, RED to verify/document custom domain)
 - [ ] P05: health/ disposition — personal app on brand domain, decision pending Daniel
+- [ ] Roadmap: OCTech Venue Network [NAMING TBD] — shared venue/partner database across amig0 + DATA.LABZ; cafés join once, appear in both products (amig0 hacks/spotlight + DATA.LABZ check-in/cohort rooms); single QR per venue routes to correct app experience; dual B2B pitch: amig0 sends travelers, DATA.LABZ sends local students + remote builders; see data-labz CLAUDE.md for counterpart entry
 - [ ] P06: amig0.vercel.app legacy redirect — Vercel dashboard action (RED)
 - [x] Legacy PUBLISH_SECRET — removed from Vercel Production 2026-09-14. No redeployment required.
