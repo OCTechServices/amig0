@@ -199,7 +199,7 @@ and confirm all three are accurate before we sign off.
 - [x] P04: landing.html — COMPLETE 2026-09-14. 301 → amig0.com/ validated in production.
 - [x] P07: Repo artifacts removed — DisciplineLog.xlsx untracked, personal files deleted, .gitignore updated
 - [x] P08: Regression/security validation — S01/P04 smoke tests passed 2026-09-14 (home, hacks, deals, business all 200; unauthenticated API 403; operator auth passes; invalid token 403)
-- [ ] P01: Stripe booking end-to-end validation (RAID I23) — test procedure defined, awaiting Daniel
+- [ ] P01: Stripe booking end-to-end validation (RAID I23) — Pass 2 complete 2026-09-20. 2 defects found + fixed (I32: webhook 500 stripe-python .to_dict(), I33: $NaN overlay). Pass 3 pending: redeploy e2e.amig0.com + Daniel full browser booking to close.
 - [ ] P02: WA credential — calendar reminder Nov 1. Renewal: Graph API Explorer → update WA_TOKEN (RED). Pursue permanent token. (RAID R06)
 - [ ] P03: Firebase Hosting domain — `amig0-travel-company-52fb1.web.app` (confirmed from .firebaserc, RED to verify/document custom domain)
 - [ ] P05: health/ disposition — personal app on brand domain, decision pending Daniel
