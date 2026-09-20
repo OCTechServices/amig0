@@ -138,7 +138,8 @@ class handler(BaseHTTPRequestHandler):
         if event['type'] != 'checkout.session.completed':
             return self._respond(200, 'ignored')
 
-        session    = event['data']['object']
+        _obj       = event['data']['object']
+        session    = _obj.to_dict() if hasattr(_obj, 'to_dict') else _obj
         session_id = session.get('id', '')
         metadata   = session.get('metadata', {})
 
