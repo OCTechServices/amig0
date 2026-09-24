@@ -1,6 +1,6 @@
 # RAID Log: amig0
 # Tier 1 — Enterprise Grade | OCTech Services
-# Last Updated: 2026-09-24 (AEO foundation + P05 deferral — llms.txt created locally pending deployment; P05 deferred to 2027-01-31 review)
+# Last Updated: 2026-09-24 (P06 CLOSED — amig0.vercel.app 301 → amig0.com configured in Vercel Dashboard; 6/6 acceptance tests pass)
 
 ---
 
