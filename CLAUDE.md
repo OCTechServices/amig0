@@ -200,7 +200,7 @@ and confirm all three are accurate before we sign off.
 - [x] P07: Repo artifacts removed — DisciplineLog.xlsx untracked, personal files deleted, .gitignore updated
 - [x] P08: Regression/security validation — S01/P04 smoke tests passed 2026-09-14 (home, hacks, deals, business all 200; unauthenticated API 403; operator auth passes; invalid token 403)
 - [x] P01: Stripe booking end-to-end validation — CLOSED 2026-09-20. Pass 3 accepted: fixed Preview build dpl_8m9TcAF3qeNtnzGxsY4jPoZLmsDH, human browser TEST booking (E-Bike $10, Ref SF6CI8M0), signed webhook HTTP 200 (no I32 AttributeError), Firestore 0→1 document, $10 deposit rendered (no $NaN), WhatsApp suppressed, Production untouched. (RAID I23 closed)
-- [ ] F01: stripe-webhook.py I32-equivalent — api/stripe-webhook.py lines 68–97 call .get() on Stripe Subscription typed object; will 500 on every subscription event in Vercel runtime (customer.subscription.created/updated/deleted → members not activated/deactivated). Same pattern as I32. Fix: _obj.to_dict() if hasattr(_obj, 'to_dict') else _obj. (RAID I34 — new, open)
+- [ ] F01: stripe-webhook.py I32-equivalent — fix committed locally 2026-09-23; 14/14 regression tests pass. Production deployment pending. FIREBASE_SERVICE_ACCOUNT absent from Production (separate gate required before full subscription path is live). (RAID I34)
 - [ ] P02: WA credential — calendar reminder Nov 1. Renewal: Graph API Explorer → update WA_TOKEN (RED). Pursue permanent token. (RAID R06)
 - [ ] P03: Firebase Hosting domain — `amig0-travel-company-52fb1.web.app` (confirmed from .firebaserc, RED to verify/document custom domain)
 - [ ] P05: health/ disposition — personal app on brand domain, decision pending Daniel

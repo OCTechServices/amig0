@@ -65,7 +65,8 @@ class handler(BaseHTTPRequestHandler):
             return self._respond(400, str(e))
 
         event_type   = event['type']
-        subscription = event['data']['object']
+        _obj         = event['data']['object']
+        subscription = _obj.to_dict() if hasattr(_obj, 'to_dict') else _obj
 
         if event_type not in (
             'customer.subscription.created',
