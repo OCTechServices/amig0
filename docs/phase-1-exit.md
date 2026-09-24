@@ -263,3 +263,23 @@ any Phase 2 work begins, per docs/phase-1-scope.md §Exit Criteria.
 *Document owner: OCTech Services*
 *Canonical source: docs/phase-1-exit.md*
 *Do not alter retrospectively — append an addendum if corrections are needed.*
+
+---
+
+## Addendum — Post-Release Reconciliation (2026-09-24)
+
+**AEO Production deployment:** LIVE. /llms.txt is confirmed live at
+amig0.com/llms.txt as of the Phase 1 Production release (canonical main
+e27a48e, 2026-09-24). HTTP 200 confirmed by post-release smoke check.
+The "Production deployment pending" language in §7 and §9 reflects the
+document's pre-release drafting state and is superseded by this addendum.
+
+**Canonical main reconciliation:** Phase 1 commits fast-forwarded to main
+as `e27a48e` on 2026-09-24. Push to origin/main triggered Vercel
+Git-triggered Production deployment. Status: READY. Smoke checks: 61/61
+tests pass, all pages 200 including llms.txt (first-time live). P06
+redirect amig0.vercel.app → amig0.com preserved. Production log observation:
+no errors during observation window (no serverless invocations on fresh
+deployment — not broad runtime validation).
+
+**Phase 2:** NOT AUTHORIZED. Authorization status unchanged from §10.

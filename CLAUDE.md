@@ -47,35 +47,7 @@ The platform consists of five apps in one codebase:
 - Traveler Hacks: hacks/index.html, api/hacks.py (Vercel serverless)
 - Content Engine: content/index.html (internal, amig0.vercel.app/content/), api/ig-post.py (Vercel serverless IG publish)
 
-**Session history:** see docs/changelog.md
-
-**Session 21 additions (2026-09-13):**
-- Booking modal UX — step indicator (numbered dots + connector line CSS, `updateStepIndicator()`), scoped input styles (focus glow, custom SVG chevron on select), emoji removal from pickup buttons
-- `api/booking-webhook.py` — operator WA alert added (`WA_OPERATOR_NUMBER` env var, SLA urgency flag). `WA_OPERATOR_NUMBER=17605396606` set in Vercel.
-- WA 60-day token — permanent system user token failed (permissions). Fell back to `fb_exchange_token` exchange. Expires Nov 10, 2026 (RAID I22).
-- Revolut referral link — URL added to hacks tools.
-- Brand asset refresh — `og.png` replaced; `brand/` folder committed (`facebook-cover.png`, `story.png`, 8 IG highlight covers); `favicon.svg` (slashed-0 mark); `.gitignore !brand/*.png` exception; SVG slash `opacity="1"` across all consumer pages.
-- Phase 0 forensic audit — `docs/phase-0-audit.md` complete. Reviewed and accepted 2026-09-13. Phase 1 authorized (RAID I26 closed).
-- Content engine venue spotlight redesign — cream palette (`#faf5f0`), Cormorant Garamond italic headlines, category accent left-edge band, `spotlightHashtags()`, `drawSpotlightTexture()`, `getCategoryAccent()`, `drawWordmark()` helper in `content/index.html`.
-- `api/hacks.py` — Coffee category added to schema; `headline` field added to venue spotlight hacks (editorial micro-headline, 2–6 words); hours/pricing guardrail (omit unless from website content).
-- `api/ig-post.py` — Graph API v21.0 → v22.0.
-- Hook improvements — `pre-commit.sh`: git index scanning (`git show :$f`), governance freshness check. `session-end.sh`: activity heuristic gate (F13), master-prompt staleness (F03), line count (F04), completed item accumulation (F06), pre-commit hook integrity (B5).
-
-**Session 20 additions (2026-09-07):**
-- Bookable services layer in `hacks/index.html` — SERVICES array with `cities[]` filter. Three services: Luxury Photo Booth (SD, $35), Mobile Bar Service (SD, $35, WA pending), E-Bike Rental (16 cities, $10 deposit, Path 1 always). Service copy is generic — no individual provider names.
-- Rental booking modal — `bookingType: 'rental'` branch skips package selection; step 1 collects date/days/bikes/pickup pref; `bk-event-fields` hidden for rentals. `submitBooking()` branches on isRental.
-- `api/stripe-booking.py` — Path 1 ($10/$35 deposit) + Path 2 (Stripe Connect Express for partners). Path 2 not used for e-bikes.
-- `api/booking-webhook.py` — Stripe signature verify, Firestore `service_bookings` write, WA notification stub.
-- `api/stripe-connect.py` — Express account onboarding for photo booth/bartender partners.
-- WhatsApp Business — Twilio (760) 891-4152 registered + verified. WABA: 1378242627790626, Phone Number ID: 1407135942475680. WA messaging confirmed working. Display name "amig0" pending approval.
-- `api/wa-webhook.py` — Meta webhook verification. `api/twiml-record.py` — Twilio voice webhook.
-- Meta business verification — OPERATIONAL CORE TECHNOLOGIES, LLC verified via opcoretech.com DNS TXT.
-- `privacy.html` + `terms.html` — live at /privacy and /terms. noindex. Cover Stripe, Firebase, WhatsApp Cloud API.
-- `.claude/prompts/meta-growth-audit.md` — 34-section reusable OCTech Meta ecosystem audit playbook. Also saved to `_octech-foundation/docs/`.
-- hacks submit form — cross-link to /business ("Apply to be an amig0 partner →") below form.
-- Bug fix: `renderTools` guard in `onCityChange` (`typeof` check) — two script blocks, block 2 not yet parsed when block 1 init runs.
-
-**Sessions 13–19 (2026-08-16 → 2026-08-30):** see docs/changelog.md
+**Session history:** see docs/changelog.md (Sessions 1–21 and Phase 1 record)
 
 **Key Modules:**
 Auth · Dashboard · CRM · Clients · Tours · Passengers · Quotes · Invoicing · Email · PDF · Providers · Briefings · Data · Guide App · Client Portal
@@ -192,21 +164,11 @@ and confirm all three are accurate before we sign off.
 
 **Non-negotiable:** No session closes with an uncommitted or unresolved artifact. Every change made in a session must be either committed, intentionally discarded, or logged as a RAID item with owner and next action.
 
-## 10. Phase 1 Open Items
-- [x] Phase 0 audit reviewed and accepted — 2026-09-13 (RAID I26 closed)
-- [x] S01: Content Engine auth — COMPLETE 2026-09-14. Firebase ID token + operator claim. PUBLISH_SECRET removed from Vercel Production. Human browser validated. (RAID I27)
-- [x] S02: Deals entitlement boundary — COMPLETE 2026-09-15. 5 findings (S02-V01–V06, V04 deferred). api/init-trial.py, deals.html, hardened rules. 34/34 emulator tests. Vercel dpl_BEprvPcMc4oBC1K4XuZnL9FmW2Rc + Firestore rules deployed to production. (RAID I28 closed)
-- [x] P04: landing.html — COMPLETE 2026-09-14. 301 → amig0.com/ validated in production.
-- [x] P07: Repo artifacts removed — DisciplineLog.xlsx untracked, personal files deleted, .gitignore updated
-- [x] P08: Regression/security validation — S01/P04 smoke tests passed 2026-09-14 (home, hacks, deals, business all 200; unauthenticated API 403; operator auth passes; invalid token 403)
-- [x] P01: Stripe booking end-to-end validation — CLOSED 2026-09-20. Pass 3 accepted: fixed Preview build dpl_8m9TcAF3qeNtnzGxsY4jPoZLmsDH, human browser TEST booking (E-Bike $10, Ref SF6CI8M0), signed webhook HTTP 200 (no I32 AttributeError), Firestore 0→1 document, $10 deposit rendered (no $NaN), WhatsApp suppressed, Production untouched. (RAID I23 closed)
-- [x] F01: stripe-webhook.py I32-equivalent — PHASE 1 EXIT: ACCEPTED AS KNOWN RISK 2026-09-24 (Daniel). Implementation complete: fix deployed Production commit 122c1d2 (dpl_2SUdmLpGq1rLrqLisWL8cSysUcto); 14/14 regression tests pass (SW-T01–SW-T09c); smoke test 200; no post-deployment 500s observed. I34 OPEN — runtime verification pending: no organic customer.subscription.* event has yet been observed in Production. Daniel explicitly accepted the remaining operational gap as known risk for Phase 1 exit. Follow-up condition (event-driven): first organic Production customer.subscription.* event → /api/stripe-webhook HTTP 200 + Firestore amig0_members/{uid} write confirmed → I34 may close. (RAID I34 — open; carries forward as monitoring item)
-- [x] FIREBASE_SERVICE_ACCOUNT — Production scoped to amig0-travel-company-52fb1; Preview isolated to amig0-e2e-test. Confirmed 2026-09-23.
-- [x] P02: WA credential lifecycle — CLOSED for Phase 1 2026-09-24. Renewal procedure documented in RAID R06 (token expires Nov 10, 2026; calendar target Nov 1). Phase 1 acceptance criterion satisfied: renewal procedure documented. Permanent system-user-token migration is post-Phase-1 credential hardening — not required for Phase 1 closure. (RAID R06)
-- [x] P03: Firebase Hosting domain — CONFIRMED 2026-09-24. Production Hosting site ID: amig0-travel-company-52fb1. Default URL: https://amig0-travel-company-52fb1.web.app. No custom domain configured. Single live channel (last deployed 2026-08-24). CRM, Client Portal, and Guide App served from this URL. Preview/E2E project (amig0-e2e-test) remains separate.
-- [x] P05: health/ disposition — DEFERRED 2026-09-24. Temporary: health/ remains in current location through Phase 1. Long-term: separate health/ from amig0 public product boundary. Owner: Daniel. Review date: 2027-01-31 (governance review/decision date — not a migration completion deadline). Architectural constraint: health/ must be separated before any intentional expansion of health/ functionality.
-- [x] P06: amig0.vercel.app legacy redirect — CLOSED 2026-09-24. 301 Moved Permanently to amig0.com configured in Vercel Dashboard (no code change). 6/6 acceptance tests pass: root/path/query-string redirect, canonical safe, single-hop chain.
-- [x] P09: Phase 1 exit report — CLOSED 2026-09-24. docs/phase-1-exit.md committed. CLAUDE.md + RAID.md updated to Phase 1 complete. Phase 2 authorization is a separate explicit human decision. (per phase-1-scope.md §Exit Criteria)
-- [x] AEO foundation — IMPLEMENTED locally 2026-09-24, Production deployment pending. robots.txt VERIFIED: exists in repo root, permits AI crawlers (User-agent: * Allow: /). llms.txt CREATED locally in repo root (will be served as /llms.txt after next authorized deployment — not yet live in Production). Deeper AEO (Quick Answer blocks, FAQ schema, H2 restructuring) formally deferred to future SEO/AEO optimization initiative.
-- [ ] Roadmap: OCTech Venue Network [NAMING TBD] — shared venue/partner database across amig0 + DATA.LABZ; cafés join once, appear in both products (amig0 hacks/spotlight + DATA.LABZ check-in/cohort rooms); single QR per venue routes to correct app experience; dual B2B pitch: amig0 sends travelers, DATA.LABZ sends local students + remote builders; see data-labz CLAUDE.md for counterpart entry
-- [x] Legacy PUBLISH_SECRET — removed from Vercel Production 2026-09-14. No redeployment required.
+## 10. Phase 1 Carry-Forward
+**PHASE 1 COMPLETE — 2026-09-24.** Canonical release: `e27a48e` (Production: amig0.com). Full disposition: docs/phase-1-exit.md. Session archive: docs/changelog.md.
+
+**Active carry-forward:**
+- I34 OPEN — api/stripe-webhook.py runtime monitoring. Close when: first organic `customer.subscription.*` event → HTTP 200 + Firestore write confirmed. (RAID I34)
+- P05 DEFERRED — health/ separation. Owner: Daniel. Review: 2027-01-31. Constraint: no health/ expansion until separated.
+- I22 — WA_TOKEN expires Nov 10, 2026. Renewal target: Nov 1. Procedure: RAID R06. Permanent token migration: post-Phase-1.
+- [ ] Roadmap: OCTech Venue Network [NAMING TBD] — shared venue/partner database across amig0 + DATA.LABZ; see data-labz CLAUDE.md for counterpart entry

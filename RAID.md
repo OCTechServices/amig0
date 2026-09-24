@@ -105,7 +105,7 @@ Features confirmed for future build — not yet in active sprint.
 | Phase | Status | Date | Notes |
 |-------|--------|------|-------|
 | Phase 0 — Foundation & Forensic Audit | COMPLETE | 2026-09-13 | docs/phase-0-audit.md. Reviewed and accepted by Daniel. Phase 1 authorized. |
-| Phase 1 — Security, Reliability & Platform Rationalization | COMPLETE | 2026-09-24 | docs/phase-1-exit.md. All items resolved, deferred with owner+date, or accepted as known risk. I34 OPEN as monitoring item. P05 DEFERRED to 2027-01-31 review. |
+| Phase 1 — Security, Reliability & Platform Rationalization | COMPLETE | 2026-09-24 | docs/phase-1-exit.md. All items resolved, deferred with owner+date, or accepted as known risk. I34 OPEN as monitoring item. P05 DEFERRED to 2027-01-31 review. Canonical main: e27a48e. Production release: Vercel Git-triggered, READY 2026-09-24. Smoke: 61/61 tests pass, all pages 200, llms.txt live. |
 | Phase 2 — Revenue Activation & Validation | NOT AUTHORIZED | — | Awaiting explicit authorization by Daniel. |
 
 ## Revenue Backlog
