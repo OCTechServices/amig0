@@ -200,13 +200,13 @@ and confirm all three are accurate before we sign off.
 - [x] P07: Repo artifacts removed — DisciplineLog.xlsx untracked, personal files deleted, .gitignore updated
 - [x] P08: Regression/security validation — S01/P04 smoke tests passed 2026-09-14 (home, hacks, deals, business all 200; unauthenticated API 403; operator auth passes; invalid token 403)
 - [x] P01: Stripe booking end-to-end validation — CLOSED 2026-09-20. Pass 3 accepted: fixed Preview build dpl_8m9TcAF3qeNtnzGxsY4jPoZLmsDH, human browser TEST booking (E-Bike $10, Ref SF6CI8M0), signed webhook HTTP 200 (no I32 AttributeError), Firestore 0→1 document, $10 deposit rendered (no $NaN), WhatsApp suppressed, Production untouched. (RAID I23 closed)
-- [ ] F01: stripe-webhook.py I32-equivalent — fix committed locally 2026-09-23; 14/14 regression tests pass. Production deployment pending. FIREBASE_SERVICE_ACCOUNT absent from Production (separate gate required before full subscription path is live). (RAID I34)
+- [ ] F01: stripe-webhook.py I32-equivalent — fix deployed Production 2026-09-24 (dpl_2SUdmLpGq1rLrqLisWL8cSysUcto, commit 122c1d2); 14/14 regression tests pass; smoke test 200. Awaiting first live customer.subscription.* event to close I34. (RAID I34 — open, runtime verification pending)
+- [x] FIREBASE_SERVICE_ACCOUNT — Production scoped to amig0-travel-company-52fb1; Preview isolated to amig0-e2e-test. Confirmed 2026-09-23.
 - [ ] P02: WA credential — calendar reminder Nov 1. Renewal: Graph API Explorer → update WA_TOKEN (RED). Pursue permanent token. (RAID R06)
 - [ ] P03: Firebase Hosting domain — `amig0-travel-company-52fb1.web.app` (confirmed from .firebaserc, RED to verify/document custom domain)
 - [ ] P05: health/ disposition — personal app on brand domain, decision pending Daniel
 - [ ] P06: amig0.vercel.app legacy redirect — Vercel dashboard action (RED)
 - [ ] P09: Phase 1 exit report — commit docs/phase-1-exit.md; update CLAUDE.md + RAID.md to Phase 1 complete; Daniel authorizes Phase 2. (per phase-1-scope.md §Exit Criteria)
-- [ ] NEEDS DISPOSITION: FIREBASE_SERVICE_ACCOUNT — vercel env ls shows Preview scope only; Production subscription/trial routes need this. Verify Production scope or document risk. (RED if credential change needed)
 - [ ] NEEDS DISPOSITION: AEO files (robots.txt, llms.txt) — absent from repo; CLAUDE.md §7 DoD requires them for public-facing sites. Add or formally defer.
 - [ ] Roadmap: OCTech Venue Network [NAMING TBD] — shared venue/partner database across amig0 + DATA.LABZ; cafés join once, appear in both products (amig0 hacks/spotlight + DATA.LABZ check-in/cohort rooms); single QR per venue routes to correct app experience; dual B2B pitch: amig0 sends travelers, DATA.LABZ sends local students + remote builders; see data-labz CLAUDE.md for counterpart entry
 - [x] Legacy PUBLISH_SECRET — removed from Vercel Production 2026-09-14. No redeployment required.
