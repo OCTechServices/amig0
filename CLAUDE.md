@@ -15,8 +15,8 @@ The platform consists of five apps in one codebase:
 **Target Users:** Tour operators, travel agents, clients, tour guides
 **Tier:** 1 — Enterprise Grade
 **Status:** Active
-**Last Updated:** 2026-09-13 (Phase 0 Reconciliation)
-**Delivery Phase:** Phase 1 — Security, Reliability & Platform Rationalization (authorized 2026-09-13, in progress) | Lifecycle: Phase 0 ✅ → **Phase 1** → Phase 2 → Phase 3 → Phase 4 → Phase 5
+**Last Updated:** 2026-09-24 (Phase 1 Complete)
+**Delivery Phase:** Phase 1 — Security, Reliability & Platform Rationalization (COMPLETE 2026-09-24) | Phase 2 — Revenue Activation & Validation (not yet authorized) | Lifecycle: Phase 0 ✅ → **Phase 1 ✅** → Phase 2 → Phase 3 → Phase 4 → Phase 5
 **Brand:** `amig0` — brand name, always lowercase. `@amig0trips` — exclusive social handle (Instagram + Facebook). These are distinct: amig0 is the product, @amig0trips is the channel.
 
 ## 2. Architecture Overview
@@ -206,7 +206,7 @@ and confirm all three are accurate before we sign off.
 - [x] P03: Firebase Hosting domain — CONFIRMED 2026-09-24. Production Hosting site ID: amig0-travel-company-52fb1. Default URL: https://amig0-travel-company-52fb1.web.app. No custom domain configured. Single live channel (last deployed 2026-08-24). CRM, Client Portal, and Guide App served from this URL. Preview/E2E project (amig0-e2e-test) remains separate.
 - [x] P05: health/ disposition — DEFERRED 2026-09-24. Temporary: health/ remains in current location through Phase 1. Long-term: separate health/ from amig0 public product boundary. Owner: Daniel. Review date: 2027-01-31 (governance review/decision date — not a migration completion deadline). Architectural constraint: health/ must be separated before any intentional expansion of health/ functionality.
 - [x] P06: amig0.vercel.app legacy redirect — CLOSED 2026-09-24. 301 Moved Permanently to amig0.com configured in Vercel Dashboard (no code change). 6/6 acceptance tests pass: root/path/query-string redirect, canonical safe, single-hop chain.
-- [ ] P09: Phase 1 exit report — commit docs/phase-1-exit.md; update CLAUDE.md + RAID.md to Phase 1 complete; Daniel authorizes Phase 2. (per phase-1-scope.md §Exit Criteria)
+- [x] P09: Phase 1 exit report — CLOSED 2026-09-24. docs/phase-1-exit.md committed. CLAUDE.md + RAID.md updated to Phase 1 complete. Phase 2 authorization is a separate explicit human decision. (per phase-1-scope.md §Exit Criteria)
 - [x] AEO foundation — IMPLEMENTED locally 2026-09-24, Production deployment pending. robots.txt VERIFIED: exists in repo root, permits AI crawlers (User-agent: * Allow: /). llms.txt CREATED locally in repo root (will be served as /llms.txt after next authorized deployment — not yet live in Production). Deeper AEO (Quick Answer blocks, FAQ schema, H2 restructuring) formally deferred to future SEO/AEO optimization initiative.
 - [ ] Roadmap: OCTech Venue Network [NAMING TBD] — shared venue/partner database across amig0 + DATA.LABZ; cafés join once, appear in both products (amig0 hacks/spotlight + DATA.LABZ check-in/cohort rooms); single QR per venue routes to correct app experience; dual B2B pitch: amig0 sends travelers, DATA.LABZ sends local students + remote builders; see data-labz CLAUDE.md for counterpart entry
 - [x] Legacy PUBLISH_SECRET — removed from Vercel Production 2026-09-14. No redeployment required.
