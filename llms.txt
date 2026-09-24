@@ -1,0 +1,23 @@
+# amig0
+
+> AI-powered travel discovery platform — city guides, bookable group experiences, and local member deals.
+
+amig0 helps travelers explore cities with AI-generated recommendations, book group services with a small deposit, and access exclusive local deals through a membership. Available at amig0.com.
+
+## What amig0 Provides
+
+- **Traveler Hacks**: AI-generated city travel guides covering food, drinks, activities, and neighborhoods. Available for 23+ cities worldwide.
+- **Bookable Services**: Reserve group experiences — e-bike rentals, luxury photo booths, and mobile bar service — with a small deposit ($10–$35).
+- **amig0 Membership**: $3.99/month subscription granting exclusive deals and perks at verified local partner venues.
+- **Partner Network**: Local restaurants, bars, and experiences can apply to join the amig0 partner network.
+
+## Public Pages
+
+- [Traveler Hacks](https://amig0.com/hacks): AI travel recommendations by city
+- [Partner Application](https://amig0.com/business): Apply to become an amig0 partner
+- [Privacy Policy](https://amig0.com/privacy)
+- [Terms of Service](https://amig0.com/terms)
+
+## Contact
+
+contact@opcoretech.com

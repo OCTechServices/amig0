@@ -1,6 +1,6 @@
 # RAID Log: amig0
 # Tier 1 — Enterprise Grade | OCTech Services
-# Last Updated: 2026-09-24 (P02/P03/P05 governance gate — P02 and P03 closed; P05 decision recorded, concrete deferral date pending)
+# Last Updated: 2026-09-24 (AEO foundation + P05 deferral — llms.txt created locally pending deployment; P05 deferred to 2027-01-31 review)
 
 ---
 
