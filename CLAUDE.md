@@ -23,7 +23,7 @@ The platform consists of five apps in one codebase:
 **Stack:**
 - Frontend: Vanilla JavaScript — no framework, no bundler, no npm. Scripts loaded via `<script>` tags
 - Backend / DB: Firebase v10.12 (compat SDK) — Firestore + Auth + Storage
-- Styling: Custom CSS + DM Sans / Playfair Display (Google Fonts)
+- Styling: Custom CSS + Plus Jakarta Sans (Google Fonts)
 - Maps: Leaflet.js 1.9.4
 - PDF Generation: jsPDF (quotes + itineraries)
 - PWA: Service worker + manifest (installable on mobile)
