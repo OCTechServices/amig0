@@ -13,6 +13,7 @@
   <meta property="og:image" content="https://amig0.com/og.png">
   <meta property="og:url" content="https://amig0.com/">
   <meta property="og:type" content="website">
+  <meta name="theme-color" content="#09090b">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/tokens.css">
   <style>
@@ -69,10 +70,11 @@
       padding: 13px 28px; border-radius: 10px; cursor: pointer; text-decoration: none;
       display: inline-block; transition: all 0.15s;
     }
-    .btn-hero.primary { background: var(--p1); border: none; color: #fff; }
+    .btn-hero.primary { background: var(--p1); border: none; color: #09090b; }
     .btn-hero.primary:hover { background: #6366f1; }
     .btn-hero.ghost { background: transparent; border: 1px solid var(--border); color: var(--text); }
     .btn-hero.ghost:hover { background: var(--surface); }
+    .hero-tagline { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.14em; color: var(--p1); margin-bottom: 14px; }
 
     /* ── Deals section ── */
     .section { border-top: 1px solid var(--border); padding: 72px 24px; }
@@ -307,11 +309,12 @@
     <div class="city-label-wrap"><span class="city-label" id="city-label">Mexico City</span></div>
     <div class="scene-chips" id="scene-chips"></div>
 
+    <p class="hero-tagline">Local deals · AI travel intel</p>
     <h1>The <span class="rotating-word" id="rotating-word">city</span>,<br>finally <em>yours.</em></h1>
     <p class="hero-sub">Walk into a verified local bar. Hand your phone to the staff. Walk out with a free drink. That's the deal. Real spots, real cities.</p>
 
     <div class="hero-ctas">
-      <a href="/deals" class="btn-hero primary">Claim your 14-day pass →</a>
+      <a href="/deals" class="btn-hero primary">Claim your free 7-day pass →</a>
       <a href="/hacks/" class="btn-hero ghost">Explore a city</a>
     </div>
 
@@ -397,7 +400,7 @@
       <h2>Own a spot?<br><em>Let's work together.</em></h2>
       <p>Reach travelers actively exploring your city and ready to spend — not just scrolling past.</p>
       <ul class="venue-bullets">
-        <li>30-day free founding affiliate trial</li>
+        <li><a href="/business" style="color:inherit;text-decoration:none">30-day free founding affiliate trial</a></li>
         <li>Listed on the amig0 deals map</li>
         <li>Tagged in Traveler Hacks AI results</li>
         <li>No hardware or scanners needed</li>
@@ -414,7 +417,6 @@
         <a href="/deals">Deals</a>
         <a href="/hacks/">Traveler Hacks</a>
         <a href="/business">For venues</a>
-        <a href="/landing.html">Operators</a>
         <a href="mailto:contact@opcoretech.com">Contact</a>
         <a href="https://instagram.com/amig0trips" target="_blank" rel="noopener">@amig0trips</a>
       </div>

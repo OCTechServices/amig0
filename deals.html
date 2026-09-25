@@ -13,6 +13,7 @@
   <meta property="og:image" content="https://amig0.com/og.png">
   <meta property="og:url" content="https://amig0.com/deals">
   <meta property="og:type" content="website">
+  <meta name="theme-color" content="#09090b">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/tokens.css">
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
@@ -39,7 +40,7 @@
       transition: background 0.15s;
     }
     .btn-sm:hover { background: #27272a; }
-    .btn-sm.primary { background: var(--p1); border-color: var(--p1); color: #fff; }
+    .btn-sm.primary { background: var(--p1); border-color: var(--p1); color: #09090b; }
     .btn-sm.primary:hover { background: #6366f1; }
     .user-email { font-size: 0.77rem; color: var(--muted); }
     .sign-out-btn { background: none; border: none; color: var(--muted); font-family: inherit; font-size: 0.78rem; cursor: pointer; padding: 0; }
@@ -82,7 +83,7 @@
     .btn-cta {
       font-family: inherit; font-size: 0.95rem; font-weight: 600;
       padding: 13px 32px; border-radius: 10px; cursor: pointer;
-      background: var(--p1); border: none; color: #fff; transition: background 0.15s;
+      background: var(--p1); border: none; color: #09090b; transition: background 0.15s;
     }
     .btn-cta:hover { background: #6366f1; }
     .hero-perks { display: flex; gap: 20px; justify-content: center; margin-top: 22px; flex-wrap: wrap; }
@@ -199,7 +200,7 @@
     .btn-spotlight {
       font-family: inherit; font-size: 0.86rem; font-weight: 600;
       padding: 10px 22px; border-radius: 9px; cursor: pointer;
-      background: var(--p1); border: none; color: #fff; white-space: nowrap;
+      background: var(--p1); border: none; color: #09090b; white-space: nowrap;
       transition: background 0.15s;
     }
     .btn-spotlight:hover { background: #6366f1; }
@@ -239,7 +240,7 @@
     .btn-vpage-join {
       width: 100%; font-family: inherit; font-size: 0.95rem; font-weight: 700;
       padding: 14px; border-radius: 10px; background: var(--p1);
-      border: none; color: #fff; cursor: pointer; transition: background 0.15s;
+      border: none; color: #09090b; cursor: pointer; transition: background 0.15s;
     }
     .btn-vpage-join:hover { background: #6366f1; }
     .vpage-cta-note { font-size: 0.72rem; color: var(--muted); text-align: center; margin-top: 8px; }
@@ -272,7 +273,7 @@
     .btn-block {
       width: 100%; font-family: inherit; font-size: 0.88rem; font-weight: 600;
       padding: 11px; border-radius: 9px; cursor: pointer;
-      background: var(--p1); border: none; color: #fff; transition: background 0.15s;
+      background: var(--p1); border: none; color: #09090b; transition: background 0.15s;
     }
     .btn-block:hover { background: #6366f1; }
     .btn-block:disabled { opacity: 0.45; cursor: default; }
@@ -561,7 +562,7 @@
       <div class="city-row">
         <label for="city-select">City</label>
         <select id="city-select"><option value="">All cities</option></select>
-        <button class="btn-near-me" id="near-me-btn" onclick="handleNearMe()">
+        <button class="btn-near-me" id="near-me-btn" onclick="handleNearMe()" aria-label="Near me — uses your device location">
           <i data-lucide="navigation" style="width:13px;height:13px;stroke-width:2"></i>Near me
         </button>
       </div>
@@ -1084,7 +1085,7 @@
     // ── Cards ─────────────────────────────────────────────────────────────────
     function renderCards(affiliates) {
       if (!affiliates.length) {
-        document.getElementById('deals-grid').innerHTML = '<p class="empty-state">No active deals in this area yet — check back soon.</p>';
+        document.getElementById('deals-grid').innerHTML = '<div class="empty-state"><p style="font-size:1.3rem;margin-bottom:8px">🤝</p><p style="font-weight:700;color:var(--text);margin-bottom:8px">Deals are on the way.</p><p>We\'re building our San Diego affiliate network. Check back soon — or explore a city in the meantime.</p><a href="/hacks/" style="display:inline-block;margin-top:18px;padding:8px 0;color:var(--p1);font-size:0.85rem;font-weight:600;text-decoration:none">Try Traveler Hacks \u2192</a></div>';
         return;
       }
       if (!currentUser) { renderCardHtml(affiliates, {}); return; }
@@ -1463,7 +1464,6 @@
       <a href="/deals">Deals</a>
       <a href="/hacks/">Traveler Hacks</a>
       <a href="/business">For venues</a>
-      <a href="/landing.html">Operators</a>
       <a href="mailto:contact@opcoretech.com">Contact</a>
       <a href="https://instagram.com/amig0trips" target="_blank" rel="noopener">@amig0trips</a>
     </div>

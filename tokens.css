@@ -32,7 +32,7 @@
   transition: all 0.15s; display: inline-block;
 }
 .btn-nav:hover { background: var(--surface); color: var(--text); }
-.btn-nav.primary { background: var(--p1); border-color: var(--p1); color: #fff; }
+.btn-nav.primary { background: var(--p1); border-color: var(--p1); color: #09090b; }
 .btn-nav.primary:hover { background: #6366f1; }
 
 /* ── Footer (canonical) ── */

@@ -13,6 +13,7 @@
   <meta property="og:image" content="https://amig0.com/og.png">
   <meta property="og:url" content="https://amig0.com/hacks/">
   <meta property="og:type" content="website">
+  <meta name="theme-color" content="#09090b">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/tokens.css">
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
@@ -657,6 +658,7 @@
           <option value="other">Other...</option>
         </select>
         <input type="text" id="cityOther" placeholder="Enter city..." style="display:none;margin-top:8px" oninput="currentCity=this.value.trim()||currentCity;renderTools()">
+        <span id="other-city-hint" class="field-hint" style="display:none;margin-top:6px">Traveler Hacks available for any city · bookable services available in select cities only.</span>
       </div>
       <div>
         <label class="input-label">Mode</label>
@@ -928,6 +930,8 @@ function onCityChange() {
   const sel   = document.getElementById('citySelect').value;
   const other = document.getElementById('cityOther');
   other.style.display = sel === 'other' ? 'block' : 'none';
+  var otherHint = document.getElementById('other-city-hint');
+  if (otherHint) otherHint.style.display = sel === 'other' ? 'block' : 'none';
 
   currentCity = sel === 'other'
     ? (other.value.trim() || currentCity)
@@ -1000,6 +1004,8 @@ async function generate() {
     if (!res.ok) throw new Error(data.error || `Server error ${res.status}`);
     lastData = data;
     output.innerHTML = renderResults(data);
+    var prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    output.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth', block: 'start' });
   } catch (err) {
     output.innerHTML = `<div class="state err">Something went wrong. Try again in a moment.</div>`;
   } finally {
@@ -1036,7 +1042,7 @@ function renderServices(destination) {
           <div class="driver-cta-name">${escHtml(s.name)}</div>
           <div class="driver-cta-detail">${escHtml(s.detail)}</div>
         </div>
-        <span class="driver-cta-btn">Message on WhatsApp</span>
+        <span class="driver-cta-btn">Book via WhatsApp →</span>
       </a>`;
     }
     // Inactive
@@ -1823,7 +1829,6 @@ async function submitBooking(e) {
       <a href="/deals">Deals</a>
       <a href="/hacks/">Traveler Hacks</a>
       <a href="/business">For venues</a>
-      <a href="/landing.html">Operators</a>
       <a href="mailto:contact@opcoretech.com">Contact</a>
       <a href="https://instagram.com/amig0trips" target="_blank" rel="noopener">@amig0trips</a>
     </div>

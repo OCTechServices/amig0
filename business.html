@@ -13,6 +13,7 @@
   <meta property="og:image" content="https://amig0.com/og.png">
   <meta property="og:url" content="https://amig0.com/business">
   <meta property="og:type" content="website">
+  <meta name="theme-color" content="#09090b">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/tokens.css">
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
@@ -70,7 +71,7 @@
     .btn-submit {
       width: 100%; font-family: inherit; font-size: 0.9rem; font-weight: 600;
       padding: 12px; border-radius: 9px; cursor: pointer;
-      background: var(--p1); border: none; color: #fff; margin-top: 22px;
+      background: var(--p1); border: none; color: #09090b; margin-top: 22px;
       transition: background 0.15s;
     }
     .btn-submit:hover { background: #6366f1; }
@@ -142,7 +143,7 @@
     <a href="/" class="nav-brand">amig<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 26" aria-hidden="true" style="display:inline-block;width:0.62em;height:0.88em;vertical-align:-0.06em;color:var(--p1)"><path fill="currentColor" fill-rule="evenodd" d="M10,1.5 C14.97,1.5 19,6.65 19,13 C19,19.35 14.97,24.5 10,24.5 C5.03,24.5 1,19.35 1,13 C1,6.65 5.03,1.5 10,1.5 Z M10,7 C7.51,7 5.5,9.69 5.5,13 C5.5,16.31 7.51,19 10,19 C12.49,19 14.5,16.31 14.5,13 C14.5,9.69 12.49,7 10,7 Z"/><line x1="6.5" y1="21" x2="13.5" y2="5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity="1"/></svg></a>
     <div class="nav-links">
       <a href="/hacks/" class="btn-nav">Traveler Hacks</a>
-      <a href="/deals" class="btn-nav primary">Get deals</a>
+      <a href="#reg-form-card" class="btn-nav primary">Apply to join →</a>
     </div>
   </nav>
 
@@ -157,15 +158,10 @@
     <div class="traveler-section">
       <div class="traveler-section-header">
         <div class="traveler-dot-live"></div>
-        <div class="traveler-section-label">Who's joining amig0</div>
+        <div class="traveler-section-label">Travelers amig0 is built for</div>
       </div>
       <div class="traveler-map-wrap"><div id="traveler-map"></div></div>
-      <div class="traveler-ticker" id="traveler-ticker">
-        <div class="ticker-pill" id="ticker-pill">
-          <span class="ticker-flag" id="ticker-flag"></span>
-          <span><span class="ticker-name" id="ticker-name"></span> from <span id="ticker-country"></span> just joined amig0</span>
-        </div>
-      </div>
+      <div class="traveler-ticker-static" style="padding:12px 18px 14px;border-top:1px solid var(--border);font-size:0.81rem;color:var(--muted)">Built for travelers exploring real cities — from San Diego to Mexico City, Amsterdam, and beyond.</div>
     </div>
 
     <div class="props">
@@ -318,35 +314,6 @@
       }).addTo(travMap);
     });
 
-    var currentIdx = 0;
-    var pill = document.getElementById('ticker-pill');
-
-    function showTraveler(idx) {
-      var t = TRAVELERS[idx];
-      pill.classList.remove('visible');
-      setTimeout(function () {
-        document.getElementById('ticker-flag').textContent    = t.flag;
-        document.getElementById('ticker-name').textContent    = t.name;
-        document.getElementById('ticker-country').textContent = t.country;
-
-        // highlight active marker
-        travMarkers.forEach(function (m, i) {
-          if (i === idx) {
-            m.setStyle({ fillColor: '#4ade80', color: '#4ade80', fillOpacity: 1, opacity: 1, radius: 6 });
-          } else {
-            m.setStyle({ fillColor: '#818cf8', color: '#818cf8', fillOpacity: 0.5, opacity: 0.5, radius: 4 });
-          }
-        });
-
-        pill.classList.add('visible');
-      }, 200);
-    }
-
-    showTraveler(0);
-    setInterval(function () {
-      currentIdx = (currentIdx + 1) % TRAVELERS.length;
-      showTraveler(currentIdx);
-    }, 2800);
   </script>
 
   <!-- Firebase v10.12.0 -->
@@ -421,7 +388,6 @@
         <a href="/deals">Deals</a>
         <a href="/hacks/">Traveler Hacks</a>
         <a href="/business">For venues</a>
-        <a href="/landing.html">Operators</a>
         <a href="mailto:contact@opcoretech.com">Contact</a>
         <a href="https://instagram.com/amig0trips" target="_blank" rel="noopener">@amig0trips</a>
       </div>
