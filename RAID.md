@@ -1,6 +1,6 @@
 # RAID Log: amig0
 # Tier 1 — Enterprise Grade | OCTech Services
-# Last Updated: 2026-09-24 (PHASE 1 COMPLETE. P09 closed — docs/phase-1-exit.md committed. I34 OPEN; accepted as known risk for Phase 1 exit; carries forward as monitoring item.)
+# Last Updated: 2026-09-25 (UI-01B released to Production. cfd1b09 + 5150ae1. Vercel dpl_DsquvQntg6DL1yRqoRnxz4yisJwb. HTTP smoke 8/8. I34 OPEN; P05 DEFERRED 2027-01-31; I22 PRESERVED. Phase 2 NOT AUTHORIZED.)
 
 ---
 
@@ -106,6 +106,7 @@ Features confirmed for future build — not yet in active sprint.
 |-------|--------|------|-------|
 | Phase 0 — Foundation & Forensic Audit | COMPLETE | 2026-09-13 | docs/phase-0-audit.md. Reviewed and accepted by Daniel. Phase 1 authorized. |
 | Phase 1 — Security, Reliability & Platform Rationalization | COMPLETE | 2026-09-24 | docs/phase-1-exit.md. All items resolved, deferred with owner+date, or accepted as known risk. I34 OPEN as monitoring item. P05 DEFERRED to 2027-01-31 review. Canonical main: e27a48e. Production release: Vercel Git-triggered, READY 2026-09-24. Smoke: 61/61 tests pass, all pages 200, llms.txt live. |
+| UI-01B — Experience Polish | RELEASED | 2026-09-25 | Application commit cfd1b09 (tokens.css, home.html, business.html, deals.html, hacks/index.html, privacy.html, terms.html). Governance commit 5150ae1 (CLAUDE.md font correction). Vercel Production deployment dpl_DsquvQntg6DL1yRqoRnxz4yisJwb (amig0-3y5vzejzu-datalabz.vercel.app), READY, aliased to amig0.com. HTTP smoke 8/8 pass (/, /business, /deals, /hacks/, /privacy, /terms, /robots.txt, /llms.txt). amig0.vercel.app → 301 → amig0.com preserved. Production copy smoke: all UI-01B strings confirmed live (hero descriptor, 7-day CTA, business static copy, Near Me aria-label, WA button, other-city hint). F-01 cosmetic (orphaned CSS in business.html): accepted. Responsive/keyboard browser validation: NOT EXECUTED — no browser automation available. I34 OPEN; P05 DEFERRED 2027-01-31; I22 PRESERVED. Phase 2 NOT AUTHORIZED. |
 | Phase 2 — Revenue Activation & Validation | NOT AUTHORIZED | — | Awaiting explicit authorization by Daniel. |
 
 ## Revenue Backlog
@@ -123,7 +124,7 @@ Business development and partnership activities. Not engineering work. Not Phase
 | D02 | Leaflet.js 1.9.4 | External | Maps — loaded via script tag |
 | D03 | jsPDF | External | PDF generation — loaded via script tag |
 | D04 | GitHub Pages + custom domain | Hosting | Current deployment target |
-| D05 | Google Fonts (DM Sans + Playfair Display) | External | Typography — requires internet |
+| D05 | Google Fonts (Plus Jakarta Sans) | External | Typography — requires internet. Corrected from DM Sans / Playfair Display per governance commit 5150ae1 (2026-09-25). |
 
 ---
 
@@ -132,3 +133,4 @@ Business development and partnership activities. Not engineering work. Not Phase
 |---|---|---|---|
 | GB-01 | Trim CLAUDE.md to PP01 200-line limit | Medium | Closed — session changelogs moved to docs/changelog.md (2026-08-16). CLAUDE.md trimmed to current-state facts only. |
 | D06 | Native mobile app (iOS/Android) | Future decision | Dan confirmed intent to ship a mobile app — stack decision (React Native vs Flutter vs PWA-only) pending; guide.html already scoped as installable PWA which may be sufficient |
+| D07 | UI-01B release | Decision | Released 2026-09-25. Commits cfd1b09 (application) + 5150ae1 (governance) pushed to origin/main. Vercel Production dpl_DsquvQntg6DL1yRqoRnxz4yisJwb. amig0.com live. Phase 2 NOT AUTHORIZED. |
